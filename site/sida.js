@@ -91,6 +91,58 @@
     knapp.setAttribute('aria-pressed', pa ? 'true' : 'false');
   });
 
+  // riggvyn: three.js laddas först på begäran (knappen), eller av sig själv efter sidladdningen på en dator
+  // med mus, WebGL2, minst 4 kärnor och 4 GB, utan datasparläge och utan reducerad rörelse, när bilden syns.
+  var riggKnapp = document.querySelector('.riggknapp'), riggPlats = document.querySelector('.riggplats');
+  if (riggKnapp && riggPlats && bild) {
+    var stangRigg = null, laddar = false;
+    var visaKnapp = function (text, pa) { riggKnapp.textContent = text; riggKnapp.setAttribute('aria-pressed', pa ? 'true' : 'false'); };
+    var startaRigg = function () {
+      if (laddar || stangRigg) return;
+      laddar = true;
+      visaKnapp('Laddar riggen', true);
+      bild.dataset.lage = 'rigg';
+      riggPlats.hidden = false;
+      var s = document.createElement('script');
+      s.type = 'module';
+      s.src = 'rigg/rigg.js';
+      s.onload = function () {
+        window.Kropp64Rigg.starta(riggPlats, new URL('rigg/', document.baseURI).href, function () {
+          riggPlats.classList.remove('klar');
+          bild.dataset.lage = 'reserv';
+          visaKnapp('Visa renderingen', true);
+        }).then(function (f) { stangRigg = f; laddar = false; if (bild.dataset.lage === 'rigg') visaKnapp('Visa renderingen', true); });
+      };
+      s.onerror = function () { laddar = false; bild.dataset.lage = 'reserv'; visaKnapp('Visa renderingen', true); };
+      if (!document.querySelector('script[src="rigg/rigg.js"]')) document.head.appendChild(s); else s.onload();
+    };
+    var stoppaRigg = function () {
+      if (stangRigg) { stangRigg(); stangRigg = null; }
+      riggPlats.hidden = true;
+      bild.dataset.lage = 'foto';
+      visaKnapp('Starta riggen', false);
+    };
+    riggKnapp.hidden = false;
+    riggKnapp.addEventListener('click', function () {
+      if (laddar) return;
+      if (bild.dataset.lage === 'rigg' || bild.dataset.lage === 'reserv') stoppaRigg(); else startaRigg();
+    });
+    var harWebgl2 = function () { try { return !!document.createElement('canvas').getContext('webgl2'); } catch (e) { return false; } };
+    var orkar = function () {
+      var c = navigator.connection;
+      return !lugn && matchMedia('(pointer: fine)').matches && !(c && c.saveData) &&
+        (navigator.hardwareConcurrency || 0) >= 4 && (navigator.deviceMemory || 8) >= 4 && harWebgl2();
+    };
+    if (orkar()) window.addEventListener('load', function () {
+      var vid = window.requestIdleCallback || function (f) { setTimeout(f, 1200); };
+      vid(function () {
+        new IntersectionObserver(function (e, o) {
+          if (e[0].isIntersecting) { o.disconnect(); if (bild.dataset.lage === 'foto' || !bild.dataset.lage) startaRigg(); }
+        }, { threshold: .3 }).observe(bild);
+      }, { timeout: 2500 });
+    });
+  }
+
   // staplarna fylls när testet syns, filmen laddas först när den syns
   var bench = document.querySelector('.bench');
   if (bench) new IntersectionObserver(function (e, o) {

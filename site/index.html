@@ -54,8 +54,8 @@
       </p>
     </div>
 
-    <!-- Plats för riggvyn (three.js, web/src/rigg) när den är klar: byt ut <picture> mot vyn och behåll
-         figcaption. Tills dess en rendering. -->
+    <!-- Riggvyn (three.js, web/src/rigg/sajt.ts, byggs till dist/rigg/ av bygg.sh). Laddas först när besökaren
+         klickar "Starta riggen", eller av sig själv efter sidladdningen på en dator som klarar det. Demoläge. -->
     <figure class="platta" id="riggvyn-plats">
       <div class="bild" data-lage="foto">
         <picture class="foto">
@@ -73,8 +73,10 @@
         <span class="mark m-led" aria-hidden="true"><i></i><em>D7 blinkar i pulsen</em></span>
         <span class="mark m-ekg under" aria-hidden="true"><i></i><em>Hjärtbussen, guldpläterad</em></span>
         <button class="varmeknapp" type="button" aria-pressed="false">Värmekamera</button>
+        <button class="riggknapp" type="button" aria-pressed="false" hidden>Starta riggen</button>
+        <div class="riggplats" hidden></div>
       </div>
-      <figcaption><span class="cap-foto">Rendering i Blender av ett kretskort som inte finns. Siffrorna på processorn är exempelvärden.</span><span class="cap-varme">Falsk färg ur en renderpass, inte en mätning. Riktiga processorer blir varmare än 67 BPM.</span></figcaption>
+      <figcaption><span class="cap-foto">Rendering i Blender av ett kretskort som inte finns. Siffrorna på processorn är exempelvärden.</span><span class="cap-varme">Falsk färg ur en renderpass, inte en mätning. Riktiga processorer blir varmare än 67 BPM.</span><span class="cap-rigg">Riggen i demoläge: syntetiska värden ur ett manus, inga riktiga hälsodata. Hjärtat slår i pulsen, fläktarna andas.<span class="cap-dra"> Dra för att vrida, klicka och scrolla för att zooma.</span></span><span class="cap-reserv">3D-vyn går inte att visa här (WebGL saknas eller ritar för långsamt). Stillbild av riggen, renderad i Blender.</span></figcaption>
     </figure>
   </div>
 </section>

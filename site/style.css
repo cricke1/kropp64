@@ -152,6 +152,21 @@ h1 { font-size: clamp(42px, 5vw, 70px); line-height: .98; letter-spacing: -.035e
 .varmeknapp[aria-pressed="true"]::before { background: linear-gradient(90deg, #2a0a5e, #c2185b, #ff8f00, #fff59d); border-color: #fff59d; }
 .varmeknapp:hover { border-color: #f2efe8; }
 
+/* riggvyn (3D, laddas på begäran). Bilden, märkningen och värmekameran döljs medan riggen visas. */
+.riggknapp {
+  position: absolute; left: 16px; bottom: 16px; font: 500 11px var(--mono); font-stretch: 87.5%; color: #f2efe8; cursor: pointer;
+  background: rgba(10, 14, 12, .72); border: 1px solid rgba(242, 239, 232, .35); border-radius: 3px; padding: 8px 10px; z-index: 3;
+}
+.riggknapp:hover { border-color: #f2efe8; }
+.riggplats { position: relative; }
+@media (pointer: coarse) { .cap-dra { display: none; } }
+@media (max-width: 699px) { .bild[data-lage="rigg"] .riggknapp, .bild[data-lage="reserv"] .riggknapp { left: auto; right: 12px; top: 12px; bottom: auto; } }
+.cap-rigg, .cap-reserv { display: none; }
+.bild[data-lage="rigg"] > :not(.riggplats):not(.riggknapp), .bild[data-lage="reserv"] > :not(.riggplats):not(.riggknapp) { display: none; }
+.bild[data-lage="rigg"] ~ figcaption .cap-foto, .bild[data-lage="rigg"] ~ figcaption .cap-varme,
+.bild[data-lage="reserv"] ~ figcaption .cap-foto, .bild[data-lage="reserv"] ~ figcaption .cap-varme { display: none; }
+.bild[data-lage="rigg"] ~ figcaption .cap-rigg, .bild[data-lage="reserv"] ~ figcaption .cap-reserv { display: inline; }
+
 /* sektioner */
 section { padding: 96px 0; border-bottom: 1px solid var(--linje); }
 

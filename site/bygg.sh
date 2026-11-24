@@ -23,4 +23,7 @@ if [ -f "$FILM" ]; then
 else
   echo "Saknar $FILM, kontorsloopen hoppas över" >&2
 fi
+# Riggvyn (three.js) som laddas på begäran: web/src/rigg/sajt.ts -> dist/rigg/rigg.js, plus modellen och stillbilden
+(cd "$REPO/web" && UT="$UT/rigg" npx vite build --config vite.sajt.config.ts --logLevel error)
+cp "$REPO/web/public/rigg/kropp64-rigg.glb" "$REPO/web/public/rigg/rigg-still.webp" "$UT/rigg/"
 du -sh "$UT"
