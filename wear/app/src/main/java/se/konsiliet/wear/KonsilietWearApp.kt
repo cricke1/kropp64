@@ -20,6 +20,7 @@ class KonsilietWearApp : Application() {
         super.onCreate()
         WatchState.init(this)
         PhoneStatus.init(this)
+        se.konsiliet.wear.exercise.PassLogg.init(this)
         Haptics.channels(this)
         Flush.schedulePeriodic(this)
         // Om en statusleverans missades medan processen var död finns den kvar i Data Layer.

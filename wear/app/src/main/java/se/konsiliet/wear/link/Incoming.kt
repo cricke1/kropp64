@@ -32,7 +32,38 @@ object Incoming {
             Protocol.PATH_FLUSH -> Flush.request(ctx, urgent = true)
             Protocol.PATH_NUDGE -> {
                 val o = runCatching { JSONObject(String(data)) }.getOrNull() ?: return
-                Haptics.notify(ctx, Pattern.RORELSE, 20, o.optString("title"), o.optString("body"))
+                val typ = o.optString("typ").ifBlank { "afk" }
+                // Svarsknappar på klockan: svaret går till mobilen, som skickar det till servern.
+                val svar = when (typ) {
+                    "afk" -> listOf(Triple("Om 30 min", "snooze", 30), Triple("Mitt i ett pass", "fokus", 120))
+                    "stress" -> listOf(Triple("Inte nu", "inte_nu", 180))
+                    "sova" -> listOf(Triple("Om 20 min", "snooze", 20), Triple("Inte i kväll", "inte_nu", 0))
+                    "pass" -> listOf(Triple("Om 1 h", "snooze", 60), Triple("Inte i dag", "inte_nu", 0))
+                    else -> emptyList()
+                }
+                val id = 20 + listOf("afk", "stress", "sova", "pass").indexOf(typ).coerceAtLeast(0)
+                val acts = svar.mapIndexed { k, (label, s, min) -> label to SvarReceiver.intent(ctx, id, k, typ, s, min) }.let { a ->
+                    // Passdagen: "Starta pass" först, så att dagens pass startar direkt från notisen.
+                    if (typ != "pass") a else listOf("Starta pass" to android.app.PendingIntent.getActivity(ctx, id * 4 + 3,
+                        android.content.Intent(ctx, se.konsiliet.wear.ui.MainActivity::class.java).putExtra("starta_pass", true)
+                            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                        android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)) + a
+                }
+                val open = when (typ) {
+                    "stress" -> android.content.Intent(ctx, se.konsiliet.wear.ui.AndasActivity::class.java)
+                    "pass" -> android.content.Intent(ctx, se.konsiliet.wear.ui.MainActivity::class.java).putExtra("starta_pass", true)
+                    else -> null
+                }
+                Haptics.notify(ctx, Pattern.RORELSE, id, o.optString("title"), o.optString("body"), acts, open)
+            }
+            Protocol.PATH_ANDAS -> {
+                // Från mobilens "Andas 60 s". Startas via notisen, eftersom en app i bakgrunden inte får öppna skärmar själv.
+                Haptics.notify(ctx, Pattern.RORELSE, 24, "Andas 60 sekunder", "Tryck för att börja. In 4 s, ut 6 s.",
+                    open = android.content.Intent(ctx, se.konsiliet.wear.ui.AndasActivity::class.java))
+                runCatching {
+                    ctx.startActivity(android.content.Intent(ctx, se.konsiliet.wear.ui.AndasActivity::class.java)
+                        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
+                }
             }
             Protocol.PATH_ALERT -> {
                 val o = runCatching { JSONObject(String(data)) }.getOrNull() ?: return
@@ -125,5 +156,35 @@ object Surfaces {
         for (c in listOf(RecoveryComplication::class.java, ConsultComplication::class.java)) {
             runCatching { ComplicationDataSourceUpdateRequester.create(ctx, ComponentName(ctx, c)).requestUpdateAll() }
         }
+    }
+}
+
+/** Svar på en knuff från klockans notis. Skickas till mobilen över MessageClient (`/konsiliet/svar`). */
+class SvarReceiver : android.content.BroadcastReceiver() {
+    companion object {
+        fun intent(ctx: Context, notis: Int, k: Int, typ: String, svar: String, minuter: Int): android.app.PendingIntent =
+            android.app.PendingIntent.getBroadcast(ctx, notis * 4 + k,
+                android.content.Intent(ctx, SvarReceiver::class.java).putExtra("notis", notis).putExtra("typ", typ)
+                    .putExtra("svar", svar).putExtra("minuter", minuter),
+                android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+
+    override fun onReceive(context: Context, intent: android.content.Intent) {
+        val o = JSONObject().put("typ", intent.getStringExtra("typ")).put("svar", intent.getStringExtra("svar"))
+            .put("minuter", intent.getIntExtra("minuter", 0))
+        context.getSystemService(android.app.NotificationManager::class.java).cancel(intent.getIntExtra("notis", 0))
+        // Sparas också för debugbryggan (emulatorerna kan inte parkopplas, se RESAN.md).
+        java.io.File(context.filesDir, "svar.json").writeText(o.toString())
+        val pending = goAsync()
+        Thread {
+            try {
+                kotlinx.coroutines.runBlocking {
+                    runCatching {
+                        val nodes = Wearable.getNodeClient(context).connectedNodes.await()
+                        for (n in nodes) Wearable.getMessageClient(context).sendMessage(n.id, Protocol.PATH_SVAR, o.toString().toByteArray()).await()
+                    }.onFailure { Log.d(TAG, "kunde inte skicka svaret: ${it.message}") }
+                }
+            } finally { pending.finish() }
+        }.start()
     }
 }

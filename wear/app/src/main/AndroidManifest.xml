@@ -49,6 +49,15 @@
             </intent-filter>
         </activity>
 
+        <!-- 60 sekunders andning, från stressknuffen eller startsidan. -->
+        <activity
+            android:name=".ui.AndasActivity"
+            android:exported="false"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.DeviceDefault" />
+
+        <receiver android:name=".link.SvarReceiver" android:exported="false" />
+
         <!-- Health Services levererar passiv data hit även när appen inte körs. -->
         <service
             android:name=".health.PassiveDataService"

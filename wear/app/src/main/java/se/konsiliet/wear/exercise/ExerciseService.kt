@@ -47,6 +47,14 @@ val EXERCISE_CHOICES = listOf(
     ExerciseType.STRENGTH_TRAINING to "Styrka",
 )
 
+/** Passtyp för planens text från servern ("Lätt pass", "Styrka", "Promenad", "Intervaller"). */
+fun planensTyp(typ: String?): ExerciseType = when {
+    typ == null -> ExerciseType.RUNNING
+    typ.contains("styrka", true) -> ExerciseType.STRENGTH_TRAINING
+    typ.contains("promenad", true) -> ExerciseType.WALKING
+    else -> ExerciseType.RUNNING
+}
+
 /** Namn som skickas till servern som passets typ. */
 fun exerciseTypeName(id: Int): String =
     EXERCISE_CHOICES.firstOrNull { it.first.id == id }?.second?.lowercase()
@@ -88,6 +96,7 @@ class ExerciseService : LifecycleService() {
                 .filter { it.value > 0 }
                 .map { Pending(metric = "hr", ts = Convert.seconds(it.getTimeInstant(boot)), value = it.value) }
             if (rows.isNotEmpty()) {
+                rows.sortedBy { it.ts }.forEach { PassLogg.puls(it.ts, it.value) }
                 lifecycleScope.launch(Dispatchers.IO) { QueueDb.get(applicationContext).pending().insert(rows) }
                 val last = rows.maxBy { it.ts }
                 WatchState.noteHr(last.value, (last.ts * 1000).toLong())
@@ -134,6 +143,7 @@ class ExerciseService : LifecycleService() {
                 ExerciseTrackedStatus.OWNED_EXERCISE_IN_PROGRESS -> {
                     // Processen har startats om mitt i ett pass: koppla bara på igen.
                     client.setUpdateCallback(callback)
+                    if (PassLogg.live.value.startMs == 0L) PassLogg.start(exerciseTypeName(type.id))
                     WatchState.noteExercise(true)
                     startFlusher(); return
                 }
@@ -149,6 +159,8 @@ class ExerciseService : LifecycleService() {
                 .build()
             client.setUpdateCallback(callback)
             client.startExerciseAsync(config).await()
+            PassLogg.kvittera(applicationContext)  // förra passets sammanfattning ersätts av det nya passet
+            PassLogg.start(exerciseTypeName(type.id))
             WatchState.noteExercise(true)
             message.value = null
             val now = System.currentTimeMillis() / 1000.0
@@ -185,6 +197,7 @@ class ExerciseService : LifecycleService() {
             }
             QueueDb.get(applicationContext).pending().insert(rows)
             runCatching { client.clearUpdateCallbackAsync(callback).await() }
+            PassLogg.avsluta(applicationContext)
             WatchState.noteExercise(false)
             Flush.request(applicationContext, urgent = true)
             ServiceCompat.stopForeground(this@ExerciseService, ServiceCompat.STOP_FOREGROUND_REMOVE)

@@ -159,7 +159,10 @@ object TileLayout {
             .addContent(text("Headroom", 12f, DIM))
             .addContent(text(score?.toString() ?: "--", 40f, if (score == null) DIM else INK, LayoutElementBuilders.FONT_WEIGHT_MEDIUM))
             .addContent(text(if (score == null) (p.scoreNote ?: "ingen poäng") else "av 100", 11f, DIM))
-            .addContent(gap(6f))
+            .addContent(gap(4f))
+            // Dagens svar: träna, ta det lugnt eller vila.
+            .addContent(text(p.idag?.rubrik ?: "", 13f, if (p.idag?.beslut == "vila") WARN else ACCENT, LayoutElementBuilders.FONT_WEIGHT_MEDIUM))
+            .addContent(gap(4f))
             .addContent(heartRate(if (hrFresh) "Klockfrekvens %.0f BPM".format(w.lastHr) else "Klockfrekvens --"))
             .addContent(gap(4f))
             .addContent(text(cText, 12f, cColor, LayoutElementBuilders.FONT_WEIGHT_MEDIUM))
@@ -183,7 +186,7 @@ object TileLayout {
             .setVerticalAlignment(LayoutElementBuilders.VERTICAL_ALIGN_CENTER)
             .setModifiers(ModifiersBuilders.Modifiers.Builder().setClickable(open)
                 .setSemantics(ModifiersBuilders.Semantics.Builder()
-                    .setContentDescription("Kropp64. Headroom ${score ?: "okänt"} av 100. $cText. $sText.").build())
+                    .setContentDescription("Kropp64. Headroom ${score ?: "okänt"} av 100. ${p.idag?.let { it.rubrik + ": " + it.plan + "." } ?: ""} $cText. $sText.").build())
                 .build())
             // Ringen visar poängen av 100, med start klockan tolv.
             .addContent(ring(360f, TRACK))

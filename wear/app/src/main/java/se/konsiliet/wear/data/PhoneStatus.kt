@@ -27,9 +27,16 @@ data class Snapshot(
     val phoneAt: Long = 0,
     /** När klockan tog emot det (ms). Detta är "senast synkad". */
     val receivedAt: Long = 0,
+    /** Dagens svar från servern (vardag.idag): beslut, rubrik och plan med pulszon. */
+    val idag: Idag? = null,
 ) {
     val hasData: Boolean get() = receivedAt > 0
 }
+
+data class Idag(
+    val beslut: String, val rubrik: String, val plan: String, val typ: String, val minuter: Int,
+    val zon: Int?, val pulsLo: Int?, val pulsHi: Int?, val maxpuls: Int, val pass: Int, val mal: Int,
+)
 
 object PhoneStatus {
     const val PATH = "/konsiliet/status"
@@ -60,6 +67,11 @@ object PhoneStatus {
             verdictAt = k?.optDouble("slut", 0.0)?.takeIf { !it.isNaN() } ?: 0.0,
             phoneAt = o.optLong("synkad", 0),
             receivedAt = receivedAt,
+            idag = o.optJSONObject("idag")?.let { i ->
+                Idag(i.optString("beslut"), i.optString("rubrik"), i.optString("plan"), i.optString("typ"), i.optInt("minuter"),
+                    if (i.isNull("zon")) null else i.optInt("zon"), if (i.isNull("puls_lo")) null else i.optInt("puls_lo"),
+                    if (i.isNull("puls_hi")) null else i.optInt("puls_hi"), i.optInt("maxpuls", 0), i.optInt("pass"), i.optInt("mal", 3))
+            },
         )
     }
 

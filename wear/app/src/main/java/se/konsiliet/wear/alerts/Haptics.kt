@@ -103,12 +103,13 @@ object Haptics {
     }
 
     /** Notis plus mönster. Notisen öppnar klockappen. */
-    fun notify(ctx: Context, p: Pattern, id: Int, title: String, body: String) {
+    fun notify(ctx: Context, p: Pattern, id: Int, title: String, body: String,
+               actions: List<Pair<String, PendingIntent>> = emptyList(), open: Intent? = null) {
         channels(ctx)
         if (p == Pattern.AKUT) play(ctx, p) else last = p
         if (Build.VERSION.SDK_INT >= 33 &&
             ctx.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
-        val open = PendingIntent.getActivity(ctx, id, Intent(ctx, MainActivity::class.java),
+        val openPi = PendingIntent.getActivity(ctx, id, open ?: Intent(ctx, MainActivity::class.java),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val (channel, category) = when (p) {
             Pattern.AKUT -> CH_AKUT to NotificationCompat.CATEGORY_ALARM
@@ -123,7 +124,8 @@ object Haptics {
             .setAutoCancel(true)
             .setCategory(category)
             .setPriority(if (p == Pattern.AKUT) NotificationCompat.PRIORITY_MAX else NotificationCompat.PRIORITY_DEFAULT)
-            .setContentIntent(open)
+            .setContentIntent(openPi)
+            .apply { actions.forEach { (label, pi) -> addAction(0, label, pi) } }
             .build()
         ctx.getSystemService(NotificationManager::class.java).notify(id, n)
     }

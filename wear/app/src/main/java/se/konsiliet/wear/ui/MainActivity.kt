@@ -124,10 +124,24 @@ class MainActivity : ComponentActivity() {
         refreshPerms()
         if (!permsOk) askForeground.launch(Permissions.foreground())
         else (application as KonsilietWearApp).reregister()
+        startaFranIntent(intent)
         setContent {
             MaterialTheme(colorScheme = ColorScheme(primary = Accent, onPrimary = Color(0xFF0E1A1E))) {
                 AppScaffold(timeText = {}) { Screen(permsOk, onAskPerms = { askForeground.launch(Permissions.foreground()) }) }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        startaFranIntent(intent)
+    }
+
+    /** Från passpåminnelsen eller rutan: starta dagens planerade pass direkt. */
+    private fun startaFranIntent(i: android.content.Intent?) {
+        if (i?.getBooleanExtra("starta_pass", false) == true && permsOk && !WatchState.status.value.exerciseActive) {
+            i.removeExtra("starta_pass")
+            ExerciseService.start(this, se.konsiliet.wear.exercise.planensTyp(se.konsiliet.wear.data.PhoneStatus.snapshot.value.idag?.typ))
         }
     }
 
@@ -174,6 +188,8 @@ private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
     val phone by se.konsiliet.wear.data.PhoneStatus.snapshot.collectAsState()
     val pending by remember { QueueDb.get(ctx).pending().countFlow() }.collectAsState(initial = 0)
     val msg by ExerciseService.message.collectAsState()
+    val live by se.konsiliet.wear.exercise.PassLogg.live.collectAsState()
+    val senaste by se.konsiliet.wear.exercise.PassLogg.senaste.collectAsState()
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var available by remember { mutableStateOf<List<String>>(emptyList()) }
     var choosing by remember { mutableStateOf(false) }
@@ -206,12 +222,57 @@ private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
                 top = contentPadding.calculateTopPadding(), bottom = contentPadding.calculateBottomPadding(),
             ),
         ) {
-            item {
-                ListHeader(Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec)) {
-                    Text("Klockfrekvens", color = Dim)
+            senaste?.let { p ->
+                item {
+                    val z = p.optJSONArray("zon_minuter")
+                    val zt = if (z != null) (0 until z.length()).filter { z.optInt(it) > 0 }.joinToString(", ") { "z${it + 1} ${z.optInt(it)} min" } else ""
+                    Column(Modifier.fillMaxWidth().morph(this, spec), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Pass klart: ${p.optInt("minuter")} min", color = Ink, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+                        if (!p.isNull("puls_medel")) Text("Medel ${p.optInt("puls_medel")}, max ${p.optInt("puls_max")} BPM", color = Ink, fontSize = 12.sp, style = Tab)
+                        if (zt.isNotEmpty()) Text(zt, color = Dim, fontSize = 11.sp, textAlign = TextAlign.Center, style = Tab)
+                        if (!p.isNull("i_malzon_procent")) Text("${p.optInt("i_malzon_procent")} % i målzon ${p.optInt("malzon")}", color = Accent, fontSize = 12.sp)
+                        Text(p.optString("rad"), color = Dim, fontSize = 11.sp, textAlign = TextAlign.Center)
+                    }
+                }
+                item {
+                    Button(onClick = { se.konsiliet.wear.exercise.PassLogg.kvittera(ctx) }, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec),
+                        transformation = SurfaceTransformation(spec), colors = ButtonDefaults.filledTonalButtonColors()) { Text("Ok") }
                 }
             }
-            item {
+            if (status.exerciseActive) {
+                item {
+                    // Live under passet: puls, zon och målzonen med gränser i BPM.
+                    val mal = live.malzon
+                    val (lo, hi) = se.konsiliet.wear.exercise.Zoner.grans(mal.coerceIn(1, 5))
+                    val bpm = status.lastHr
+                    val zon = bpm?.let { se.konsiliet.wear.exercise.Zoner.zon(it) }
+                    val iMal = (live.sekunderIZon[mal] / 60).toInt()
+                    val min = (now - status.exerciseStartedAt) / 60000
+                    val rad = when {
+                        bpm == null || zon == null -> "Väntar på puls"
+                        zon > mal -> "Över målzonen, sakta ner"
+                        zon < mal -> "Under målzonen, öka lite"
+                        else -> "I målzonen"
+                    }
+                    Column(Modifier.fillMaxWidth().morph(this, spec), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Pass $min min (stresstest)", color = Dim, fontSize = 12.sp, style = Tab)
+                        Row(verticalAlignment = Alignment.Bottom) {
+                            Text(bpm?.let { "%.0f".format(it) } ?: "--", style = Tab, fontSize = 40.sp, fontWeight = FontWeight.Medium, color = Ink)
+                            Text(" BPM", color = Dim, fontSize = 12.sp, modifier = Modifier.padding(bottom = 8.dp))
+                        }
+                        Text(if (zon != null && zon > 0) "Zon $zon: ${se.konsiliet.wear.exercise.Zoner.NAMN[zon]}" else "Under zon 1",
+                            color = if (zon == mal) Accent else Warn, fontSize = 14.sp)
+                        Text("Mål zon $mal: $lo-$hi BPM", color = Ink, fontSize = 12.sp, style = Tab)
+                        Text("$rad · $iMal min i målzon", color = Dim, fontSize = 11.sp, textAlign = TextAlign.Center)
+                    }
+                }
+            }
+            if (!status.exerciseActive) item {
+                ListHeader(Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec)) {
+                    Text("Klockfrekvens (puls)", color = Dim)
+                }
+            }
+            if (!status.exerciseActive) item {
                 Column(Modifier.fillMaxWidth().morph(this, spec), horizontalAlignment = Alignment.CenterHorizontally) {
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(status.lastHr?.let { "%.0f".format(it) } ?: "--",
@@ -226,7 +287,14 @@ private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
                 val (cText, cColor) = se.konsiliet.wear.tile.TileLayout.consultLine(phone)
                 val (sText, sColor) = se.konsiliet.wear.tile.TileLayout.syncLine(phone, now)
                 Column(Modifier.fillMaxWidth().morph(this, spec).padding(top = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Headroom " + (phone.score?.toString() ?: "--") + "/100", color = Ink, fontSize = 14.sp, style = Tab)
+                    phone.idag?.let { i ->
+                        Text(i.rubrik, color = if (i.beslut == "vila") Warn else Accent, fontSize = 15.sp, fontWeight = FontWeight.Medium,
+                            textAlign = TextAlign.Center)
+                        Text(i.plan, color = Ink, fontSize = 12.sp, textAlign = TextAlign.Center)
+                        Text("Pass ${i.pass} av ${i.mal} i veckan", color = Dim, fontSize = 11.sp, style = Tab)
+                    }
+                    Text("Headroom " + (phone.score?.toString() ?: "--") + " av 100", color = Ink, fontSize = 14.sp, style = Tab)
+                    Text("återhämtning", color = Dim, fontSize = 11.sp)
                     Text(cText, color = Color(cColor), fontSize = 12.sp, textAlign = TextAlign.Center)
                     Text(sText, color = Color(sColor), fontSize = 11.sp, style = Tab)
                 }
@@ -252,13 +320,8 @@ private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
             }
             if (status.exerciseActive) {
                 item {
-                    val min = (now - status.exerciseStartedAt) / 60000
-                    Text("Stresstest pågår, $min min", color = Accent, fontSize = 13.sp, style = Tab, textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth().morph(this, spec))
-                }
-                item {
                     Button(onClick = { ExerciseService.stop(ctx) }, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec),
-                        colors = ButtonDefaults.filledTonalButtonColors()) { Text("Avsluta stresstest") }
+                        colors = ButtonDefaults.filledTonalButtonColors()) { Text("Avsluta passet") }
                 }
             } else if (choosing) {
                 EXERCISE_CHOICES.forEach { (type, label) ->
@@ -270,10 +333,23 @@ private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
                 }
                 item { Button(onClick = { choosing = false }, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec)) { Text("Avbryt") } }
             } else {
+                val planTyp = phone.idag?.typ
                 item {
-                    Button(onClick = { choosing = true }, enabled = permsOk, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec)) {
-                        Text("Starta stresstest")
+                    // Ett tryck: dagens planerade pass. Annan sorts pass via "Välj pass".
+                    Button(onClick = { ExerciseService.start(ctx, se.konsiliet.wear.exercise.planensTyp(planTyp)) }, enabled = permsOk,
+                        modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec),
+                        secondaryLabel = { Text(phone.idag?.let { "${it.typ} ${it.minuter} min" } ?: "Stresstest") }) {
+                        Text("Starta pass")
                     }
+                }
+                item {
+                    Button(onClick = { choosing = true }, enabled = permsOk, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec),
+                        transformation = SurfaceTransformation(spec), colors = ButtonDefaults.filledTonalButtonColors()) { Text("Välj pass") }
+                }
+                item {
+                    Button(onClick = { ctx.startActivity(android.content.Intent(ctx, AndasActivity::class.java)) },
+                        modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec),
+                        colors = ButtonDefaults.filledTonalButtonColors(), secondaryLabel = { Text("In 4 s, ut 6 s") }) { Text("Andas 60 s") }
                 }
             }
             msg?.let { m -> item { Text(m, color = Warn, fontSize = 11.sp, textAlign = TextAlign.Center,

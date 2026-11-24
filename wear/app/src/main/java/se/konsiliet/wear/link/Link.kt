@@ -41,6 +41,8 @@ object Protocol {
     const val PATH_FLUSH = "/konsiliet/flush"
     const val PATH_NUDGE = "/konsiliet/nudge"
     const val PATH_ALERT = "/konsiliet/alert"
+    const val PATH_ANDAS = "/konsiliet/andas"
+    const val PATH_SVAR = "/konsiliet/svar"
     const val BATCH_SIZE = 400
 }
 
