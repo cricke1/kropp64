@@ -88,9 +88,19 @@ inga egna nätverksanrop. Tryck öppnar appen.
 äldre än det den har. Akuta larm och rörelsepåminnelser går som meddelanden (`/konsiliet/alert`,
 `/konsiliet/nudge`).
 
-**Ruta på klockan** (tile "Kropp64"): ring och siffra för headroom, Klockfrekvens i BPM (färsk puls, högst
-30 minuter gammal), trådens läge och "Synkad HH:MM" (bärnsten om mer än två timmar gammalt). Tryck öppnar
-klockappen. Läser bara cachen.
+**Ruta på klockan** (tile "Kropp64"): ring och siffra för headroom, Klockfrekvens i BPM, trådens läge och
+"Synkad HH:MM" (bärnsten om mer än två timmar gammalt). Tryck öppnar klockappen. Läser bara cachen.
+- Klockfrekvensen är ett dynamiskt värde (`PlatformHealthSources.heartRateBpm`) som rendraren uppdaterar
+  själv, utan att rutan hämtas om.
+- Ny status ritar om rutan direkt. `Surfaces.requestTile` binder till systemets uppdateringstjänst
+  (`androidx.wear.tiles.action.BIND_UPDATE_REQUESTER` i hemskärmens paket) och skickar begäran, eftersom
+  `TileService.getUpdater().requestUpdate()` inte gjorde något på Wear OS 6-emulatorn (biblioteket är reserv).
+  Den väntar högst 3 s på anslutningen utanför huvudtråden, så att processen inte fryses innan begäran gått.
+- Uppmätt på emulatorn: omritning 0,05 s efter ny status när rutan inte syns, 1,1-1,8 s när den syns, och
+  högst 20 s när systemets strypning (en omritning per 20 s) slår till.
+- Färskhetsintervallet är bara skyddsnät: 1 minut medan en tråd pågår, annars 15 minuter.
+- I testet ska rutan läggas till via rutväljaren på klockan (håll på en ruta, plus). `DEBUG_SURFACE add-tile`
+  fungerar för att visa den men användes inte för mätningarna.
 
 **Komplikationer**: "Headroom" (RANGED_VALUE 0-100, SHORT_TEXT som reserv, mätarikon i stället för titel)
 och "Supporttråden" (SHORT_TEXT "Pågår", "Bevaka", "Ta upp", "Vård nu", samt LONG_TEXT). Uppdateras när
@@ -109,7 +119,7 @@ Wear OS spelar inte notisvibrationer medan klockan laddar.
 **Testa på emulatorerna** (ingen parkoppling, se RESAN.md): `android/tools/statusbrygga.ps1` låter mobilen
 hämta sammanfattningen och lägga den i Data Layer som vanligt, och flyttar exakt samma JSON till klockan med
 adb, där den går in i samma kod som `onDataChanged`. `-Meddelande` flyttar också senaste meddelandet
-(påminnelse eller akut larm). Rutan läggs till med
+(påminnelse eller akut larm). Rutan kan också läggas till med
 `am broadcast -a com.google.android.wearable.app.DEBUG_SURFACE --es operation add-tile --ecn component se.konsiliet/se.konsiliet.wear.tile.KonsilietTile`
 och komplikationer med `--es operation set-complication ... --ei slot N --ei type 5` (RANGED_VALUE) eller 3 (SHORT_TEXT).
 
