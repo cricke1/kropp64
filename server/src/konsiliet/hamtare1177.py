@@ -159,6 +159,47 @@ def _tabell_till_provsvar(t: dict[str, Any]) -> list[dict[str, str]]:
     return out
 
 
+# ---------------------------------------------------------------- reserv: lokal modell tolkar sidtexten
+
+LLM_SCHEMA = {"type": "object", "properties": {
+    "anteckningar": {"type": "array", "items": {"type": "object", "properties": {
+        "datum": {"type": "string", "description": "YYYY-MM-DD"}, "enhet": {"type": "string"},
+        "yrke": {"type": "string"}, "rubrik": {"type": "string"}, "text": {"type": "string"}},
+        "required": ["datum", "text"]}},
+    "provsvar": {"type": "array", "items": {"type": "object", "properties": {
+        "datum": {"type": "string"}, "analys": {"type": "string"}, "varde": {"type": "string"},
+        "referens": {"type": "string"}}, "required": ["analys", "varde"]}}},
+    "required": ["anteckningar", "provsvar"]}
+
+
+def _llm_tolka(sidtext: str, kategori: str) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    """Används bara när heuristiken inte hittar något. Allt som modellen returnerar kontrolleras mot
+    sidtexten: ett provvärde eller datum som inte står ordagrant i texten kastas."""
+    from . import llm
+    from .config import settings
+
+    anteckningar: list[dict[str, str]] = []
+    prov: list[dict[str, str]] = []
+    for i in range(0, min(len(sidtext), 60000), 6000):
+        bit = sidtext[i:i + 6500]
+        r = llm.chat(settings.model_orchestrator, [
+            {"role": "system", "content": "Du tolkar text från en svensk patientjournal (1177) till strukturerad data. "
+             "Skriv av exakt, sammanfatta inte och hitta inte på något. Tomma listor om inget finns."},
+            {"role": "user", "content": f"Kategori: {kategori}\n\n{bit}"}], fmt=LLM_SCHEMA, temperature=0,
+            max_tokens=3000)
+        try:
+            d = json.loads(r.content)
+        except json.JSONDecodeError:
+            continue
+        for a in d.get("anteckningar", []):
+            if a.get("datum", "") in sidtext and len(a.get("text", "")) > 15:
+                anteckningar.append(a)
+        for p in d.get("provsvar", []):
+            if str(p.get("varde", "")).strip() and str(p["varde"]).strip() in sidtext and p.get("analys", "") in sidtext:
+                prov.append(p)
+    return anteckningar, prov
+
+
 # ---------------------------------------------------------------- webbläsaren
 
 async def _login(page: Any) -> bool:
@@ -245,7 +286,17 @@ async def _hamta() -> dict[str, int]:
             if prov:
                 counts["provsvar"] += tolka_provsvar(prov)
             else:
-                counts["anteckningar"] += tolka_anteckningar(data["poster"], namn.lower())
+                n = tolka_anteckningar(data["poster"], namn.lower())
+                counts["anteckningar"] += n
+                if n == 0:
+                    sidtext = await page.evaluate("() => document.body.innerText")
+                    if len(sidtext) > 200:
+                        _status("tolkar", kategori=namn, metod="lokal modell")
+                        ant, pv = await asyncio.to_thread(_llm_tolka, sidtext, namn)
+                        counts["anteckningar"] += tolka_anteckningar(
+                            [{"rubrik": a.get("rubrik", "") + " " + a.get("datum", ""), "text": a["text"],
+                              "enhet": a.get("enhet"), "yrke": a.get("yrke")} for a in ant], namn.lower())
+                        counts["provsvar"] += tolka_provsvar(pv)
         await browser.close()
     _status("klar", **counts, mapp=str(outdir))
     return counts
