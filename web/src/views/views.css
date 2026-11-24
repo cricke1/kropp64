@@ -219,3 +219,9 @@ section.panel > table.data th:last-child, section.panel > table.data td:last-chi
 .lat { position: relative; height: 8px; background: var(--surface-2); }
 .lat i { display: block; height: 100%; background: var(--text-2); }
 .lat b { position: absolute; top: -2px; width: 2px; height: 12px; background: var(--danger); }
+
+@media (max-width: 560px) {
+  table.datorn th:nth-child(3), table.datorn td:nth-child(3), table.datorn th:nth-child(5), table.datorn td:nth-child(5) { display: none; }
+  table.datorn td { white-space: nowrap; }
+  .hy-l, .hy-t { font-size: 16px; }
+}

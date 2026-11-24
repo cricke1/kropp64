@@ -261,6 +261,7 @@ export class Director {
         const spot = where === 'desk' ? a.home : s.spotFor(a, where)
         if (instant) { s.walkTo(id, spot, true); return }
         s.think(id, false)
+        const before = a.target
         await Promise.race([s.walkTo(id, spot), s.wait(6)])
         s.chip(id, `<span class="lbl">${esc(toolLabel(tool, args))}</span>`, 2.6)
         if (where === 'arkiv') s.useTerminal(2.6)
@@ -269,8 +270,8 @@ export class Director {
         const m = metricOf(tool, args)
         if (m) this.focusMetric(m, hoursOf(args), args.window ?? (args.start && args.end ? [args.start, args.end] : null))
         await s.wait(2.4)
-        // tillbaka till bordet om ett möte pågår
-        if (this.state.active && s.members.includes(id)) s.walkTo(id, s.seatAtTable(a))
+        // från arkivet eller labbet: tillbaka dit agenten var (servern styr annars platsen med agent.move)
+        if (where !== 'desk' && before && before !== spot && a.target === spot) s.walkTo(id, before)
         return
       }
       case 'agent.say': {

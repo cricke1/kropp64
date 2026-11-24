@@ -139,7 +139,10 @@ function Detail({ id }: { id: string }) {
                 <dl class="stats">
                   <dt>Tid</dt><dd class="num">{sec != null ? duration(sec) : '-'}</dd>
                   <dt>Händelser</dt><dd class="num">{q.data.events.length}</dd>
-                  {stats.map(([k, val]) => <><dt>{STAT_LABELS[k] ?? k}</dt><dd class="num">{fmtStat(val)}</dd></>)}
+                  {stats.filter(([k]) => k !== 'per_model').map(([k, val]) => <><dt>{STAT_LABELS[k] ?? k}</dt><dd class="num">{fmtStat(val)}</dd></>)}
+                  {c?.stats?.per_model && Object.entries(c.stats.per_model as Record<string, any>).map(([m, u]) => (
+                    <><dt class="mono">{m}</dt><dd class="num">{u.calls} anrop, {fmtNum(u.output_tokens)} ut{u.seconds > 0 ? `, ${fmtNum(u.output_tokens / u.seconds, 1)} tokens/s` : ''}</dd></>
+                  ))}
                 </dl>
               </div>
             </section>
