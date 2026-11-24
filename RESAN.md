@@ -323,3 +323,24 @@ vyn kan ersätta renderingen. Skärmbilder: `docs/skarmbilder/sajt-*.png`.
 Ett misstag på vägen: första provrenderingen var kraftigt överexponerad, eftersom ljusstyrkorna från
 hjältebilden (skrivbordsskala, 0,6 m) återanvändes i makroskala (0,2 m). Exponeringen sänktes 5 steg och en
 reflexskärm som bara når processorlocket (light linking) gjorde gravyren läsbar utan att bränna ut kortet.
+
+**Rutan ritas nu om direkt, och "Jag mår bra" är testat på riktigt.** Det som stod ovan om rutan var en
+nödlösning. Felsökningen med tidsstämplar i loggen: `TileService.getUpdater().requestUpdate()` (tiles 1.5
+och 1.6) gav ingen omritning på 20 försök, inte heller med huvudtråden fri och processen hållen vaken. När
+klockappen själv band till systemets uppdateringstjänst (`androidx.wear.tiles.action.BIND_UPDATE_REQUESTER`
+i hemskärmens paket) och skickade samma begäran kom `onTileRequest` 11 ms senare. Det är nu vägen
+(`Surfaces.requestTile`, biblioteket som reserv). Uppmätt på klockemulatorn: när rutan inte syns 51 ms från
+status till omritning, när den syns 1,8 s och 1,1 s, och en begäran 9 s efter förra omritningen väntade till
+nästa 20-sekundersfönster (15 s). En fälla i testet: min första testserie skapade en ny bedömning per steg, och
+notisen "Tråden är löst" lade sig över rutan så att den inte syntes. Mätningarna gjordes med rutan tillagd
+via rutväljaren på klockan. Klockfrekvensen är nu ett dynamiskt
+värde som rendraren uppdaterar själv: 150, 100 och 145 BPM avlästa med 9 sekunders mellanrum utan någon
+omritning däremellan.
+
+Sms-kedjans "Jag mår bra" hade bara testats i enhetstester. Riktigt test på mobilemulatorn mot den separata
+testinstansen, sms påslaget med en testkontakt och 2 minuters frist: akutlarm med vaktregel publicerat
+23:11:40, sms-alarmet stod i AlarmManager till 23:13:40. Knappen "Jag mår bra, skicka inget sms" trycktes i
+notisen 23:11:58. AlarmManager loggade `alarm_cancelled` samma sekund, den sparade kedjan var borta, och efter
+fristen (kontroll 23:14:21) fanns inget nytt sms i skickat-mappen och ingen sms-notis. Under testet visade
+det sig att en annan session samtidigt använde samma mobilemulator mot en egen testserver (port 8801) och
+bytte serveradress i appen. Emulatorerna delas, så tester på dem ska samordnas.

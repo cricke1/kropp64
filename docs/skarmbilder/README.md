@@ -6,6 +6,7 @@ Varje bild har samma märkning i en remsa i nederkanten (gjord med `tools/etiket
 | Bild | Märkning | Vad det är |
 |---|---|---|
 | [fraga.png](fraga.png) | Syntetisk testdata | Testserver med egen databas, mätpunkterna kommer från web/dev/ingest.mjs (källa dev-syntetisk). |
+| [klocka-app-kropp64.png](klocka-app-kropp64.png) | Syntetisk testdata från emulator | Klockappen med Kropp64-termer (Klockfrekvens, Headroom, trådens läge). Health Services testläge, syntetisk status från testservern. Inte en människa. |
 | [klocka-komplikationer.png](klocka-komplikationer.png) | Syntetisk testdata från emulator | Urtavlan Everyday med Kropp64:s komplikationer: Headroom som båge (vänster) och Supporttråden överst. Klock- och mobilemulator mot en separat testserver med egen databas. Headroom från syntetiska nätter (dev-syntetisk), trådarna infogade för hand, puls och steg från Health Services testläge. Inte en människa. |
 | [klocka-pass-pagar.png](klocka-pass-pagar.png) | Syntetisk testdata från emulator | Klock- och mobilemulator mot en testserver, Health Services testläge. Inte en människa. |
 | [klocka-puls-syntetisk.png](klocka-puls-syntetisk.png) | Syntetisk testdata från emulator | Klock- och mobilemulator mot en testserver, Health Services testläge. Inte en människa. |
@@ -24,10 +25,14 @@ Varje bild har samma märkning i en remsa i nederkanten (gjord med `tools/etiket
 | [mobil-idag-testdata.png](mobil-idag-testdata.png) | Syntetisk testdata från emulator | Klock- och mobilemulator mot en testserver, Health Services testläge. Inte en människa. |
 | [mobil-idag-utan-nat.png](mobil-idag-utan-nat.png) | Syntetisk testdata från emulator | Klock- och mobilemulator mot en testserver, Health Services testläge. Inte en människa. |
 | [mobil-installningar.png](mobil-installningar.png) | Emulator mot testserver | Serveradressen är suddad. |
+| [mobil-jag-mar-bra-test.png](mobil-jag-mar-bra-test.png) | Testlarm på emulator | Akutlarm med knappen "Jag mår bra". Larmet publicerades för hand på en separat testserver. Knappen trycktes och sms-alarmet avbröts, inget sms skickades. |
 | [mobil-konsiliet-kontoret.png](mobil-konsiliet-kontoret.png) | Syntetisk testdata från emulator | Klock- och mobilemulator mot en testserver, Health Services testläge. Inte en människa. |
 | [mobil-lank-ko-utan-nat.png](mobil-lank-ko-utan-nat.png) | Syntetisk testdata från emulator | Klock- och mobilemulator mot en testserver, Health Services testläge. Inte en människa. |
+| [mobil-ny-trad.png](mobil-ny-trad.png) | Syntetisk testdata | Fliken Ny tråd. Mobilemulator mot en separat testserver med egen databas (källa syntetisk-vecka). Inte en människa. |
+| [mobil-sensorer.png](mobil-sensorer.png) | Syntetisk testdata | Fliken Sensorer (tidigare Idag) med Kropp64-termer. Mobilemulator mot en separat testserver med egen databas (källa syntetisk-vecka). Inte en människa. |
 | [mobil-sms-exakt-alarm-test.png](mobil-sms-exakt-alarm-test.png) | Testlarm på emulator | Larmet är infogat för hand i testdatabasen för att prova larmkedjan. Ingen riktig mätning. |
 | [mobil-sms-skickat-test.png](mobil-sms-skickat-test.png) | Testlarm på emulator | Larmet är infogat för hand i testdatabasen för att prova larmkedjan. Ingen riktig mätning. |
+| [mobil-tidslinje-kropp64.png](mobil-tidslinje-kropp64.png) | Syntetisk testdata | Tidslinjen med POST-skärmen. Mobilemulator mot en separat testserver med egen databas (källa syntetisk-vecka). Inte en människa. |
 | [mobil-tidslinje-morkt.png](mobil-tidslinje-morkt.png) | Testlarm på emulator | Larmet är infogat för hand i testdatabasen för att prova larmkedjan. Ingen riktig mätning. |
 | [mobil-widget.png](mobil-widget.png) | Syntetisk testdata från emulator | Hemskärmswidgeten: headroom med delar, steg, senaste lösningen. Klock- och mobilemulator mot en separat testserver med egen databas. Headroom från syntetiska nätter (dev-syntetisk), trådarna infogade för hand, puls och steg från Health Services testläge. Inte en människa. |
 | [oversikt-ljust.png](oversikt-ljust.png) | Syntetisk testdata | Testserver med egen databas, mätpunkterna kommer från web/dev/ingest.mjs (källa dev-syntetisk). |
