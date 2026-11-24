@@ -149,6 +149,10 @@
     if (e[0].isIntersecting) { bench.classList.add('syns'); o.disconnect(); }
   }, { threshold: .25 }).observe(bench);
   var film = document.querySelector('.kontoret video');
+  // omslagsbilden laddas först när filmen närmar sig, inte med första skärmen
+  if (film && film.dataset.poster) new IntersectionObserver(function (e, o) {
+    if (e[0].isIntersecting) { film.poster = film.dataset.poster; o.disconnect(); }
+  }, { rootMargin: '900px' }).observe(film);
   if (film) new IntersectionObserver(function (e) {
     if (e[0].isIntersecting) {
       if (!film.src) { film.src = film.dataset.src; film.preload = 'auto'; }
