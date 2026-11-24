@@ -39,6 +39,7 @@ os.environ.setdefault("PYTORCH_MPS_LOW_WATERMARK_RATIO", "0.7")
 
 MAX_TECKEN = 600
 MAX_KO = 3
+BF16 = os.environ.get("ROST_BF16", "0") == "1"
 
 
 class Parambe:
@@ -70,6 +71,34 @@ class Parambe:
         m.t3.load_state_dict({k.replace("t3.", ""): v for k, v in sd.items() if k.startswith("t3.")}, strict=False)
         self.m = m
         return time.time() - t0
+
+    def _generera(self, text: str, uttryck: float, cfg: float):
+        """Som ChatterboxMultilingualTTS.generate, men med ett tak för antalet taltoken efter textens längd.
+        Originalet har alltid 1000, och ibland hittar modellen inget slut: då blev 7 s tal 119 s arbete."""
+        import torch
+        import torch.nn.functional as F
+        from chatterbox.models.s3tokenizer import drop_invalid_tokens
+        from chatterbox.models.t3.modules.cond_enc import T3Cond
+        from chatterbox.mtl_tts import punc_norm
+
+        m = self.m
+        if float(uttryck) != float(m.conds.t3.emotion_adv[0, 0, 0].item()):
+            c = m.conds.t3
+            m.conds.t3 = T3Cond(speaker_emb=c.speaker_emb, cond_prompt_speech_tokens=c.cond_prompt_speech_tokens,
+                                emotion_adv=uttryck * torch.ones(1, 1, 1)).to(device=m.device)
+        tt = m.tokenizer.text_to_tokens(punc_norm(text), language_id="sv").to(m.device)
+        tt = torch.cat([tt, tt], dim=0)
+        tt = F.pad(F.pad(tt, (1, 0), value=m.t3.hp.start_text_token), (0, 1), value=m.t3.hp.stop_text_token)
+        # 25 taltoken per sekund, svenska runt 14 tecken per sekund, dubbel marginal
+        tak = min(1000, int(80 + 25 * len(text) / 14 * 2))
+        with torch.autocast(device_type="cuda", dtype=torch.bfloat16, enabled=self.enhet == "cuda" and BF16):
+            st = m.t3.inference(t3_cond=m.conds.t3, text_tokens=tt, max_new_tokens=tak, temperature=0.8,
+                                cfg_weight=cfg, repetition_penalty=2.0, min_p=0.05, top_p=1.0)
+        st = drop_invalid_tokens(st[0]).to(m.device)
+        wav, _ = m.s3gen.inference(speech_tokens=st, ref_dict=m.conds.gen)
+        wav = wav.squeeze(0).detach().float().cpu().numpy()
+        # Chatterbox vattenmärke (Perth) behålls: ljudet går att känna igen som syntetiskt
+        return torch.from_numpy(m.watermarker.apply_watermark(wav, sample_rate=m.sr))
 
     def _meningar(self, text: str) -> list[str]:
         """Chatterbox tappar ord i långa stycken. Högst ungefär 220 tecken per bit, delat vid meningsslut."""
@@ -106,10 +135,10 @@ class Parambe:
             paus = np.zeros(int(self.m.sr * 0.22), dtype=np.float32)
             with torch.inference_mode():
                 for i, mening in enumerate(self._meningar(text)):
-                    w = self.m.generate(text=mening, language_id="sv", exaggeration=uttryck, cfg_weight=cfg)
+                    w = self._generera(mening, uttryck, cfg)
                     if i:
                         bitar.append(paus)
-                    bitar.append(w.squeeze().cpu().numpy().astype(np.float32))
+                    bitar.append(w.numpy().astype(np.float32))
             if self.enhet == "mps":
                 torch.mps.empty_cache()
         ljud = np.concatenate(bitar)

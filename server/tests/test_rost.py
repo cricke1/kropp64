@@ -26,7 +26,7 @@ def klient(tmp_path, monkeypatch):
         return f
 
     monkeypatch.setattr(rost, "ljud", falsk_ljud)
-    monkeypatch.setattr(rost, "forvarm", lambda: None)
+    monkeypatch.setattr(rost, "forvarm", lambda *_: None)
     return TestClient(api.app, base_url="http://127.0.0.1", client=("127.0.0.1", 50000)), db, anrop
 
 
@@ -68,9 +68,43 @@ def test_normalisering():
     assert for_tal("Sömnen: 5 h 40 min.") == "Sömnen: fem timmar och fyrtio minuter."
     assert "syremättnad nittiosju procent" in for_tal("SpO2 97 %")
     assert "H R V" in for_tal("HRV låg")
+    assert "hå ärr ve låg" in for_tal("HRV låg", "parambe") and "e kå ge" in for_tal("EKG", "parambe")
+    assert for_tal("I går kväll", "parambe") == "I går kväll"
     assert "sextioåtta slag per minut" in for_tal("puls 68 slag/min")
     assert "sextiosju slag per minut" in for_tal("67 BPM")
     assert "Kropp sextiofyra" in for_tal("Kropp64")
     assert "S:hr" not in for_tal("Enligt källan S:hr:1795450202-1795536602 (Ref: S:hr:1-2) är det så.")
     assert "en natt" in for_tal("1 natt") and "ett dygn" in for_tal("1 dygn")
     assert "musskel" in for_tal("muskel", "piper") and "muskel" in for_tal("muskel", "parambe")
+
+
+def test_reservordning(tmp_path, monkeypatch):
+    """Lenovo först, sedan MPS, sist Piper. Piper-resultat används bara tills en Parambe-röst finns."""
+    monkeypatch.setenv("KONSILIET_ROST_DIR", str(tmp_path))
+    from konsiliet import rost
+    importlib.reload(rost)
+    steg = []
+    monkeypatch.setattr(rost, "_koda", lambda wav, ton=1.0: wav)
+    monkeypatch.setattr(rost, "_wav_piper", lambda r, t: steg.append("piper") or b"piper")
+    monkeypatch.setattr(rost, "_wav_say", lambda r, t: steg.append("say") or b"say")
+    lenovo = {"svar": None}
+    monkeypatch.setattr(rost, "_wav_lenovo", lambda b, t: steg.append("lenovo") or lenovo["svar"])
+    monkeypatch.setattr(rost, "_wav_mps", lambda b, t: steg.append("mps") or None)
+    assert rost.ljud("kardiolog", "Pulsen låg på 68.").read_bytes() == b"piper"
+    assert steg == ["lenovo", "mps", "piper"]
+    lenovo["svar"] = b"parambe"
+    assert rost.ljud("kardiolog", "Pulsen låg på 68.").read_bytes() == b"parambe"
+    steg.clear()
+    assert rost.ljud("kardiolog", "Pulsen låg på 68.").read_bytes() == b"parambe"
+    assert steg == []   # cachad
+
+
+def test_mps_bara_utan_sprakmodell(tmp_path, monkeypatch):
+    from konsiliet import rost
+    monkeypatch.setattr(rost, "_sprakmodell_laddad", lambda: True)
+    monkeypatch.setattr(rost, "_fritt_minne_procent", lambda: 90)
+    monkeypatch.setattr(rost.subprocess, "run", lambda *a, **k: (_ for _ in ()).throw(AssertionError("startade MPS")))
+    assert rost._wav_mps(rost.BANK["somn"], "Hej.") is None
+    monkeypatch.setattr(rost, "_sprakmodell_laddad", lambda: False)
+    monkeypatch.setattr(rost, "_fritt_minne_procent", lambda: 20)
+    assert rost._wav_mps(rost.BANK["somn"], "Hej.") is None

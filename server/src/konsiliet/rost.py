@@ -232,6 +232,10 @@ def _klockslag(h: str, m: str) -> str:
     return f"{tal(hh)} {'noll ' + tal(mm) if mm < 10 else tal(mm)}"
 
 
+_BOKSTAV = dict(zip("ABCDEFGHJKLMNOPQRSTUVWXZ",
+                   ["a", "be", "se", "de", "e", "eff", "ge", "hå", "ji", "kå", "ell", "emm", "enn", "o", "pe", "ku",
+                    "ärr", "ess", "te", "u", "ve", "dubbelve", "eks", "säta"]))
+
 # Engelska ord som espeak läser på svenska. Piper tar råa fonem inom [[ ]], say får en svensk stavning.
 _ENGELSKA = [(re.compile(r"\b[Hh]eadroom\b"), "[[ hˈɛdruːm ]]", "heddrum")]
 
@@ -275,6 +279,9 @@ def for_tal(text: str, motor: str = "piper") -> str:
     if motor == "piper":
         for r, s in _ESPEAK:
             t = r.sub(s, t)
+    else:
+        # Chatterbox läser lösa versaler som den vill ("H R V" blev "å r v"), så bokstäverna skrivs som de låter
+        t = re.sub(r"(?<![\wåäöÅÄÖ])([A-Z])(?![\wåäöÅÄÖ])", lambda m: _BOKSTAV.get(m[1], m[1]), t)
     t = re.sub(r"\s+([.,;:!?])", r"\1", t)
     t = re.sub(r"([.!?])(?:\s*[.!?])+", r"\1", t)
     t = re.sub(r"\(\s*\)|\[\s*\]", "", t)
@@ -415,7 +422,7 @@ def _wav_lenovo(b: BankRost, text: str) -> bytes | None:
     try:
         wavar = []
         for bit in _bitar(text, LENOVO_MAX):
-            r = httpx.post(f"{LENOVO}/tal", headers={"X-Rost-Hemlighet": hemlis}, timeout=httpx.Timeout(120, connect=3),
+            r = httpx.post(f"{LENOVO}/tal", headers={"X-Rost-Hemlighet": hemlis}, timeout=httpx.Timeout(300, connect=3),
                            json={"rost": b.namn, "text": bit, "uttryck": b.uttryck, "cfg": b.cfg})
             r.raise_for_status()
             wavar.append(r.content)
@@ -546,17 +553,35 @@ def replik(event_id: int) -> tuple[str, str] | None:
 
 _forvarmning: threading.Thread | None = None
 _senast_fragad = 0.0
+_ko: deque[int] = deque()
 
 
-def forvarm() -> None:
-    """Startas när någon lyssnar: nya repliker i loggen genereras direkt i bakgrunden, så att rösten är
-    klar när webben ber om den. Stannar efter 20 minuter utan anrop."""
+def forvarm(event_id: int | None = None) -> None:
+    """Startas när någon lyssnar. Syntesen är långsammare än realtid på Lenovon (RTF 2-5), så rösterna
+    görs i förväg i bakgrunden: nya repliker i loggen så fort de kommer, och vid uppspelning av ett gammalt
+    konsilium resten av det konsiliets repliker i tur och ordning. Stannar efter 20 minuter utan anrop."""
     global _forvarmning, _senast_fragad
     _senast_fragad = time.time()
+    if event_id is not None:
+        _kolla_konsilium(event_id)
     if _forvarmning and _forvarmning.is_alive():
         return
     _forvarmning = threading.Thread(target=_forvarm_loop, name="rost-forvarmning", daemon=True)
     _forvarmning.start()
+
+
+def _kolla_konsilium(event_id: int) -> None:
+    from . import db
+
+    r = db.conn().execute("SELECT json_extract(payload, '$.consult_id') FROM events WHERE id=?", (event_id,)).fetchone()
+    if not r or not r[0]:
+        return
+    ids = [x[0] for x in db.conn().execute(
+        "SELECT id FROM events WHERE kind='agent.say' AND id > ? AND json_extract(payload, '$.consult_id') = ? "
+        "ORDER BY id LIMIT 60", (event_id, r[0]))]
+    if ids and (not _ko or _ko[0] not in ids):
+        _ko.clear()       # bara det konsilium som spelas nu
+        _ko.extend(ids)
 
 
 def _forvarm_loop() -> None:
@@ -564,15 +589,19 @@ def _forvarm_loop() -> None:
 
     sist = db.conn().execute("SELECT COALESCE(MAX(id), 0) FROM events").fetchone()[0]
     while time.time() - _senast_fragad < 1200:
-        time.sleep(1.5)
         try:
-            rader = db.conn().execute("SELECT id FROM events WHERE id > ? AND kind='agent.say' ORDER BY id",
-                                      (sist,)).fetchall()
-            for (eid,) in rader:
-                sist = eid
-                rep = replik(eid)
-                if rep:
-                    ljud(*rep)
+            nya = [x[0] for x in db.conn().execute(
+                "SELECT id FROM events WHERE id > ? AND kind='agent.say' ORDER BY id", (sist,))]
+            if nya:
+                sist = nya[-1]
+            eid = nya[0] if nya else (_ko.popleft() if _ko else None)
+            _ko.extendleft(reversed(nya[1:]))      # live går före uppspelning
+            if eid is None:
+                time.sleep(1.5)
+                continue
+            rep = replik(eid)
+            if rep:
+                ljud(*rep)
         except Exception:
             time.sleep(10)
 

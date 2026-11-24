@@ -385,7 +385,7 @@ def rost_ljud(event_id: int, request: Request) -> Response:
     rep = rost.replik(event_id)
     if rep is None:
         raise HTTPException(404)
-    rost.forvarm()
+    rost.forvarm(event_id)
     try:
         fil = rost.ljud(*rep)
     except FileNotFoundError as e:
