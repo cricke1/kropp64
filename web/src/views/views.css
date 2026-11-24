@@ -240,3 +240,33 @@ section.panel > table.data th:last-child, section.panel > table.data td:last-chi
 .sensorpanel table.sensors td.sn { padding-left: 24px; }
 .sensorpanel table.sensors td.not, .sensorpanel table.sensors th.not { font-size: 11.5px; white-space: nowrap; }
 @media (max-width: 760px) { .sensorpanel table.sensors td.not, .sensorpanel table.sensors th.not { display: none; } .sensorpanel table.sensors td.sn { padding-left: 14px; } }
+
+/* ------------------------------------------------------------ Idag */
+
+.idag { display: flex; flex-direction: column; gap: 12px; }
+.idag .pagehead p { margin: 0; }
+.beslut { border-left: 6px solid var(--text-3); }
+.beslut.ok { border-left-color: var(--ok); }
+.beslut.warn { border-left-color: var(--warn); }
+.beslut.danger { border-left-color: var(--danger); }
+.beslut .body > * + * { margin-top: 6px; }
+.beslut-rubrik { font-size: 28px; line-height: 1.15; margin: 2px 0 0; font-weight: 600; }
+.beslut-plan { font-size: 20px; margin: 0; }
+.beslut p { margin: 0; }
+.beslut .linkish { display: block; margin-top: 10px; }
+.ordlista { margin: 8px 0 0; display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 13.5px; }
+.ordlista dt { font-weight: 600; }
+.ordlista dd { margin: 0; color: var(--text-2); }
+.pass-rad { display: flex; align-items: center; gap: 6px; }
+.pass-rad i { width: 32px; height: 10px; background: var(--line-2); display: inline-block; }
+.pass-rad i.klar { background: var(--ok); }
+.pass-rad b { font-size: 20px; margin-left: 8px; font-weight: 500; }
+.senaste-pass { margin-top: 10px; display: flex; flex-direction: column; gap: 2px; }
+.warn-text { color: var(--warn); }
+.fragor { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.fragor .btn { height: auto; min-height: 32px; padding: 6px 12px; text-align: left; }
+.atgarder li { margin: 4px 0; }
+@media (max-width: 640px) {
+  .ordlista { grid-template-columns: 1fr; }
+  .beslut-rubrik { font-size: 24px; }
+}

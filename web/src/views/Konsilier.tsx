@@ -1,4 +1,4 @@
-import { useMemo } from 'preact/hooks'
+import { useEffect, useMemo } from 'preact/hooks'
 import { api } from '../api'
 import { cites as toCites, dateTime, duration, fmtNum, LEVELS, verdictParts } from '../format'
 import { entriesFromEvents } from '../office/director'
@@ -80,6 +80,13 @@ function Detail({ id }: { id: string }) {
   const verdictEv = [...(q.data?.events ?? [])].reverse().find((e) => e.kind === 'consult.verdict')
   const verdict = c?.verdict ?? verdictEv?.payload.verdict
   const v = verdictParts(verdict)
+  const kort = [...(q.data?.events ?? [])].reverse().find((e) => e.kind === 'consult.kort')?.payload
+  // Medan tråden pågår: läs om var 5:e sekund, så att snabbsvaret och sedan lösningen dyker upp utan omladdning.
+  useEffect(() => {
+    if (verdict || !q.data) return
+    const t = setTimeout(() => q.reload(), 5000)
+    return () => clearTimeout(t)
+  }, [q.data, !!verdict])
   const allCites = useMemo(() => {
     const seen = new Map<string, ReturnType<typeof toCites>[number]>()
     for (const e of entries) for (const ci of toCites(e.cites)) seen.set(ci.label, ci)
@@ -106,6 +113,21 @@ function Detail({ id }: { id: string }) {
               <header><h2>Anledning</h2><span class="meta num">{c ? dateTime(c.started) : start?.ts ? dateTime(start.ts) : ''}</span></header>
               <div class="body"><p class="lead">{trig.detail || trig.title}</p></div>
             </section>
+            {!verdict && kort && (
+              <section class="panel">
+                <header><h2>Snabbsvar ur datan</h2><span class="meta">regelverket, teamet svarar om ca {Math.max(1, Math.round((kort.eta_s ?? 120) / 60))} min</span></header>
+                <div class="body">
+                  <p class="lead">{kort.bradska_text}{kort.skal?.length ? ` (${kort.skal.join('; ')})` : ''}.</p>
+                  <ul class="plain">{(kort.rader ?? []).map((r: string) => <li>{r}</li>)}</ul>
+                </div>
+              </section>
+            )}
+            {verdict?.atgarder?.length > 0 && (
+              <section class="panel">
+                <header><h2>Gör så här</h2></header>
+                <div class="body"><ol class="plain atgarder">{verdict.atgarder.map((a: string) => <li>{a}</li>)}</ol></div>
+              </section>
+            )}
             <section class="panel">
               <header><h2>Markerad som lösning</h2>{levelTag(verdict)}</header>
               <div class="body">

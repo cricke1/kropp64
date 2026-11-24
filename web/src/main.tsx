@@ -7,6 +7,7 @@ import { api, live } from './api'
 import { dismissToast, useLive, useRoute, useSide } from './store'
 import { Kontoret } from './views/Kontoret'
 import { Oversikt } from './views/Oversikt'
+import { Idag } from './views/Idag'
 import { Konsilier } from './views/Konsilier'
 import { Fraga } from './views/Fraga'
 import { Systemet } from './views/Systemet'
@@ -26,6 +27,7 @@ function applyTheme(t: Theme) {
 const NAV: [string, string][] = __PUBLIK_DEMO__
   ? [['kontoret', 'Kontoret'], ['oversikt', 'Översikt'], ['riggen', 'Riggen'], ['systemet', 'Systemet']]
   : [
+      ['idag', 'Idag'],
       ['kontoret', 'Kontoret'],
       ['oversikt', 'Översikt'],
       ['riggen', 'Riggen'],
@@ -124,11 +126,12 @@ function Toasts() {
 function App() {
   const r = useRoute()
   useEffect(() => { if (!__PUBLIK_DEMO__) live.start() }, [])
-  const view = NAV.some(([k]) => k === r.view) ? r.view : 'kontoret'
+  // Startsidan är Idag (svaret på "ska jag träna i dag?"); i den publika demon finns den inte, där är det kontoret.
+  const view = NAV.some(([k]) => k === r.view) ? r.view : NAV[0][0]
   return (
     <div class="app">
       <header class="topbar">
-        <a class="brand" href="#/kontoret"><Logo /><span>Kropp64</span></a>
+        <a class="brand" href="#/"><Logo /><span>Kropp64</span></a>
         <nav class="nav" aria-label="Huvudmeny">
           {NAV.map(([k, label]) => <a href={`#/${k}`} aria-current={view === k ? 'page' : undefined}>{label}</a>)}
         </nav>
@@ -138,6 +141,7 @@ function App() {
       </header>
       {__PUBLIK_DEMO__ ? <DemoBanner /> : <TestdataBanner />}
       <main class="page">
+        {view === 'idag' && <Idag />}
         {view === 'kontoret' && <Kontoret query={r.query} />}
         {view === 'oversikt' && <Oversikt />}
         {view === 'riggen' && <Riggen query={r.query} />}

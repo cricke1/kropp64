@@ -78,7 +78,8 @@ live.on((ev, history) => {
   if (ev.kind === 'vakt.anomaly') anomalies.push(ev)
   if (ev.kind === 'brief.morgon') { side.brief = ev; emitSide() }
   if (ev.kind === 'sync.1177') { side.sync = ev; emitSide() }
-  if (ev.kind === 'nudge.move' && !history) toast(String(ev.payload.title ?? 'Påminnelse'), String(ev.payload.body ?? ''))
+  if ((ev.kind.startsWith('nudge.') || ev.kind === 'pass.klart' || ev.kind === 'vecka.summering') && !history)
+    toast(String(ev.payload.title ?? (ev.kind === 'vecka.summering' ? 'Veckan' : 'Påminnelse')), String(ev.payload.body ?? ev.payload.text ?? ''))
   director.live(ev, history)
 })
 live.onState(() => { if (live.state === 'open') { loadIdleHr(); loadRefs() } })
@@ -119,7 +120,7 @@ export function parseHash() {
   const h = location.hash.replace(/^#\/?/, '')
   const [path, q] = h.split('?')
   const parts = path.split('/').filter(Boolean)
-  return { view: parts[0] || 'kontoret', arg: parts[1] ? decodeURIComponent(parts[1]) : null, query: new URLSearchParams(q ?? '') }
+  return { view: parts[0] || '', arg: parts[1] ? decodeURIComponent(parts[1]) : null, query: new URLSearchParams(q ?? '') }
 }
 
 export function useRoute() {

@@ -2,11 +2,9 @@ import { useState } from 'preact/hooks'
 import { api } from '../api'
 import { go } from '../store'
 
-const EXAMPLES = [
-  'Varför var min puls hög i natt?',
-  'Hur har min återhämtning sett ut den här veckan?',
-  'Sover jag sämre efter kvällsträning?',
-]
+import { FRAGOR } from './Idag'
+
+const EXAMPLES = [...FRAGOR, 'Varför var min puls hög i natt?', 'Sover jag sämre efter kvällsträning?']
 
 export function Fraga() {
   const [q, setQ] = useState('')
@@ -20,8 +18,9 @@ export function Fraga() {
     if (!text) return
     setBusy(true); setErr(null)
     try {
-      await api.ask(text, hours)
-      go('kontoret')
+      const r = await api.ask(text, hours)
+      // Tråden med snabbsvaret, i stället för kontoret: svaret är det man vill se först.
+      go(`konsilier/${encodeURIComponent(r.consult_id)}`)
     } catch (x: any) {
       setErr(x?.status === 401 ? 'Servern nekade frågan (ej behörig).' : `Kunde inte starta tråden: ${x?.message ?? x}`)
     } finally { setBusy(false) }

@@ -88,6 +88,11 @@ export const api = {
   brief: () => postJSON<{ datum: string; text: string; fakta: any }>('/api/brief', {}),
   datorn: (hours: number) => getJSON<{ timmar: number; kategorier: Record<string, { minuter: number; puls_median: number | null }> }>(`/api/datorn?hours=${hours}`),
   sync1177: () => postJSON<{ started: boolean }>('/api/sync/1177', {}),
+  idag: () => getJSON<any>('/api/idag'),
+  vecka: () => getJSON<any>('/api/vecka'),
+  pass: (dagar = 14) => getJSON<any[]>(`/api/pass?dagar=${dagar}`),
+  notiser: (dagar = 7) => getJSON<any>(`/api/notiser?dagar=${dagar}`),
+  knuffSvar: (typ: string, svar: string, minuter?: number) => postJSON<any>('/api/knuff/svar', { typ, svar, minuter }),
 }
 
 // ------------------------------------------------------------------ live-ström
