@@ -38,7 +38,7 @@ Klockan:
 
 Första start:
 1. Öppna Konsiliet på klockan och ge behörigheterna (puls, fysisk aktivitet, aviseringar, och sedan puls i bakgrunden "Tillåt alltid").
-2. Öppna Konsiliet på mobilen. Under Inställningar: serveradress (standard `http://100.69.247.16:8790`, Tailscale måste vara på i mobilen),
+2. Öppna Konsiliet på mobilen. Under Inställningar: serveradress (standard `http://<mac-minins-tailscale-ip>:8790`, Tailscale måste vara på i mobilen),
    enhetstoken (samma som `KONSILIET_DEVICE_TOKENS` på servern), "Spara och testa".
 3. Health Connect: "Ge behörighet" och tillåt allt, inklusive "historik" och "i bakgrunden".
 4. Stäng av batterioptimering för Konsiliet (knapp i Inställningar). Utan det kan Android pausa länken i viloläge.

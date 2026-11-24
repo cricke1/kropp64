@@ -6,6 +6,12 @@ Dagbok över bygget. Skrivs medan det händer, inte i efterhand.
 
 Köpte Mac minin (M4, 16 GB) under OpenClaw-trenden i januari 2026 och har kört agenter på den sedan dess.
 
+**Vem som skrev koden.** Koden i repot är skriven av Claude Code-agenter (Claude Opus 5.5) som jag styr:
+jag bestämmer vad som ska byggas och hur det ska bete sig, testar, underkänner och ber om om-tag. Agenterna
+skriver koden, kör testerna och för den här dagboken medan de arbetar, flera parallellt (webb, klocka och
+mobil, konsiliets kvalitet, granskning, presentation). Där det står "jag" nedan är det projektet som talar,
+inte ett påstående om att jag skrev varje rad själv. Tokenåtgången redovisas med `tools/tokenredovisning.py`.
+
 ## 2026-11-24
 
 **Falsk start.** Min Discord-agent fick i uppdrag att bygga ett tävlingsbidrag och producerade på en timme
@@ -18,9 +24,6 @@ Lärdom: en agent som får "gör det imponerande" som mål optimerar för att de
 
 **Arkitektur bestämd.** Egen Wear OS-app på klockan för realtid (Fitbit-synken kommer bara var 15:e minut),
 Android-app som brygga, Mac minin som server bakom Cloudflare Tunnel, lokala modeller via Ollama.
-
-**Port upptagen.** Servern skulle köra på 8787, men den porten hade ett annat av mina projekt (en node-server
-som stått igång i 17 timmar). Flyttade till 8790.
 
 **Tjänsten startade men svarade aldrig.** Som launchd-tjänst hängde servern tyst utan en enda loggrad.
 Orsak: macOS skyddar Skrivbordet (TCC), och en process som startas av launchd får inte läsa där, inte ens
@@ -76,7 +79,7 @@ Svaret klipptes vid tokentaket mitt i verktygsanropets XML. Samtidigt visade log
 med flera parallella förfrågningar. Datorn swappade. Fix: 8k kontext, en förfrågan åt gången, KV-cache i
 q8_0 och flash attention. Modellen tar nu 9,1 GB och ett helt konsilium tar 250 sekunder i stället för 563.
 
-**Klocka och mobil: port 8787 var redan upptagen.** En annan av mina nodeservrar (cricketrack) lyssnade på
+**Port 8787 var redan upptagen.** En annan av mina nodeservrar (cricketrack, igång sedan 17 timmar) lyssnade på
 8787, även på Tailscale-adressen. Uvicorn startade inte och testanrop fick "Cannot GET /api/health" från fel
 server. Fix: Konsiliet flyttade till 8790. Emulatortesterna körs mot en egen serverinstans på 8797 med en
 separat databas, så att syntetisk puls aldrig hamnar i min riktiga baslinje.

@@ -68,7 +68,7 @@ sådan punkt kommer in, utan att vänta på nästa vaktvarv.
 
 ## 7. Port
 
-Port 8787 på Mac minin används av ett annat projekt. Appen har nu `http://100.69.247.16:8790` som standard.
+Port 8787 på Mac minin används av ett annat projekt. Appen har nu `http://<mac-minins-tailscale-ip>:8790` som standard.
 
 ## Från webben (web/)
 
