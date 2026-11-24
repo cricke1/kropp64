@@ -12,10 +12,20 @@ skriver koden, kör testerna och för den här dagboken medan de arbetar, flera 
 mobil, konsiliets kvalitet, granskning, presentation). Där det står "jag" nedan är det projektet som talar,
 inte ett påstående om att jag skrev varje rad själv. Tokenåtgången redovisas med `tools/tokenredovisning.py`.
 
+**Min roll.** Produktägare och grindvakt. Jag bestämde vad som skulle byggas och underkände resten: under
+morgonens idésökning sa jag nej till ett dussintal förslag innan hälsoidén fick fortsätta, och jag krävde att
+lösningen skulle vara agentisk från grunden, inte en chatt ovanpå en dashboard. När agenterna började
+vänta på "riktig data senare" eller fylla ut med demosiffror styrde jag om: allt ska gå att köra på min egen
+data, och varje siffra ska vara uppmätt. Jag valde också namnet.
+
+**Namnet.** Arbetsnamnet var Konsiliet, tills jag såg att "konsilium" på svenska mest betyder kyrkomöte.
+Överklockad testades en stund men kunde lika gärna vara namnet på vilket hårdvaruverktyg som helst. Det blev
+Kropp64: en sensorpanel som AIDA64 och HWiNFO64, fast för kroppen. Internt heter koden fortfarande konsiliet.
+
 ## 2026-11-24
 
 **Falsk start.** Min Discord-agent fick i uppdrag att bygga ett tävlingsbidrag och producerade på en timme
-cirka 4 000 rader Python: en "diabetesagent" med korrelationsmotor, larmkedja och ett snyggt terminaldemo.
+cirka 4 000 rader Python: en hälsoagent på påhittad data, med korrelationsmotor, larmkedja och ett snyggt terminaldemo.
 Problemet: allt kördes på syntetisk exempeldata, journalformatet var påhittat, och demot innehöll siffror
 som ingen hade mätt. Det såg imponerande ut men var en kuliss. Jag slängde storyn och började om här,
 med kravet att allt ska köras på min riktiga data och att varje siffra ska vara uppmätt.
