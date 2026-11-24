@@ -1,0 +1,195 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" font-family="-apple-system, 'Segoe UI', 'IBM Plex Sans', Helvetica, Arial, sans-serif">
+  <title>Konsiliet: arkitektur</title>
+  <desc>Klocka och mobil skickar mätdata till Mac minin. Där bevakar en regelbaserad vakt datan, och vid avvikelse kallas ett team av lokala språkmodellagenter in. En deterministisk granskare stryker påståenden som inte går att belägga i källdatan.</desc>
+  <style>
+    .bg { fill: #ffffff; }
+    .box { fill: #f6f7f8; stroke: #c9ced4; stroke-width: 1.5; }
+    .mac { fill: #fbfbfa; stroke: #8b939c; stroke-width: 1.5; }
+    .step { fill: #ffffff; stroke: #c9ced4; stroke-width: 1.2; }
+    .det { fill: #fff7e8; stroke: #c98a1b; stroke-width: 1.5; }
+    .llm { fill: #eef5f1; stroke: #5d9a7a; stroke-width: 1.2; }
+    .h { fill: #15181c; font-size: 19px; font-weight: 650; }
+    .h2 { fill: #15181c; font-size: 15.5px; font-weight: 600; }
+    .t { fill: #3d444c; font-size: 13.5px; }
+    .s { fill: #69727c; font-size: 12.5px; }
+    .m { font-family: ui-monospace, 'SF Mono', Menlo, 'IBM Plex Mono', monospace; }
+    .amb { fill: #9a6510; }
+    .grn { fill: #2f7353; }
+    .line { stroke: #7d868f; stroke-width: 1.6; fill: none; }
+    .dash { stroke: #7d868f; stroke-width: 1.4; fill: none; stroke-dasharray: 5 4; }
+    .arrow { fill: #7d868f; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0d1117; }
+      .box { fill: #161b22; stroke: #3a424c; }
+      .mac { fill: #11161d; stroke: #5b646e; }
+      .step { fill: #1b2129; stroke: #3a424c; }
+      .det { fill: #2a2110; stroke: #c9902a; }
+      .llm { fill: #13241c; stroke: #4f8c6b; }
+      .h, .h2 { fill: #e8eaed; }
+      .t { fill: #c2c8cf; }
+      .s { fill: #8f98a2; }
+      .amb { fill: #e0a84a; }
+      .grn { fill: #6cc497; }
+      .line, .dash { stroke: #8f98a2; }
+      .arrow { fill: #8f98a2; }
+    }
+  </style>
+  <defs>
+    <marker id="pil" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" class="arrow"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1600" height="900"/>
+
+  <!-- klockan -->
+  <rect class="box" x="40" y="70" width="300" height="200" rx="8"/>
+  <text class="h" x="62" y="104">Pixel Watch</text>
+  <text class="s" x="62" y="126">Egen Wear OS-app, wear/</text>
+  <text class="t" x="62" y="158">Health Services: puls, steg, kalorier,</text>
+  <text class="t" x="62" y="178">aktivitetsläge, fall-larm. Puls varje</text>
+  <text class="t" x="62" y="198">sekund under träningspass.</text>
+  <text class="t" x="62" y="228">Kö på klockan. Raderas först när</text>
+  <text class="t" x="62" y="248">mobilen kvitterat.</text>
+
+  <!-- mobilen -->
+  <rect class="box" x="40" y="340" width="300" height="250" rx="8"/>
+  <text class="h" x="62" y="374">Mobilen</text>
+  <text class="s" x="62" y="396">Android-app, android/</text>
+  <text class="t" x="62" y="428">Tar emot klockans batchar, egen kö</text>
+  <text class="t" x="62" y="448">som överlever omstart och nätavbrott.</text>
+  <text class="t" x="62" y="478">Health Connect: HRV, SpO2, andning,</text>
+  <text class="t" x="62" y="498">hudtemperatur, sömn. Kommer med</text>
+  <text class="t" x="62" y="518">fördröjning, när Fitbit-appen synkar.</text>
+  <text class="t" x="62" y="548">Notis vid akut larm. Sms till anhörig</text>
+  <text class="t" x="62" y="568">efter frist, bara om påslaget.</text>
+
+  <line class="line" x1="190" y1="270" x2="190" y2="336" marker-end="url(#pil)"/>
+  <text class="s" x="202" y="300">Bluetooth</text>
+  <text class="s" x="202" y="318">Wearable Data Layer</text>
+
+  <!-- 1177 -->
+  <rect class="box" x="40" y="660" width="300" height="160" rx="8"/>
+  <text class="h" x="62" y="694">1177 Journalen</text>
+  <text class="t" x="62" y="726">Hämtas med Playwright efter</text>
+  <text class="t" x="62" y="746">inloggning med eget BankID.</text>
+  <text class="t" x="62" y="776">Anteckningar och provsvar</text>
+  <text class="t" x="62" y="796">sparas bara på Mac minin.</text>
+
+  <!-- pilar till mac -->
+  <path class="line" d="M340 465 H420" marker-end="url(#pil)"/>
+  <text class="s" x="350" y="452">Tailscale</text>
+  <text class="s" x="350" y="486">HTTP, WS</text>
+  <path class="line" d="M340 740 H420" marker-end="url(#pil)"/>
+
+  <!-- mac mini -->
+  <rect class="mac" x="424" y="40" width="1136" height="820" rx="10"/>
+  <text class="h" x="452" y="76">Mac mini M4, 16 GB</text>
+  <text class="s" x="640" y="76">allt nedan körs lokalt, server/src/konsiliet/</text>
+
+  <!-- mottagning + db -->
+  <rect class="step" x="452" y="100" width="250" height="118" rx="6"/>
+  <text class="h2" x="470" y="128">Mottagning</text>
+  <text class="t" x="470" y="152">FastAPI, api.py</text>
+  <text class="t" x="470" y="172">Validering, avduplicering,</text>
+  <text class="t" x="470" y="192">källprioritet per minut</text>
+
+  <rect class="step" x="452" y="242" width="250" height="118" rx="6"/>
+  <text class="h2" x="470" y="270">SQLite</text>
+  <text class="t" x="470" y="294">mätpunkter, sömn, pass,</text>
+  <text class="t" x="470" y="314">journal, prover, händelser,</text>
+  <text class="t" x="470" y="334">konsilier med transkript</text>
+  <line class="line" x1="577" y1="218" x2="577" y2="238" marker-end="url(#pil)"/>
+
+  <rect class="step" x="452" y="384" width="250" height="100" rx="6"/>
+  <text class="h2" x="470" y="412">Datorn</text>
+  <text class="t" x="470" y="436">Kategori på programmet i fokus</text>
+  <text class="t" x="470" y="456">varje minut, aldrig titlar</text>
+  <line class="line" x1="577" y1="384" x2="577" y2="364" marker-end="url(#pil)"/>
+
+  <!-- vakten -->
+  <rect class="det" x="740" y="100" width="300" height="160" rx="6"/>
+  <text class="h2" x="758" y="128">Vakten</text>
+  <text class="s amb" x="830" y="128">regler, ingen språkmodell</text>
+  <text class="t" x="758" y="154">Akut: t.ex. puls 140+ i vila,</text>
+  <text class="t" x="758" y="174">SpO2 under 88 %, fall-larm.</text>
+  <text class="t" x="758" y="198">Avvikelse: robust z mot egen</text>
+  <text class="t" x="758" y="218">baslinje per timme, 28 dagar.</text>
+  <text class="t" x="758" y="242">Utvärderas på datans egen tid.</text>
+  <path class="line" d="M702 300 H720 V180 H736" marker-end="url(#pil)"/>
+
+  <!-- akut larm tillbaka -->
+  <path class="dash" d="M890 100 V58 H382 V420 H344" marker-end="url(#pil)"/>
+  <text class="s amb" x="904" y="54">akut larm direkt till mobilen, utan att vänta på någon modell</text>
+
+  <!-- konsiliet pipeline -->
+  <text class="h2" x="740" y="304">Konsiliet</text>
+  <text class="s" x="830" y="304">vid avvikelse eller egen fråga, konsiliet.py</text>
+  <path class="line" d="M890 260 V286"/>
+
+  <rect class="det" x="740" y="322" width="250" height="104" rx="6"/>
+  <text class="h2" x="756" y="348">1. Faktablad</text>
+  <text class="t" x="756" y="370">Räknas fram i kod: observerat</text>
+  <text class="t" x="756" y="390">mot baslinje, nätter, prover.</text>
+  <text class="s m" x="756" y="412">varje del får en ref</text>
+
+  <rect class="llm" x="1020" y="322" width="250" height="92" rx="6"/>
+  <text class="h2" x="1036" y="348">2. Ordföranden</text>
+  <text class="t" x="1036" y="370">Allmänläkare. Kallar in 2-4</text>
+  <text class="t" x="1036" y="390">specialister för just detta.</text>
+  <path class="line" d="M990 368 H1016" marker-end="url(#pil)"/>
+
+  <rect class="llm" x="1300" y="322" width="236" height="160" rx="6"/>
+  <text class="h2" x="1316" y="348">3. Specialisterna</text>
+  <text class="t" x="1316" y="372">Kardiolog, sömnläkare,</text>
+  <text class="t" x="1316" y="392">idrottsläkare, stressmedicin,</text>
+  <text class="t" x="1316" y="412">klinisk kemist.</text>
+  <text class="t" x="1316" y="436">Verktyg mot databasen. Varje</text>
+  <text class="t" x="1316" y="456">påstående måste ange ref:ar.</text>
+  <path class="line" d="M1270 368 H1296" marker-end="url(#pil)"/>
+
+  <rect class="det" x="1020" y="508" width="516" height="118" rx="6"/>
+  <text class="h2" x="1036" y="536">4. Granskaren</text>
+  <text class="s amb" x="1160" y="536">deterministisk kod, ingen språkmodell</text>
+  <text class="t" x="1036" y="562">Finns ref:en bland det mötet faktiskt hämtat? Finns varje siffra i källans värden</text>
+  <text class="t" x="1036" y="582">(med enkla omräkningar)? Är ett baslinjevärde verkligen baslinjen? Har en slutsats</text>
+  <text class="t" x="1036" y="602">en källa av rätt typ? Annars stryks påståendet, och strykningen syns i kontoret.</text>
+  <path class="line" d="M1418 482 V504" marker-end="url(#pil)"/>
+
+  <rect class="llm" x="1020" y="652" width="250" height="100" rx="6"/>
+  <text class="h2" x="1036" y="678">5. Djävulens advokat</text>
+  <text class="t" x="1036" y="700">Söker vardagliga och tekniska</text>
+  <text class="t" x="1036" y="720">förklaringar. Specialisterna</text>
+  <text class="t" x="1036" y="740">bemöter dem.</text>
+  <path class="line" d="M1145 626 V648" marker-end="url(#pil)"/>
+
+  <rect class="llm" x="1300" y="652" width="236" height="100" rx="6"/>
+  <text class="h2" x="1316" y="678">6. Slutbedömning</text>
+  <text class="t" x="1316" y="700">Granskas igen. Brådskan</text>
+  <text class="t" x="1316" y="720">styrs av regelverket, bara</text>
+  <text class="t" x="1316" y="740">en akut regel ger "nu".</text>
+  <path class="line" d="M1270 702 H1296" marker-end="url(#pil)"/>
+
+  <!-- ollama -->
+  <rect class="step" x="740" y="440" width="250" height="186" rx="6"/>
+  <text class="h2" x="756" y="466">Ollama</text>
+  <text class="t m grn" x="756" y="492">qwen3.5:9b</text>
+  <text class="t" x="756" y="512">alla agenter, 8k kontext,</text>
+  <text class="t" x="756" y="532">KV-cache q8_0, en förfrågan</text>
+  <text class="t" x="756" y="552">åt gången</text>
+  <text class="t m grn" x="756" y="580">medgemma:4b</text>
+  <text class="t" x="756" y="600">valfri kunskapskälla, ger</text>
+  <text class="t" x="756" y="618">aldrig en ref</text>
+  <path class="dash" d="M990 470 H1010 V368"/>
+
+  <!-- webb -->
+  <rect class="step" x="452" y="652" width="538" height="184" rx="6"/>
+  <text class="h2" x="470" y="680">Webb och app</text>
+  <text class="s" x="580" y="680">web/, via WebSocket /ws</text>
+  <text class="t" x="470" y="706">Pixelkontoret: varje händelse från mötet (gå, slå upp, säga, räcka över,</text>
+  <text class="t" x="470" y="726">stryka) blir en rörelse eller en pratbubbla. Översikt, tidslinje, sömn,</text>
+  <text class="t" x="470" y="746">puls vid datorn, systempanel med minne och tokens.</text>
+  <text class="t" x="470" y="776">Besöksunderlag som PDF: kurvor, bedömningar med källor och frågor att</text>
+  <text class="t" x="470" y="796">ta med till vården. Systemet ställer inga diagnoser.</text>
+  <path class="dash" d="M1418 752 V800 H994" marker-end="url(#pil)"/>
+  <text class="s" x="1040" y="792">alla steg sänds som händelser</text>
+</svg>
