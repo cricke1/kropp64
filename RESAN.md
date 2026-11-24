@@ -116,3 +116,11 @@ på 1,5 minut. Fix: `USE_EXACT_ALARM`, eftersom fristen är en säkerhetsfunktio
 **WHPX.** Windows-funktionen "HypervisorPlatform" stod som avstängd på Lenovon, men emulatorn rapporterade
 "WHPX is installed and usable" (Hyper-V och virtualiseringsbaserad säkerhet var redan igång) och båda
 emulatorerna startade med hårdvaruacceleration. Ingen omstart behövdes.
+
+**Träningspass till servern och omtest av sms-fristen.** Servern fick `POST /api/ingest/exercise`. Klockan
+behöll sitt protokoll (passmarkörer i samma kö med kvittens) och skickar nu passtypen som text, mobilen gör om
+markörerna till ett pass och skickar det vid start med `end = null` och igen vid slut med samma id. Mobilens
+databas fick en ny tabell med en riktig migrering, inte en destruktiv, så att kön överlever uppdateringen.
+Testat på emulatorerna mot testinstansen: passet "promenad" kom in med tomt slut och fick sluttid tre minuter
+senare med samma id. Larmtestet kördes om med `USE_EXACT_ALARM`: alarmet stod som exakt (fönster 0) och sms:et
+skickades 39 millisekunder efter fristen, i stället för 70 sekunder sent som förra gången.

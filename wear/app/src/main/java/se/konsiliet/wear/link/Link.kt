@@ -52,11 +52,18 @@ object Sender {
     fun encode(rows: List<se.konsiliet.wear.data.Pending>): ByteArray {
         val samples = JSONArray()
         for (r in rows) samples.put(JSONArray().put(r.ts).put(r.metric).put(r.value))
+        // Passtyp som text för passmarkörer (metric "exercise", värde = ExerciseType-id), så att
+        // mobilen kan skicka passet till /api/ingest/exercise utan att känna till Health Services id:n.
+        val types = JSONObject()
+        rows.filter { it.metric == "exercise" && it.value > 0 }.forEach {
+            types.put(it.value.toInt().toString(), se.konsiliet.wear.exercise.exerciseTypeName(it.value.toInt()))
+        }
         return JSONObject()
             .put("v", 1)
             .put("source", WatchState.source)
             .put("device", Build.MODEL)
             .put("samples", samples)
+            .apply { if (types.length() > 0) put("exercise_types", types) }
             .toString().toByteArray()
     }
 

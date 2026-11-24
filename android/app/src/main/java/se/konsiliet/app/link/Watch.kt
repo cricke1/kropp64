@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.json.JSONObject
+import se.konsiliet.app.data.ExerciseRow
 import se.konsiliet.app.data.KonsilietDb
 import se.konsiliet.app.data.Prefs
 import se.konsiliet.app.data.SampleRow
@@ -63,6 +64,16 @@ class WatchListenerService : WearableListenerService() {
                 rows += SampleRow(metric = s.getString(1), ts = s.getDouble(0), value = v, source = source)
             }
             KonsilietDb.get(ctx).samples().insert(rows)
+            // Passmarkörer blir även pass för /api/ingest/exercise: värde > 0 är start (ExerciseType-id), 0 är slut.
+            val types = o.optJSONObject("exercise_types")
+            val ex = KonsilietDb.get(ctx).exercise()
+            for (r in rows.filter { it.metric == "exercise" }.sortedBy { it.ts }) {
+                if (r.value > 0) {
+                    val id = r.value.toInt().toString()
+                    ex.insertStart(ExerciseRow(id = "$source-${(r.ts * 1000).toLong()}", start = r.ts, end = null,
+                        typ = types?.optString(id)?.ifEmpty { null } ?: "typ_$id", source = source))
+                } else ex.closeLatest(source, r.ts)
+            }
             Prefs.link { it.copy(lastWatchAt = System.currentTimeMillis(), lastWatchSource = source) }
             UploadScheduler.now(ctx)
             return rows.size

@@ -47,6 +47,11 @@ val EXERCISE_CHOICES = listOf(
     ExerciseType.STRENGTH_TRAINING to "Styrka",
 )
 
+/** Namn som skickas till servern som passets typ. */
+fun exerciseTypeName(id: Int): String =
+    EXERCISE_CHOICES.firstOrNull { it.first.id == id }?.second?.lowercase()
+        ?: ExerciseType.fromId(id).name.lowercase()
+
 /**
  * Träningspass med ExerciseClient: puls med hög upplösning (ungefär varje sekund) i stället för
  * passiva lägets glesa punkter. Körs som förgrundstjänst av typen health, vilket krävs för att

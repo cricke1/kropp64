@@ -52,6 +52,11 @@ eller filtrera på källa i `_window()`.
 
 ## 5. Träningspass som egen typ
 
+Klart i servern (`POST /api/ingest/exercise`) och använt av apparna sedan 2026-11-24: klockan skickar
+passmarkörer i sin vanliga kö, mobilen gör om dem till pass (id `<källa>-<startms>`) och skickar vid start
+med `end = null` och igen vid slut med samma id. Pass från Health Connect skickas med id `hc-<id>`.
+Mätvärdena `exercise` och `exercise_calories` skickas fortfarande också.
+
 Pass skickas i dag som mätvärden (`exercise`, `exercise_calories`, `exercise_minutes`). Ett eget
 `POST /api/ingest/exercise` med (id, start, end, typ, källa) vore tydligare och låter vakten bortse från
 hög puls under pass utan att gissa via steg.

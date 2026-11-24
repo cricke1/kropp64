@@ -58,6 +58,16 @@ object Uploader {
                 if (e.code == 400 || e.code == 422) db.sleep().mark(s.id, 2) else throw e
             }
         }
+        for (e in db.exercise().pending(50)) {
+            val body = JSONObject().put("id", e.id).put("start", e.start)
+                .put("end", e.end ?: JSONObject.NULL).put("typ", e.typ).put("source", e.source)
+            try {
+                Api.postJson("/api/ingest/exercise", body)
+                db.exercise().mark(e.id, e.end, 1)
+            } catch (err: HttpError) {
+                if (err.code == 400 || err.code == 422) db.exercise().mark(e.id, e.end, 2) else throw err
+            }
+        }
         // Behåll en vecka lokalt för appens egna vyer, rensa äldre uppladdade rader.
         db.samples().prune(System.currentTimeMillis() / 1000.0 - 7 * 86400)
         Prefs.link { it.copy(lastUploadAt = System.currentTimeMillis(), lastUploadError = null) }

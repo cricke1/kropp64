@@ -11,7 +11,18 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.flow.Flow
+
+val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `exercise` (`id` TEXT NOT NULL, `start` REAL NOT NULL, `end` REAL, " +
+                "`typ` TEXT NOT NULL, `source` TEXT NOT NULL, `state` INTEGER NOT NULL, PRIMARY KEY(`id`))"
+        )
+    }
+}
 
 /**
  * Mobilens kö och lokala spegel. En rad lämnar aldrig tabellen förrän servern svarat 2xx,
@@ -43,6 +54,20 @@ data class SleepRow(
     val end: Double,
     /** JSON-lista med {start, end, stage}. */
     val stages: String,
+    val source: String,
+    val state: Int = 0,
+)
+
+/**
+ * Träningspass för POST /api/ingest/exercise. Skickas vid start (end = null) och igen vid slut med
+ * samma id. state 0 = ändrat sedan senaste uppladdning.
+ */
+@Entity(tableName = "exercise")
+data class ExerciseRow(
+    @PrimaryKey val id: String,
+    val start: Double,
+    val end: Double?,
+    val typ: String,
     val source: String,
     val state: Int = 0,
 )
@@ -123,6 +148,33 @@ interface SleepDao {
 }
 
 @Dao
+interface ExerciseDao {
+    /** IGNORE: en batch som levereras igen får inte nollställa ett redan avslutat pass. */
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertStart(row: ExerciseRow): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(rows: List<ExerciseRow>)
+
+    /** Avslutar det senaste öppna passet från källan som startade före slutmarkören. */
+    @Query(
+        """UPDATE exercise SET `end` = :end, state = 0 WHERE id =
+           (SELECT id FROM exercise WHERE source = :source AND start <= :end AND `end` IS NULL ORDER BY start DESC LIMIT 1)"""
+    )
+    suspend fun closeLatest(source: String, end: Double): Int
+
+    @Query("SELECT * FROM exercise WHERE state = 0 ORDER BY start LIMIT :n")
+    suspend fun pending(n: Int): List<ExerciseRow>
+
+    /** Markeras bara om raden inte ändrats under uppladdningen (t.ex. passet avslutades under tiden). */
+    @Query(
+        """UPDATE exercise SET state = :state WHERE id = :id AND state = 0 AND
+           ((`end` IS NULL AND :end IS NULL) OR `end` = :end)"""
+    )
+    suspend fun mark(id: String, end: Double?, state: Int): Int
+}
+
+@Dao
 interface EventDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(rows: List<EventRow>): List<Long>
@@ -137,17 +189,20 @@ interface EventDao {
     suspend fun maxId(): Long?
 }
 
-@Database(entities = [SampleRow::class, SleepRow::class, EventRow::class], version = 1, exportSchema = true)
+@Database(entities = [SampleRow::class, SleepRow::class, EventRow::class, ExerciseRow::class], version = 2, exportSchema = true)
 abstract class KonsilietDb : RoomDatabase() {
     abstract fun samples(): SampleDao
     abstract fun sleep(): SleepDao
     abstract fun events(): EventDao
+    abstract fun exercise(): ExerciseDao
 
     companion object {
         @Volatile private var instance: KonsilietDb? = null
 
         fun get(ctx: Context): KonsilietDb = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(ctx.applicationContext, KonsilietDb::class.java, "konsiliet.db")
+                // Riktig migrering, aldrig destruktiv: kön får inte tömmas vid en uppdatering.
+                .addMigrations(MIGRATION_1_2)
                 .build().also { instance = it }
         }
     }

@@ -6,7 +6,8 @@
   skickar batchar till mobilen med `MessageClient.sendRequest` och raderar först när mobilen kvitterat.
 - `android/` Mobilappen. Tar emot batcharna (`WatchListenerService`), sparar i Room, laddar upp till
   `POST /api/ingest` med WorkManager, håller en förgrundstjänst med WebSocket mot `/ws` för larm och live,
-  läser Health Connect (bakåt i tiden och sedan inkrementellt), skickar sms till anhöriga om användaren slagit på det.
+  läser Health Connect (bakåt i tiden och sedan inkrementellt), skickar träningspass till
+  `POST /api/ingest/exercise` (vid start och igen vid slut med samma id), skickar sms till anhöriga om användaren slagit på det.
 
 Båda apparna har `applicationId = "se.konsiliet"`. Det måste vara samma, och båda måste vara signerade
 med samma nyckel, annars levererar Wearable Data Layer ingenting mellan dem. Bygg därför alltid båda på

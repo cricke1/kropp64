@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.reflect.KClass
 import org.json.JSONArray
 import org.json.JSONObject
+import se.konsiliet.app.data.ExerciseRow
 import se.konsiliet.app.data.KonsilietDb
 import se.konsiliet.app.data.Prefs
 import se.konsiliet.app.data.SampleRow
@@ -176,6 +177,7 @@ object HealthConnectSync {
         if (records.isEmpty()) return 0
         val rows = ArrayList<SampleRow>()
         val sleeps = ArrayList<SleepRow>()
+        val exercises = ArrayList<ExerciseRow>()
         fun add(metric: String, t: Instant, v: Double) {
             if (!v.isNaN() && !v.isInfinite()) rows += SampleRow(metric = metric, ts = s(t), value = v, source = SOURCE)
         }
@@ -198,6 +200,8 @@ object HealthConnectSync {
             is ExerciseSessionRecord -> {
                 add("exercise_minutes", r.endTime, (r.endTime.epochSecond - r.startTime.epochSecond) / 60.0)
                 add("exercise_type_hc", r.startTime, r.exerciseType.toDouble())
+                exercises += ExerciseRow(id = "hc-" + r.metadata.id, start = s(r.startTime), end = s(r.endTime),
+                    typ = r.title?.takeIf { it.isNotBlank() } ?: "hc_${r.exerciseType}", source = SOURCE)
             }
             is SleepSessionRecord -> {
                 val stages = JSONArray()
@@ -212,6 +216,7 @@ object HealthConnectSync {
         val db = KonsilietDb.get(ctx)
         val inserted = rows.chunked(500).sumOf { chunk -> db.samples().insert(chunk).count { it != -1L } }
         if (sleeps.isNotEmpty()) db.sleep().upsert(sleeps)
+        if (exercises.isNotEmpty()) db.exercise().upsert(exercises)
         return inserted + sleeps.size
     }
 
