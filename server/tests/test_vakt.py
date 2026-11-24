@@ -67,3 +67,39 @@ def test_testdata_halls_ute(miljo):
     db, vakt, now = miljo
     db.insert_samples([(now - 50, "spo2", 80, "watch-emulator"), (now - 40, "spo2", 81, "dev-syntetisk")])
     assert db.query_samples("spo2", now - 100) == []
+
+
+def test_lag_vilopuls_ar_ingen_avvikelse(miljo):
+    """En sovmorgon en timme då man brukar sitta vid datorn ger lägre puls än baslinjen: ingen tråd."""
+    db, vakt, now = miljo
+    db.insert_samples([(now - 1200 + j * 60, "hr", 45, "watch") for j in range(20)])
+    assert not [f for f in vakt.evaluate() if f.rule == "baseline_hr"]
+
+
+def test_gammal_historik_startar_ingen_trad(miljo, monkeypatch):
+    db, vakt, now = miljo
+    from konsiliet import vardag
+    startade = []
+    monkeypatch.setattr(vardag, "starta_trad", lambda t: startade.append(t) or "x")
+    gammal = vakt.Finding("baseline_hr", "avvikelse", "hr", "t", "d", window=(now - 3 * 86400, now - 3 * 86400 + 600))
+    vakt._handle(gammal)
+    farsk = vakt.Finding("baseline_hr", "avvikelse", "hr", "t", "d", window=(now - 3600, now - 3000))
+    vakt._handle(farsk)
+    assert len(startade) == 1
+
+
+def test_hog_puls_vid_datorn_ar_ingen_viloavvikelse(miljo):
+    """Spel kl. 02 jämfördes med sovpulsen för den timmen. Vid datorn är man vaken."""
+    db, vakt, now = miljo
+    db.insert_samples([(now - 1200 + j * 60, "hr", 85, "watch") for j in range(20)])
+    db.insert_samples([(now - 1200 + j * 60, "dator_spel", 1, "macmini") for j in range(20)])
+    assert not [f for f in vakt.evaluate() if f.rule == "baseline_hr"]
+
+
+def test_en_trad_per_sex_timmar(miljo):
+    db, vakt, now = miljo
+    f = vakt.Finding("baseline_hr", "avvikelse", "hr", "t", "d")
+    g = vakt.Finding("skin_temp_delta", "avvikelse", "skin_temp_delta", "t", "d")
+    a = vakt.Finding("hr_rest_acute", "akut", "hr", "t", "d")
+    assert vakt.trad_tillats(f, now) and not vakt.trad_tillats(g, now + 600) and vakt.trad_tillats(a, now + 700)
+    assert vakt.trad_tillats(g, now + 700 + 6 * 3600)

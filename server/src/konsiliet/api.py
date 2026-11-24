@@ -10,6 +10,13 @@ GET  /api/consults/{id}     ett möte med hela samtalet
 POST /api/consult           starta ett konsilium manuellt (fråga från användaren)
 GET  /api/journal           journal och provsvar
 GET  /api/rost/{event_id}   en agent.say-replik uppläst (Ogg Opus), aldrig fri text
+GET  /api/idag              dagens svar: träna, ta det lugnt eller vila, varför och planen (vardag.py)
+GET  /api/somn              sömnskuld, läggdags och sena kvällar
+GET  /api/pass              träningspass med tid i zoner och råd efteråt
+GET  /api/vecka             veckosammanfattningen
+GET  /api/notiser           knuffar per dag, budget, tysta timmar, fokusläge
+POST /api/knuff/svar        svar på en knuff: snooze, inte_nu, fokus, klar
+GET/POST /api/installningar plan, passdagar, väckning, tysta timmar, notisbudget
 POST /api/sync/1177         starta journalhämtning (kräver BankID i mobilen)
 WS   /ws                    live-ström av alla händelser (se bus.py för typer)
 
@@ -222,7 +229,23 @@ def ingest_sleep(sess: SleepSession) -> dict[str, Any]:
             "INSERT OR REPLACE INTO sleep(id, start, end, stages, source) VALUES (?,?,?,?,?)",
             (sess.id, sess.start, sess.end, json.dumps([s.model_dump() for s in sess.stages]), sess.source),
         )
+    if time.time() - sess.end < 3 * 3600:
+        # Natten är slut: POST-skärmen kan skrivas nu i stället för på ett fast klockslag.
+        _i_bakgrunden(lambda: __import__("konsiliet.vardag", fromlist=["morgon"]).morgon(time.time()))
     return {"stored": 1}
+
+
+def _i_bakgrunden(f: Any) -> None:
+    import threading
+
+    def kor() -> None:
+        try:
+            f()
+        except Exception:
+            import logging
+            logging.getLogger("api").exception("bakgrundsjobb")
+
+    threading.Thread(target=kor, daemon=True).start()
 
 
 class Exercise(BaseModel):
@@ -239,6 +262,11 @@ def ingest_exercise(ex: Exercise) -> dict[str, Any]:
     with db.tx() as c:
         c.execute("INSERT OR REPLACE INTO exercise(id, start, end, typ, source) VALUES (?,?,?,?,?)",
                   (ex.id, ex.start, ex.end, ex.typ, ex.source))
+    if ex.end is not None:
+        from . import vardag
+
+        # Sammanfattningen efter passet (zoner, råd) går ut som notis.
+        _i_bakgrunden(lambda: vardag.efter_pass(ex.id))
     return {"stored": 1}
 
 
@@ -313,9 +341,10 @@ def consult(cid: str) -> dict[str, Any]:
 
 @app.post("/api/consult", dependencies=[Depends(auth)])
 def start_consult(req: ConsultRequest) -> dict[str, Any]:
-    from . import konsiliet
+    from . import vardag
 
-    cid = konsiliet.start_async({"kind": "question", "question": req.question, "hours": req.hours})
+    # Snabbsvaret ur datan (consult.kort) kommer inom sekunder, teamets svar efter några minuter.
+    cid = vardag.starta_trad({"kind": "question", "question": req.question, "hours": req.hours})
     return {"consult_id": cid}
 
 
@@ -347,6 +376,75 @@ def brief() -> dict[str, Any]:
     from . import rutiner
 
     return rutiner.morgonbrief()
+
+
+@app.get("/api/idag", dependencies=[Depends(auth)])
+def idag() -> dict[str, Any]:
+    from . import vardag
+
+    return vardag.idag()
+
+
+@app.get("/api/somn", dependencies=[Depends(auth)])
+def somn_status() -> dict[str, Any]:
+    from . import vardag
+
+    return vardag.somn(time.time())
+
+
+@app.get("/api/pass", dependencies=[Depends(auth)])
+def pass_lista(dagar: int = 14) -> list[dict[str, Any]]:
+    from . import vardag
+
+    nu = time.time()
+    return [s for p in vardag.pass_lista(nu - min(dagar, 90) * 86400, nu) if (s := vardag.pass_summering(p["id"], nu))]
+
+
+@app.get("/api/vecka", dependencies=[Depends(auth)])
+def vecka() -> dict[str, Any]:
+    from . import vardag
+
+    return vardag.vecka()
+
+
+@app.get("/api/notiser", dependencies=[Depends(auth)])
+def notiser(dagar: int = 7) -> dict[str, Any]:
+    from . import vardag
+
+    return vardag.notis_statistik(time.time(), min(dagar, 60))
+
+
+class KnuffSvar(BaseModel):
+    typ: str = Field(max_length=20)
+    svar: str = Field(max_length=20)
+    minuter: int | None = Field(default=None, ge=0, le=24 * 60)
+
+
+@app.post("/api/knuff/svar", dependencies=[Depends(auth)])
+def knuff_svar(s: KnuffSvar) -> dict[str, Any]:
+    from . import vardag
+
+    try:
+        return vardag.svara(s.typ, s.svar, s.minuter)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+
+
+@app.get("/api/installningar", dependencies=[Depends(auth)])
+def installningar() -> dict[str, Any]:
+    from . import vardag
+
+    return vardag.installningar()
+
+
+@app.post("/api/installningar", dependencies=[Depends(auth)])
+def spara_installningar(andringar: dict[str, Any]) -> dict[str, Any]:
+    from . import vardag
+
+    try:
+        return vardag.spara_installningar(andringar)
+    except (ValueError, TypeError) as e:
+        raise HTTPException(422, str(e))
 
 
 @app.get("/api/datorn", dependencies=[Depends(auth)])

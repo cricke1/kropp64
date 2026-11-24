@@ -216,12 +216,21 @@ def rule_metric_vs_baseline(metric: str, minutes: int, z_limit: float, label: st
             return None
         if metric == "hr" and not _resting(minutes, slut):
             return None
+        # Vid datorn är man vaken. Baslinjen för en timme då man brukar sova säger då inget (spel kl. 02
+        # jämfördes med sovpuls). Hög puls vid datorn hanteras av stressknuffen, och akutreglerna gäller alltid.
+        if metric == "hr" and sum(len(db.query_samples(f"dator_{k}", slut - minutes * 60, slut))
+                                  for k in ("kod", "spel", "chatt", "webb", "annat")) >= 5:
+            return None
         base = baslinje(metric, datetime.fromtimestamp(slut).hour)
         if base is None:
             return None
         med, sd, _ = base
         cur = float(np.median(w[:, 1]))
         z = (cur - med) / sd
+        # Lägre vilopuls än vanligt är nästan alltid sömn eller vila (t.ex. en sovmorgon en timme då man
+        # brukar sitta vid datorn), inget att starta en tråd om. Bara under 40 BPM räknas det.
+        if metric == "hr" and z < 0 and cur >= 40:
+            return None
         if abs(z) >= z_limit:
             riktning = "över" if z > 0 else "under"
             return Finding(f"baseline_{metric}", "avvikelse", metric, f"{label} avviker från din baslinje",
@@ -324,14 +333,37 @@ def _evaluate(slut: float) -> list[Finding]:
     return found
 
 
+HISTORIK_S = 24 * 3600
+TRAD_MELLANRUM_S = 6 * 3600  # högst en tråd från vakten per sex timmar, utom vid akuta larm
+
+
+def trad_tillats(f: Finding, nu: float) -> bool:
+    _schema()
+    if f.level == "akut":
+        _satt_senast("__trad__", nu)
+        return True
+    if nu - _senast("__trad__") < TRAD_MELLANRUM_S:
+        return False
+    _satt_senast("__trad__", nu)
+    return True  # avvikelser äldre än så (t.ex. 30 dagars historik vid första installationen) blir ingen tråd
+
+
 def _handle(f: Finding) -> None:
-    bus.publish("vakt.anomaly", {"rule": f.rule, "level": f.level, "metric": f.metric,
+    historik = bool(f.window) and time.time() - f.window[1] > HISTORIK_S
+    bus.publish("vakt.anomaly", {"rule": f.rule, "level": f.level, "metric": f.metric, "historik": historik,
                                  "title": f.title, "detail": f.detail, "z": f.z, "window": f.window})
+    if historik:
+        # Syns i tidslinjen, men en tråd om något som hände för flera dagar sedan går inte att göra något åt.
+        return
+    if not trad_tillats(f, time.time()):
+        # Samma natt eller förmiddag har redan en tråd: teamet tittar på hela perioden ändå.
+        return
     if f.level == "akut":
         bus.publish("alert.raise", {"level": "akut", "title": f.title, "body": f.detail, "rule": f.rule})
-    from . import konsiliet
+    from . import vardag
 
-    konsiliet.start_async({"kind": "anomaly", "rule": f.rule, "level": f.level, "metric": f.metric,
+    # Snabbsvaret ur datan kommer inom sekunder, teamets lösning efter några minuter.
+    vardag.starta_trad({"kind": "anomaly", "rule": f.rule, "level": f.level, "metric": f.metric,
                            "title": f.title, "detail": f.detail, "window": f.window})
 
 
