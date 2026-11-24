@@ -20,7 +20,7 @@ from typing import Callable
 
 import numpy as np
 
-from . import db
+from . import db, matning
 from .bus import bus
 
 log = logging.getLogger("vakt")
@@ -174,7 +174,17 @@ def rule_hrv_trend() -> Finding | None:
     return None
 
 
+def rule_fall() -> Finding | None:
+    """Klockans egen falldetektering: larma direkt."""
+    pts = db.query_samples("fall_detected", time.time() - 5 * 60)
+    if any(v >= 1 for _, v in pts):
+        return Finding("fall", "akut", "fall_detected", "Klockan registrerade ett fall",
+                       "Pixel Watch falldetektering slog till de senaste minuterna.")
+    return None
+
+
 RULES: list[Callable[[], Finding | None]] = [
+    rule_fall,
     rule_hr_rest_acute,
     rule_hr_sudden_jump,
     rule_spo2_low,
@@ -192,6 +202,11 @@ _started = False
 
 
 def evaluate() -> list[Finding]:
+    with matning.tid("Vakt, regelkoll"):
+        return _evaluate()
+
+
+def _evaluate() -> list[Finding]:
     found = []
     for rule in RULES:
         try:

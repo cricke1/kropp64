@@ -167,3 +167,36 @@ def run(name: str, args: dict[str, Any]) -> dict[str, Any]:
         return {"fel": f"fel argument: {e}"}
     except Exception as e:  # ett trasigt verktyg ska ge agenten ett felsvar, inte krascha mötet
         return {"fel": f"verktyget misslyckades: {type(e).__name__}: {e}"}
+
+
+def las_ref(ref: str) -> dict[str, Any]:
+    """Läsbar etikett och innehåll för en källreferens, för webbens källchips och besöksunderlaget."""
+    typ, _, rest = ref.partition(":")
+    try:
+        if typ == "S":
+            metric, _, span = rest.partition(":")
+            a, b = (float(x) for x in span.split("-"))
+            return {"ref": ref, "kind": "serie", "label": f"{METRIC_NAMES.get(metric, metric).split(' (')[0].capitalize()} "
+                    f"{_fmt_t(a)[5:]} - {_fmt_t(b)[11:] if _fmt_t(a)[:10] == _fmt_t(b)[:10] else _fmt_t(b)[5:]}",
+                    "metric": metric, "start": a, "end": b}
+        if typ == "B":
+            metric, _, h = rest.partition(":")
+            return {"ref": ref, "kind": "baslinje",
+                    "label": f"Baslinje {METRIC_NAMES.get(metric, metric).split(' (')[0]} kl {h.lstrip('h')}",
+                    "metric": metric}
+        if typ == "U":
+            return {"ref": ref, "kind": "larm", "label": "Vaktens larm"}
+        if typ == "N":
+            r = db.conn().execute("SELECT start, end FROM sleep WHERE id=?", (rest,)).fetchone()
+            return {"ref": ref, "kind": "somn", "label": f"Sömn natten till {_fmt_t(r['end'])[:10]}" if r else "Sömnpass"}
+        if typ in ("J", "L"):
+            tab = "journal" if typ == "J" else "labs"
+            r = db.conn().execute(f"SELECT * FROM {tab} WHERE id=?", (rest,)).fetchone()
+            if not r:
+                return {"ref": ref, "kind": tab, "label": "Journal" if typ == "J" else "Provsvar"}
+            d = dict(r)
+            label = (f"Journal {d['date']}" if typ == "J" else f"{d['analyte']} {d['date']}")
+            return {"ref": ref, "kind": "journal" if typ == "J" else "provsvar", "label": label, "post": d}
+    except Exception:
+        pass
+    return {"ref": ref, "kind": "okand", "label": ref}

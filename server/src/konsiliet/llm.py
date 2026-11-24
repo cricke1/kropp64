@@ -20,12 +20,17 @@ class Usage:
     seconds: float = 0.0
     per_model: dict[str, dict[str, float]] = field(default_factory=dict)
 
-    def add(self, model: str, p: int, o: int, s: float) -> None:
+    def add(self, model: str, p: int, o: int, s: float, p_s: float = 0.0, o_s: float = 0.0) -> None:
         self.calls += 1
         self.prompt_tokens += p
         self.output_tokens += o
         self.seconds += s
-        m = self.per_model.setdefault(model, {"calls": 0, "prompt_tokens": 0, "output_tokens": 0, "seconds": 0.0})
+        m = self.per_model.setdefault(model, {"calls": 0, "prompt_tokens": 0, "output_tokens": 0, "seconds": 0.0,
+                                              "prompt_eval_s": 0.0, "eval_s": 0.0})
+        m["prompt_eval_s"] += p_s
+        m["eval_s"] += o_s
+        m["gen_tokens_per_s"] = round((m["output_tokens"] + o) / m["eval_s"], 1) if m["eval_s"] else 0.0
+        m["prompt_tokens_per_s"] = round((m["prompt_tokens"] + p) / m["prompt_eval_s"], 1) if m["prompt_eval_s"] else 0.0
         m["calls"] += 1
         m["prompt_tokens"] += p
         m["output_tokens"] += o
@@ -79,10 +84,11 @@ def chat(model: str, messages: list[dict[str, Any]], tools: list[dict[str, Any]]
     msg = d.get("message", {})
     p, o = int(d.get("prompt_eval_count", 0)), int(d.get("eval_count", 0))
     eval_s = d.get("eval_duration", 0) / 1e9 or dt
+    prompt_s = d.get("prompt_eval_duration", 0) / 1e9
     with _lock:
-        total_usage.add(model, p, o, dt)
+        total_usage.add(model, p, o, dt, prompt_s, eval_s)
         if usage is not None:
-            usage.add(model, p, o, dt)
+            usage.add(model, p, o, dt, prompt_s, eval_s)
     calls = []
     for tc in msg.get("tool_calls") or []:
         fn = tc.get("function", {})

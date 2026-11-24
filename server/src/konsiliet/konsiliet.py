@@ -24,7 +24,7 @@ import uuid
 from dataclasses import dataclass
 from typing import Any
 
-from . import db, llm, verktyg
+from . import db, llm, matning, verktyg
 from .bus import bus
 from .config import settings
 
@@ -170,7 +170,8 @@ def _specialist(m: Mote, lid: str, uppdrag: str, forhand: list[dict[str, Any]]) 
     sett: set[str] = set()
     for _ in range(MAX_STEG - 1):
         m.emit("agent.think", agent=lid)
-        r = llm.chat(settings.model_orchestrator, msgs, tools=tools, usage=m.usage)
+        with matning.tid("Specialist, per modellanrop"):
+            r = llm.chat(settings.model_orchestrator, msgs, tools=tools, usage=m.usage)
         msgs.append(r.message)
         if not r.tool_calls:
             break  # agenten anser sig klar
@@ -257,7 +258,8 @@ def granska(m: Mote, agent: str, bed: dict[str, Any]) -> list[dict[str, Any]]:
             if saknas:
                 skal = f"siffran {saknas[0]:g} finns inte i källdatan"
         if skal:
-            m.emit("review.strike", agent="granskare", target=agent, claim=text, reason=skal)
+            m.emit("review.strike", agent="granskare", target=agent, claim=text, reason=skal,
+                   say_id=f"{agent}-bedomning")
         else:
             godkanda.append({"text": text, "kallor": giltiga, "av": agent})
     return godkanda
@@ -330,10 +332,13 @@ def _kor(m: Mote) -> None:
     with db.tx() as c:
         c.execute("INSERT INTO consults(id, started, trigger) VALUES (?,?,?)",
                   (m.id, m.t0, json.dumps(m.trigger, ensure_ascii=False)))
-    m.emit("consult.start", trigger=m.trigger, members=list(TEAM))
+    m.emit("consult.start", trigger=m.trigger, members=["ordforande", "advokat", "granskare"])
     m.emit("agent.move", agent="ordforande", to="bordet")
 
     val = _ordforande_val(m)
+    m.emit("consult.members", members=["ordforande", *[v[0] for v in val], "advokat", "granskare"])
+    for lid, _ in val:
+        m.emit("agent.move", agent=lid, to="bordet")
     for lid, uppdrag in val:
         m.say("ordforande", f"{TEAM[lid].titel}: {uppdrag}", to=lid)
 
@@ -345,10 +350,13 @@ def _kor(m: Mote) -> None:
     godkanda: list[dict[str, Any]] = []
     for lid, bed in bedomningar.items():
         m.emit("agent.move", agent=lid, to="bordet")
-        m.say(lid, bed.get("sammanfattning", ""), cites=[k for p in bed.get("pastaenden", []) or []
-                                                          for k in (p.get("kallor") or [])][:6])
+        claims = [{"text": p.get("text", ""), "kallor": p.get("kallor") or []}
+                  for p in bed.get("pastaenden", []) or []]
+        m.emit("agent.say", agent=lid, to="alla", text=bed.get("sammanfattning", ""), claims=claims,
+               cites=[k for c in claims for k in c["kallor"]][:6], say_id=f"{lid}-bedomning")
         m.emit("agent.handoff", agent=lid, to="granskare", item="bedömning")
-        godkanda += granska(m, lid, bed)
+        with matning.tid("Granskning"):
+            godkanda += granska(m, lid, bed)
 
     m.emit("agent.move", agent="advokat", to="bordet")
     invand = _advokat(m, bedomningar)
@@ -382,7 +390,8 @@ def _worker() -> None:
     while True:
         m = _q.get()
         try:
-            _kor(m)
+            with matning.tid("Hela konsiliet"):
+                _kor(m)
         except Exception as e:
             log.exception("konsiliet kraschade")
             m.emit("consult.verdict", verdict={"sammanfattning": f"Mötet avbröts av ett fel: {e}",

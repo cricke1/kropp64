@@ -11,6 +11,7 @@ Tabeller:
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import threading
 import time
@@ -129,13 +130,49 @@ def insert_samples(rows: Iterable[tuple[float, str, float, str]]) -> int:
     return len(rows)
 
 
+TILLAT_EMULATOR = os.environ.get("KONSILIET_TILLAT_EMULATOR") == "1"
+KALLPRIORITET = ("watch", "health_connect")
+
+
 def query_samples(metric: str, start: float, end: float | None = None) -> list[tuple[float, float]]:
+    """Mätpunkter för ett mätvärde. Samma puls kan komma både från klockappen och från Health Connect:
+    då används en källa i taget (klockappen först) så att inget räknas dubbelt. Emulatordata
+    hålls ute om den inte uttryckligen tillåts."""
     end = end or time.time()
-    cur = conn().execute(
-        "SELECT ts, value FROM samples WHERE metric=? AND ts BETWEEN ? AND ? ORDER BY ts",
+    rows = conn().execute(
+        "SELECT ts, value, source FROM samples WHERE metric=? AND ts BETWEEN ? AND ? ORDER BY ts",
         (metric, start, end),
-    )
-    return [(r[0], r[1]) for r in cur]
+    ).fetchall()
+    if not TILLAT_EMULATOR:
+        rows = [r for r in rows if "emulator" not in r[2]]
+    kallor = {r[2] for r in rows}
+    if len(kallor) > 1:
+        vald = next((k for k in KALLPRIORITET if k in kallor), None)
+        if vald is None:
+            vald = max(kallor, key=lambda k: sum(1 for r in rows if r[2] == k))
+        rows = [r for r in rows if r[2] == vald]
+    return [(r[0], r[1]) for r in rows]
+
+
+def downsample(points: list[tuple[float, float]], step: float) -> list[list[float]]:
+    """En punkt per hink: [ts, min, max, median]."""
+    if step <= 0 or not points:
+        return [[t, v, v, v] for t, v in points]
+    out: list[list[float]] = []
+    hink: list[float] = []
+    hink_start = points[0][0] // step * step
+    for t, v in points:
+        b = t // step * step
+        if b != hink_start and hink:
+            s = sorted(hink)
+            out.append([hink_start, s[0], s[-1], s[len(s) // 2]])
+            hink = []
+        hink_start = b
+        hink.append(v)
+    if hink:
+        s = sorted(hink)
+        out.append([hink_start, s[0], s[-1], s[len(s) // 2]])
+    return out
 
 
 def metrics_available() -> list[dict[str, Any]]:

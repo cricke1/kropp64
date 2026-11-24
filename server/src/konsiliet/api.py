@@ -18,6 +18,7 @@ X-Device-Token som jämförs med KONSILIET_DEVICE_TOKENS. Anrop från localhost 
 from __future__ import annotations
 
 import asyncio
+import ipaddress
 import json
 import os
 import re
@@ -39,20 +40,41 @@ app = FastAPI(title="Konsiliet", version="0.1.0")
 WEB_DIR = Path(__file__).resolve().parents[3] / "web" / "dist"
 
 
-def _is_local(request: Request) -> bool:
-    host = request.client.host if request.client else ""
-    # Cloudflare Tunnel ansluter från localhost men sätter Cf-Connecting-Ip.
-    return host in ("127.0.0.1", "::1") and "cf-connecting-ip" not in request.headers
+TAILNET = ipaddress.ip_network("100.64.0.0/10")  # Tailscale: bara mina egna enheter
+COOKIE = "konsiliet_token"
+
+
+def _betrodd(host: str, headers: Any, token: str | None) -> bool:
+    via_tunnel = "cf-connecting-ip" in headers  # Cloudflare Tunnel ansluter från localhost men sätter headern
+    if not via_tunnel:
+        if host in ("127.0.0.1", "::1"):
+            return True
+        try:
+            if ipaddress.ip_address(host) in TAILNET:
+                return True
+        except ValueError:
+            pass
+    if token and token in settings.device_tokens:
+        return True
+    return bool(headers.get("cf-access-authenticated-user-email"))
 
 
 def auth(request: Request, x_device_token: str | None = Header(default=None)) -> None:
-    if _is_local(request):
-        return
-    if x_device_token and x_device_token in settings.device_tokens:
-        return
-    if request.headers.get("cf-access-authenticated-user-email"):
-        return
-    raise HTTPException(status_code=401, detail="Ej behörig")
+    host = request.client.host if request.client else ""
+    token = x_device_token or request.cookies.get(COOKIE)
+    if not _betrodd(host, request.headers, token):
+        raise HTTPException(status_code=401, detail="Ej behörig")
+
+
+@app.middleware("http")
+async def _token_cookie(request: Request, call_next: Any) -> Any:
+    """WebView i mobilappen: /?token=... sätter en httpOnly-cookie så att webbappens egna anrop går igenom."""
+    resp = await call_next(request)
+    tok = request.query_params.get("token")
+    if tok and tok in settings.device_tokens:
+        resp.set_cookie(COOKIE, tok, httponly=True, secure=request.url.scheme == "https",
+                        samesite="lax", max_age=365 * 86400)
+    return resp
 
 
 class Sample(BaseModel):
@@ -104,6 +126,9 @@ def health() -> dict[str, Any]:
 
 @app.post("/api/ingest", dependencies=[Depends(auth)])
 def ingest(batch: IngestBatch) -> dict[str, Any]:
+    from . import matning
+
+    t0 = time.perf_counter()
     rows = [(s.ts, s.metric, s.value, batch.source) for s in batch.samples]
     n = db.insert_samples(rows)
     # Senaste värdet per mätvärde går ut live, utan att sparas som händelse.
@@ -116,6 +141,7 @@ def ingest(batch: IngestBatch) -> dict[str, Any]:
     from . import vakt
 
     vakt.notify_new_data([s.metric for s in latest.values()])
+    matning.record("Mottagning (ingest)", (time.perf_counter() - t0) * 1000)
     return {"stored": n}
 
 
@@ -135,10 +161,21 @@ def metrics() -> list[dict[str, Any]]:
 
 
 @app.get("/api/series/{metric}", dependencies=[Depends(auth)])
-def series(metric: str, hours: float = 24) -> dict[str, Any]:
+def series(metric: str, hours: float = 24, step: float = 0) -> dict[str, Any]:
+    """Utan step: [ts, värde]. Med step (sekunder): en punkt per hink, [ts, min, max, median]."""
     start = time.time() - hours * 3600
     pts = db.query_samples(metric, start)
+    if step > 0:
+        return {"metric": metric, "step": step, "points": db.downsample(pts, step)}
     return {"metric": metric, "points": pts}
+
+
+@app.get("/api/ref/{ref:path}", dependencies=[Depends(auth)])
+def ref(ref: str) -> dict[str, Any]:
+    """Slår upp en källreferens (S:, B:, N:, J:, L:) till något läsbart."""
+    from . import verktyg
+
+    return verktyg.las_ref(ref)
 
 
 @app.get("/api/sleep", dependencies=[Depends(auth)])
@@ -263,7 +300,7 @@ def _mac_minne() -> dict[str, Any]:
 
 @app.get("/api/system", dependencies=[Depends(auth)])
 def system() -> dict[str, Any]:
-    from . import llm
+    from . import llm, matning
 
     since = time.time() - 60
     epm = db.conn().execute("SELECT COUNT(*) FROM events WHERE ts > ?", (since,)).fetchone()[0]
@@ -274,12 +311,18 @@ def system() -> dict[str, Any]:
         "tokens_sedan_start": llm.total_usage.as_dict(),
         "minne": _mac_minne(),
         "handelser_per_minut": epm,
+        "pipeline": matning.sammanstall(),
         "matvarden": db.metrics_available(),
     }
 
 
 @app.websocket("/ws")
 async def ws(sock: WebSocket) -> None:
+    host = sock.client.host if sock.client else ""
+    token = sock.query_params.get("token") or sock.headers.get("x-device-token") or sock.cookies.get(COOKIE)
+    if not _betrodd(host, sock.headers, token):
+        await sock.close(code=4401)
+        return
     await sock.accept()
     q = bus.subscribe()
     try:
