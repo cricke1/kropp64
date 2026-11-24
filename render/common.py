@@ -363,7 +363,7 @@ def mac_mini(alu=None, led_strength=6.0):
 
 # ---------------------------------------------------------------- Pixel Watch
 
-def pixel_watch(screen_img, band_color=(0.045, 0.047, 0.05, 1), case_color=(0.78, 0.79, 0.80, 1), screen_strength=1.2, band_bend=0.018):
+def pixel_watch(screen_img, band_color=(0.045, 0.047, 0.05, 1), case_color=(0.78, 0.79, 0.80, 1), screen_strength=1.2, band_bend=0.018, band_len=(88, 104)):
     """Pixel Watch 3, 41 mm: helt valvt glas, krona pa hoger sida. Ligger med glaset uppat,
     armbandet utlagt at bada hall langs Y. Origo i bottenmitten under urtavlan."""
     root = empty('PixelWatch')
@@ -421,7 +421,7 @@ def pixel_watch(screen_img, band_color=(0.045, 0.047, 0.05, 1), case_color=(0.78
         cu.dimensions = '3D'
         sp = cu.splines.new('BEZIER')
         bend = band_bend * sgn
-        L = 88 * MM if sgn > 0 else 104 * MM
+        L = (band_len[0] if sgn > 0 else band_len[1]) * MM
         pts = [(0, sgn * 15 * MM, 3.4 * MM), (0, sgn * 24 * MM, 2.3 * MM), (bend * 0.15, sgn * 36 * MM, 1.25 * MM),
                (bend * 0.55, sgn * (36 * MM + (L - 36 * MM) * 0.55), 1.25 * MM), (bend, sgn * L, 1.25 * MM)]
         sp.bezier_points.add(len(pts) - 1)

@@ -17,28 +17,30 @@ VAR = a[4] if len(a) > 4 else 'bred'
 
 
 def build(sc, led_strength=6.0):
-    desk(size=4.0, color=(0.032, 0.031, 0.030, 1), rough=0.72, spec=0.3, wall=True, wall_color=(0.03, 0.03, 0.03, 1))
+    # mattsvart skrivbordsskiva med svag reflektion, ger foremalen en mjuk spegling att sta pa
+    desk(size=4.0, color=(0.014, 0.014, 0.015, 1), rough=0.38, spec=0.5, wall=True, wall_color=(0.01, 0.01, 0.01, 1))
     mini, mp = mac_mini(led_strength=led_strength)
-    mini.location = (0.06, 0.03, 0.0)
-    mini.rotation_euler.z = math.radians(-33)
-    watch, wp = pixel_watch(os.path.join(HERE, 'tex_klocka_panel.png'), band_color=(0.075, 0.077, 0.078, 1), screen_strength=9.0)
-    watch.location = (-0.07, -0.135, 0.0)
-    watch.rotation_euler.z = math.radians(25)
-    tel, tp = phone(os.path.join(HERE, 'tex_mobil_panel.png'), screen_strength=7.0)
-    tel.location = (-0.165, 0.035, 0.0)
-    tel.rotation_euler.z = math.radians(-12)
-    world_studio(sc, 0.015)
-    # nyckelljus: stor softbox snett bakifran vanster, ger ljuskanten pa ovansidan
-    area_light('nyckel', (-0.55, 0.30, 0.70), (0, 0, 0.02), 0.9, 30, size_y=0.6, spread=60)
-    # fyllnad fran hoger fram, lag och mjuk
-    area_light('fyll', (0.85, -0.25, 0.30), (0.06, 0.03, 0.03), 1.2, 6, color=(1.0, 0.97, 0.93), size_y=0.35, spread=60)
-    # kantljus bakom, smal list
-    area_light('kant', (0.30, 0.60, 0.16), (0, 0, 0.03), 1.0, 8, size_y=0.06, spread=40)
-    # svag toppbelysning for en mjuk reflex i aluminiumet
-    area_light('topp', (0.05, -0.20, 0.8), (0.05, 0, 0), 0.5, 4, size_y=0.4, spread=40)
-    # reflexskarmar: syns bara i speglingar, ger aluminiumet mjuka gradienter
-    for nm, loc, tgt, sz, sy, e in (('refl_topp', (-0.05, 0.85, 0.40), (0.06, 0.03, 0.05), 1.4, 0.45, 13),
-                                    ('refl_fram', (0.35, -1.3, 0.30), (0.06, 0.03, 0.03), 1.2, 0.6, 7)):
+    mini.location = (0.075, 0.045, 0.0)
+    mini.rotation_euler.z = math.radians(-30)
+    # klockan framfor, med uppsidan bort fran kameran sa att urtavlan ar rattvand; korta remmar
+    watch, wp = pixel_watch(os.path.join(HERE, 'tex_klocka_panel.png'), band_color=(0.30, 0.30, 0.29, 1),
+                            screen_strength=9.0, band_bend=0.008, band_len=(62, 72))
+    watch.location = (-0.035, -0.095, 0.0)
+    watch.rotation_euler.z = math.radians(16)
+    tel, tp = phone(os.path.join(HERE, 'tex_mobil_panel.png'), screen_strength=9.0)
+    tel.location = (-0.125, 0.025, 0.0)
+    tel.rotation_euler.z = math.radians(22)
+    world_studio(sc, 0.006)
+    # nyckelljus: mjuk softbox fran vanster sida, lag, faller av mot bakgrunden
+    area_light('nyckel', (-0.62, -0.02, 0.32), (0.0, 0.0, 0.02), 0.7, 13, size_y=0.5, spread=50)
+    # kantljus bakifran hoger: ritar Mac minins rundade ovankant och telefonens kant
+    k1 = area_light('kant', (0.20, 0.55, 0.30), (0.06, 0.04, 0.05), 0.9, 15, size_y=0.08, spread=22)
+    k1.visible_camera = False
+    # svag fyllnad fran hoger fram
+    area_light('fyll', (0.70, -0.45, 0.28), (0.0, 0.0, 0.02), 1.0, 2.5, color=(1.0, 0.97, 0.93), size_y=0.35, spread=60)
+    # reflexskarmar som bara syns i aluminiumet: en mjuk spegling i ovansidan och en gradient i fronten
+    for nm, loc, tgt, sz, sy, e in (('refl_topp', (-0.10, 0.70, 0.55), (0.075, 0.045, 0.05), 0.5, 0.9, 5),
+                                    ('refl_fram', (0.30, -1.2, 0.25), (0.075, 0.045, 0.03), 1.2, 0.6, 5)):
         l = area_light(nm, loc, tgt, sz, e, size_y=sy, spread=180)
         l.visible_camera = False
         l.visible_diffuse = False
@@ -53,21 +55,15 @@ if __name__ == '__main__':
     sc = reset()
     setup_render(sc, W, H, samples=SAMPLES, noise=0.008, exposure=-3.2)
     mini, mp, watch, tel = build(sc)
-    if VAR == 'hog':
-        watch.location = (0.0, -0.175, 0.0)
-        watch.rotation_euler.z = math.radians(18)
-        tel.location = (-0.12, 0.02, 0.0)
-        tel.rotation_euler.z = math.radians(-8)
-    foc = empty('fokus', (0.09, -0.03, 0.026))
-    if VAR == 'test_topp':
-        camera('kamera', (watch.location.x, watch.location.y, 0.35), (watch.location.x, watch.location.y + 0.0001, 0.0), lens=50)
-    elif VAR == 'test_klocka':
+    foc = empty('fokus', (-0.01, -0.025, 0.01))
+    if VAR == 'test_klocka':
         camera('kamera', (watch.location.x + 0.08, watch.location.y - 0.12, 0.09), (watch.location.x, watch.location.y, 0.005), lens=70, fstop=8, focus=0.16)
-    elif VAR == 'test_mini':
-        camera('kamera', (0.10, -0.30, 0.07), (0.0, 0.0, 0.025), lens=70, fstop=8, focus=0.3)
     elif VAR == 'hog':
-        camera('kamera', (0.14, -0.64, 0.40), (0.0, -0.08, 0.0), lens=55, fstop=2.8, focus=foc)
+        # hogre kamera ser mer av reflexskarmen i ovansidan: dampa den
+        bpy.data.objects['refl_topp'].data.energy *= 0.4
+        bpy.data.objects['kant'].data.energy *= 0.6
+        camera('kamera', (0.07, -0.47, 0.44), (-0.01, -0.005, 0.0), lens=50, fstop=5.6, focus=foc)
     else:
-        camera('kamera', (0.20, -0.70, 0.30), (-0.01, -0.035, 0.02), lens=62, fstop=2.8, focus=foc)
+        camera('kamera', (0.14, -0.58, 0.30), (-0.005, -0.015, 0.012), lens=60, fstop=5.6, focus=foc)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     render_still(sc, OUT)
