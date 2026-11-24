@@ -110,3 +110,81 @@ def test_efter_pass_zoner_och_rad(v):
     s = vardag.efter_pass("p", nu)
     assert s["zon_minuter"][1] >= 28 and s["malzon"] == 2
     assert pub and pub[-1][0] == "pass.klart" and "zon 2" in pub[-1][1]["body"]
+
+
+# ------------------------------------------------ kalibrering mot personens egen baslinje
+
+def _vanliga_natter(db, sista_morgon: datetime, natter: int = 21, timmar: float = 7.2, seed: int = 1):
+    """Syntetiska nätter som för en 18-åring som sover ungefär 7 timmar: puls, HRV och sömnpass."""
+    import random
+    r = random.Random(seed)
+    rows = []
+    for d in range(natter, 0, -1):
+        slut = (sista_morgon - timedelta(days=d - 1)).replace(hour=7, minute=45).timestamp()
+        h = timmar + r.uniform(-0.3, 0.3)
+        start = slut - h * 3600
+        with db.tx() as c:
+            c.execute("INSERT OR REPLACE INTO sleep VALUES (?,?,?,?,?)", (f"n{d}", start, slut, "[]", "test"))
+        for k in range(int(h * 60)):
+            ts = start + k * 60
+            rows.append((ts, "hr", 54 + r.gauss(0, 2), "test"))
+            if k % 5 == 0:
+                rows.append((ts, "hrv_rmssd", 55 + r.gauss(0, 6), "test"))
+    db.insert_samples(rows)
+
+
+def _forra_mandag() -> datetime:
+    d = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    return d - timedelta(days=d.weekday() + 7)
+
+
+def test_vanlig_vecka_ger_traning_tre_dagar(v):
+    """En vanlig vecka för honom (7,2 h sömn, Headroom under 55 men som vanligt) ska ge träning mån, ons och lör."""
+    db, vardag, _ = v
+    mon = _forra_mandag()
+    _vanliga_natter(db, mon + timedelta(days=6))
+    trana = []
+    for dag in range(7):
+        t = mon + timedelta(days=dag, hours=17, minutes=30)
+        i = vardag.idag(t.timestamp())
+        if i["beslut"] == "trana":
+            trana.append(dag)
+            with db.tx() as c:  # han kör passet
+                c.execute("INSERT INTO exercise VALUES (?,?,?,?,?)", (f"p{dag}", t.timestamp() + 600, t.timestamp() + 2400, "löpning", "test"))
+    assert trana == [0, 2, 5]
+    assert i["headroom_baslinje"] is not None
+
+
+def test_dalig_natt_ger_lugnt_eller_vila(v):
+    db, vardag, _ = v
+    mon = _forra_mandag()
+    _vanliga_natter(db, mon)
+    # natten mot måndag: 5 h 30 min i stället för drygt 7
+    slut = mon.replace(hour=7, minute=45).timestamp()
+    with db.tx() as c:
+        c.execute("UPDATE sleep SET start=? WHERE end=?", (slut - 5.5 * 3600, slut))
+    i = vardag.idag((mon + timedelta(hours=17, minutes=30)).timestamp())
+    assert i["beslut"] == "lugnt" and "sömn" in i["varfor"]
+    with db.tx() as c:
+        c.execute("UPDATE sleep SET start=? WHERE end=?", (slut - 4.5 * 3600, slut))
+    assert vardag.idag((mon + timedelta(hours=17, minutes=31)).timestamp())["beslut"] == "vila"
+
+
+def test_sjukdomstecken_ger_vila(v):
+    """Hög vilopuls och låg HRV samma natt (som vid en förkylning) ger vila, även på en passdag."""
+    db, vardag, _ = v
+    mon = _forra_mandag()
+    _vanliga_natter(db, mon)
+    slut = mon.replace(hour=7, minute=45).timestamp()
+    with db.tx() as c:
+        c.execute("DELETE FROM samples WHERE ts > ? AND ts < ?", (slut - 8 * 3600, slut))
+    db.insert_samples([(slut - 7 * 3600 + k * 60, "hr", 68, "test") for k in range(420)] +
+                      [(slut - 7 * 3600 + k * 300, "hrv_rmssd", 32, "test") for k in range(84)])
+    i = vardag.idag((mon + timedelta(hours=17, minutes=30)).timestamp())
+    assert i["beslut"] == "vila"
+    # hudtemperatur +1,2 °C räcker också
+    db2 = db
+    with db2.tx() as c:
+        c.execute("DELETE FROM samples WHERE ts > ? AND ts < ? AND metric IN ('hr','hrv_rmssd')", (slut - 8 * 3600, slut))
+    db.insert_samples([(slut - 3600 * k, "skin_temp_delta", 1.2, "test") for k in (1, 3, 5)])
+    assert vardag.idag((mon + timedelta(hours=17, minutes=31)).timestamp())["beslut"] == "vila"

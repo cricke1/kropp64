@@ -134,16 +134,22 @@ def main() -> None:
     efter[dag(vecko)].append("tråd: veckan (tyst om inget ska tas upp med vården)")
 
     dagar_ = [dag((v0 + timedelta(days=i)).timestamp()) for i in range(7)]
+    # Dagens beslut kl. 17:30 (passpåminnelsens tid) och hur många passpåminnelser som gick ut.
+    beslut = {dag((v0 + timedelta(days=i)).timestamp()): vardag.idag((v0 + timedelta(days=i, hours=17, minutes=30)).timestamp())["beslut"]
+              for i in range(7)}
+    paminnelser = sum(1 for v in efter.values() for x in v if x.startswith("nudge.pass"))
     rad = lambda d, x: len([y for y in x.get(d, []) if not y.startswith("tråd: veckan")])
     tabell = [{"dag": d, "fore": len(fore.get(d, [])), "efter": rad(d, efter)} for d in dagar_]
     ut = {"vecka": dagar_[0], "tabell": tabell, "summa_fore": sum(r["fore"] for r in tabell),
           "summa_efter": sum(r["efter"] for r in tabell), "fore": fore, "efter": efter,
           "post_medan_personen_sov_fore": vakna_fore, "fynd_fore": fynd_fore, "fynd_efter": fynd_efter,
-          "stoppade_efter": vardag.notis_statistik(t1 - 1, 7)}
+          "stoppade_efter": vardag.notis_statistik(t1 - 1, 7), "beslut_1730": beslut, "passpaminnelser": paminnelser}
     for r in tabell:
         print(f"{r['dag']:<10} före {r['fore']:>2}  efter {r['efter']:>2}")
     print(f"summa      före {ut['summa_fore']:>2}  efter {ut['summa_efter']:>2}")
     print("POST-skärmen medan personen sov (före):", ", ".join(vakna_fore) or "ingen")
+    print("Beslut kl. 17:30:", ", ".join(f"{d} {b}" for d, b in beslut.items()))
+    print("Träningsdagar:", sum(1 for b in beslut.values() if b in ("trana", "klart")), " passpåminnelser:", paminnelser)
     for d in dagar_:
         print(f"\n{d}\n  före:  " + "\n         ".join(fore.get(d, []) or ["-"]) + "\n  efter: " + "\n         ".join(efter.get(d, []) or ["-"]))
     if a.json:

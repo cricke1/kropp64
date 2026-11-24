@@ -60,11 +60,24 @@ kodar på eftermiddagen, spelar på kvällen, sover för lite och vill börja tr
 | varav om trådar (avvikelse, start, lösning) | 19 | 3 (+ en tyst veckotråd) | samma |
 | Nya, efterfrågade notiser | - | läggdags 6, efter passet 2, veckan 1 | samma |
 | POST-skärmen medan personen sov | 4 av 7 morgnar | 0 (skrivs när natten är slut) | samma |
+| Dagar med "träna" kl. 17:30 i testveckan | 0 (Headroom låg under den fasta gränsen 55 hela veckan) | 2 av 3 passdagar (mån, ons); lördagen vila (sjuk natt) | `tools/simulera_vecka.py` |
+| Passpåminnelser i testveckan | 0 | 2 | samma |
 | Trådar vid första installationen (30 dagars historik) | 1 tråd, 3 notiser, om en sovmorgon för en månad sedan | 0 | Testservern, före och efter ändringen i vakten |
 
 Efter-veckan stoppade budget och tysta timmar 4 knuffar till (de räknas inte ovan). Stressknuffen syns inte i
 simuleringen eftersom personen tryckte "mitt i ett pass" just den kvällen; den provades live på testservern
 (puls 105 BPM vid datorn mot vilopuls 78 vid samma timme) och på emulatorerna hela vägen till andningen på klockan.
+
+## Beslutet mot personens egen baslinje
+
+Första versionen jämförde Headroom med en fast gräns (55). Med 7,2 h sömn i snitt låg personen under den hela
+veckan, så appen sa aldrig "träna" och passpåminnelsen gick aldrig ut, vilket är tvärtemot syftet. Nu jämförs
+Headroom med hans eget 14-dagarsmedian och sömnen med hans vanliga sömnlängd: en vanlig dag ger träning med en
+lagom plan, 8 under den vanliga nivån eller en timme mindre sömn än vanligt ger ett lugnt pass, och bara tydliga
+avvikelser ger vila (20 under den vanliga nivån, under 5 h sömn, låg HRV och hög vilopuls samma natt, hudtemperatur
++1 °C, eller ett öppet larm). Sömnskuld över 5 h stoppar inte passet men gör det kortare och lätt. Testerna i
+`server/tests/test_vardag.py` kontrollerar en vanlig vecka (träning mån, ons, lör), en dålig natt (5 h 30 min ger
+lugnt, 4 h 30 min vila) och sjukdomstecken (vila).
 
 ## Det som inte är löst eller inte verifierat
 
@@ -73,10 +86,6 @@ simuleringen eftersom personen tryckte "mitt i ett pass" just den kvällen; den 
 - **Teamets svar på "varför är jag så trött"** missade sömnskulden (7 h 24 min) och de sena nätterna, och sa
   att sömnen var god. Snabbsvaret visar dem, men faktabladet till teamet saknar sömnskuld och datorn efter
   midnatt. Det ligger i `fakta.py`, som en annan session äger; önskemålet står här i stället för som en ändring.
-- **Headroom under hela veckan låg under 55** för personen (sömnen var 7,2 h i snitt), så planen sa aldrig
-  "träna" på en passdag och passpåminnelsen skickades aldrig i simuleringen. Det är regeln som den är skriven
-  (50 + 8 x (sömn - 7,5)), men för någon som sover 7 timmar blir det nästan aldrig grönt. Värt att se över när
-  det finns riktig data.
 - **Startsidan i den publika demon** är fortfarande kontoret: demon kör utan vardag-rutinerna.
 - Riktiga användare har inte provat något av detta. Allt ovan är en agent som spelar en användare.
 

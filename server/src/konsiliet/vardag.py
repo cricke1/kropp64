@@ -443,9 +443,33 @@ def _oppet(nu: float) -> dict[str, Any] | None:
     return None
 
 
+def headroom_baslinje(nu: float, dagar: int = 14) -> float | None:
+    """Median av Headroom de senaste 14 dagarna (i dag oräknad). Gamla dagar sparas, de ändras inte."""
+    vals = []
+    for d in range(1, dagar + 1):
+        t = _midnatt(nu) - d * 86400 + 12 * 3600
+        key = f"headroom:{_dag(t)}"
+        v = _state(key)
+        if v is None:
+            v = _aterhamtning(t).get("poang")
+            if v is not None:
+                _satt_state(key, v)
+        if v is not None:
+            vals.append(v)
+    return float(np.median(vals)) if len(vals) >= 5 else None
+
+
+def somn_baslinje(nu: float) -> float | None:
+    """Personens vanliga sömnlängd: median av de senaste 14 nätterna (i natt oräknad)."""
+    nn = [n["timmar"] for n in natter(_midnatt(nu) - 1, 14)]
+    return float(np.median(nn)) if len(nn) >= 5 else None
+
+
 def _feber(nu: float) -> float | None:
     """Hudtemperaturens avvikelse i natt (Health Connect, mot klockans egen baslinje)."""
-    w = [v for _, v in db.query_samples("skin_temp_delta", nu - 14 * 3600, nu)]
+    nn = natter(nu, 1)
+    a, b = (nn[-1]["start"] - 3600, nn[-1]["slut"] + 3600) if nn else (nu - 14 * 3600, nu)
+    w = [v for _, v in db.query_samples("skin_temp_delta", a, min(b, nu))]
     return float(np.median(w)) if len(w) >= 3 else None
 
 
@@ -492,6 +516,18 @@ def idag(nu: float | None = None, snabb: bool = False) -> dict[str, Any]:
                 "text": text, "forslag": n["forslag"]}
 
     lugn = {"typ": "Promenad", "minuter": 30, "forslag": "i lugn takt, gärna utomhus i dagsljus"}
+    # Kalibrerat mot personens egen vardag: Headroom jämförs med hans eget 14-dagarsmedian och sömnen med hans
+    # egen vanliga sömnlängd. En vanlig dag för honom ger träning, en sämre dag ett lugnt pass och bara tydliga
+    # avvikelser (eller sjukdomstecken) vila. Absoluta golv finns kvar för det som alltid är för lite.
+    hb = headroom_baslinje(nu)
+    sb = somn_baslinje(nu)
+    dH = (H - hb) if H is not None and hb is not None else None
+    dS = (S - sb) if S is not None and sb is not None else None
+    hd = ah.get("delar", {})
+    z_hrv = (hd.get("hrv") or {}).get("z")
+    z_vp = (hd.get("vilopuls") or {}).get("z")
+    if hb is not None and H is not None:
+        delar[0] = f"Headroom {H} av 100 (din vanliga nivå {round(hb)})"
     beslut, skal = "trana", []
     if idag_pass:
         beslut, skal = "klart", [f"du har redan kört ett pass i dag ({round(_langd_min(idag_pass[-1], nu))} min)"]
@@ -499,17 +535,21 @@ def idag(nu: float | None = None, snabb: bool = False) -> dict[str, Any]:
         beslut, skal = "vila", [oppet["text"]]
     elif feber is not None and feber >= 1.0:
         beslut, skal = "vila", [f"hudtemperaturen {_tal(feber, 1)} °C över din baslinje i natt, kan vara en förkylning på väg"]
-    elif H is not None and H < 35:
-        beslut, skal = "vila", [f"Headroom bara {H} av 100"] + ([f"{tid_text(S)} sömn"] if S is not None and S < 6.5 else [])
+    elif z_hrv is not None and z_vp is not None and z_hrv <= -2 and z_vp >= 2:
+        beslut, skal = "vila", ["låg HRV och hög vilopuls i natt jämfört med din baslinje, ett vanligt tecken på infektion eller överbelastning"]
     elif S is not None and S < 5:
         beslut, skal = "vila", [f"bara {tid_text(S)} sömn"]
+    elif dH is not None and dH <= -20:
+        beslut, skal = "vila", [f"Headroom {H} av 100, {round(-dH)} under din vanliga nivå"]
+    elif dH is None and H is not None and H < 30:
+        beslut, skal = "vila", [f"Headroom bara {H} av 100"]
     else:
-        if H is not None and H < 55:
-            beslut = "lugnt"; skal.append(f"Headroom {H} av 100 (under 55)")
-        if S is not None and S < 6.5:
-            beslut = "lugnt"; skal.append(f"{tid_text(S)} sömn")
-        if sm["skuld_h"] >= 6:
-            beslut = "lugnt"; skal.append(f"sömnskuld {tid_text(sm['skuld_h'])}")
+        if dH is not None and dH <= -8:
+            beslut = "lugnt"; skal.append(f"Headroom {H} av 100, {round(-dH)} under din vanliga nivå")
+        elif dH is None and H is not None and H < 45:
+            beslut = "lugnt"; skal.append(f"Headroom {H} av 100")
+        if S is not None and (S < 6 or (dS is not None and dS <= -1.0)):
+            beslut = "lugnt"; skal.append(f"{tid_text(S)} sömn" + (f", {tid_text(-dS)} mindre än du brukar" if dS is not None and dS < 0 else ""))
         if bel["hart_igar_min"] >= 15:
             beslut = "lugnt"; skal.append(f"hårt pass i går ({bel['hart_igar_min']} min i zon 4-5)")
         if beslut == "trana" and vk["pass"] >= vk["mal"]:
@@ -520,15 +560,20 @@ def idag(nu: float | None = None, snabb: bool = False) -> dict[str, Any]:
             beslut = "lugnt"; skal.append("du valde att hoppa över passet i dag")
         elif beslut == "trana" and not passdag:
             beslut = "lugnt"; skal.append(f"inte en passdag (dina passdagar: {', '.join(vk['passdagar'])})")
+    if beslut == "trana" and sm["skuld_h"] >= 5:
+        # Sömnskulden stoppar inte passet (lätt träning hjälper sömnen), men passet hålls lätt och kort.
+        skal.append(f"sömnskuld {tid_text(sm['skuld_h'])}, så passet hålls lätt")
 
     if beslut == "trana":
         tredje = niva.get("tredje")
-        n = tredje if tredje and vk["pass"] == vk["mal"] - 1 and (H is None or H >= 70 or tredje["typ"] == "Styrka") else niva
+        intervaller_ok = dH is not None and dH >= 5 and sm["skuld_h"] < 5
+        n = tredje if tredje and vk["pass"] == vk["mal"] - 1 and (intervaller_ok or tredje["typ"] == "Styrka") else niva
+        if sm["skuld_h"] >= 5 and n.get("zon") == 2:
+            n = {**n, "minuter": min(n["minuter"], 25)}
         plan = plan_av(n, n["zon"])
         rubrik = "Träna i dag"
-        if not skal:
-            skal = ([f"inget hårt pass i går"] if not bel["tranade_igar"] else []) + \
-                   [f"pass {vk['pass'] + 1} av {vk['mal']} den här veckan"]
+        skal = ([f"en vanlig dag för dig ({'Headroom ' + str(H) + ', vanligt ' + str(round(hb))})"] if dH is not None
+                else []) + [f"pass {vk['pass'] + 1} av {vk['mal']} den här veckan"] + skal
     elif beslut == "lugnt":
         plan = plan_av(lugn, 1) | {"text": f"Promenad 30 min, under {z[2]['lo']} BPM"}
         rubrik = "Ta det lugnt i dag"
@@ -559,9 +604,14 @@ def idag(nu: float | None = None, snabb: bool = False) -> dict[str, Any]:
             "Sömnskuld": f"Summan av det som saknats mot ditt sömnbehov ({tid_text(inst['somnbehov_h'])}) de senaste 7 nätterna.",
             "Stresstest": "Träningspass. Minuter med puls över 100 BPM räknas som last.",
         },
-        "regler": ("vila: akut larm senaste dygnet, tråd med 'ta upp med vården' senaste 3 dygnen, hudtemp +1 °C, "
-                   "Headroom under 35 eller under 5 h sömn. Lugnt: Headroom under 55, under 6,5 h sömn, sömnskuld "
-                   "över 6 h, hårt pass i går, veckans pass klara, vilodag mellan pass i början, eller inte en passdag."),
+        "headroom_baslinje": round(hb) if hb is not None else None,
+        "somn_baslinje_h": round(sb, 2) if sb is not None else None,
+        "regler": ("Jämfört med din egen vanliga nivå (median senaste 14 dagarna). Vila: akut larm senaste dygnet, "
+                   "tråd med 'ta upp med vården' senaste 3 dygnen, hudtemp +1 °C, låg HRV och hög vilopuls samma natt "
+                   "(z -2/+2), Headroom 20 under din vanliga nivå, eller under 5 h sömn. Lugnt: Headroom 8 under din "
+                   "vanliga nivå, en timme mindre sömn än du brukar eller under 6 h, hårt pass i går, veckans pass klara, "
+                   "vilodag mellan pass i början, eller inte en passdag. Annars träning. Sömnskuld över 5 h ger ett "
+                   "kortare, lätt pass."),
     }
 
 
