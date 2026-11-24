@@ -39,7 +39,7 @@ def _tal(obj: Any) -> set[float]:
 
 
 def _belagt(n: float, mangd: set[float]) -> bool:
-    for b in mangd:
+    for b in mangd | {abs(x) for x in mangd}:
         if abs(b - n) < 0.051 or round(b) == n or abs(b / 60 - n) < 0.051 or abs(b * 60 - n) < 0.6:
             return True
     return False
@@ -86,7 +86,7 @@ def baslinjefel(texter: list[str], refs: dict[str, Any]) -> list[str]:
     for t in texter:
         for men in _meningar(t):
             for mt in re.finditer(r"baslinje\w*", men, re.I):
-                seg = re.split(r"[.;](?!\d)", men[mt.end():mt.end() + 40])[0]
+                seg = re.split(r"[;(]|,(?!\d)|\boch\b|\.(?!\d)", men[mt.end():mt.end() + 30])[0]
                 seg = re.sub(r"(?<=\d)[ \u00a0](?=\d{3}\b)", "", _BORT.sub(" ", seg))
                 seg = re.sub(r"\b\d+:e\b", " ", seg)
                 tal = [round(float(x.replace(",", ".")), 1) for x in _NUM.findall(seg)]

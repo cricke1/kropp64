@@ -15,7 +15,7 @@
   "strykandel": 0.109,
   "belagda_medel": 6.5,
   "overifierade_siffror": 3,
-  "baslinjefel": 1,
+  "baslinjefel": 0,
   "sek_median": 299.6,
   "sek_max": 481.2,
   "sek_medel": 314.4,
@@ -127,9 +127,7 @@
    "strykandel": 0.111,
    "belagda": 8,
    "overifierade_siffror": [],
-   "baslinjefel": [
-    "Granskningen visar att HRV-värdena 39, 36 och 31 ms är exakta enligt datan för de tre nätterna, men en trendanalys saknas eftersom källan endast anger baslinjen utan historisk jämförelse innan 2026-11-24."
-   ],
+   "baslinjefel": [],
    "sekunder": 399.7,
    "prompt_tokens": 26462,
    "ut_tokens": 5127,
