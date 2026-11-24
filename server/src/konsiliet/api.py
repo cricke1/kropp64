@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -232,6 +232,14 @@ def datortid(hours: float = 24) -> dict[str, Any]:
         out[kat] = {"minuter": len(minuter),
                     "puls_median": round(sorted(pulser)[len(pulser) // 2], 1) if pulser else None}
     return {"timmar": hours, "kategorier": out}
+
+
+@app.get("/api/besoksunderlag.pdf", dependencies=[Depends(auth)])
+def besoksunderlag() -> Response:
+    from . import underlag
+
+    return Response(underlag.pdf(), media_type="application/pdf",
+                    headers={"Content-Disposition": 'inline; filename="besoksunderlag.pdf"'})
 
 
 def _mac_minne() -> dict[str, Any]:
