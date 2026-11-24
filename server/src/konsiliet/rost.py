@@ -1,19 +1,24 @@
 """Röster till kontoret. Varje läkare läser sina repliker med en egen lokal svensk röst.
 
-Allt körs på Mac minin:
-  - Piper (VITS, ONNX på CPU) med de tre svenska rösterna från rhasspy/piper-voices: nst (man), lisa och
-    alma (kvinnor). Ungefär 63 MB per röst, laddas först när någon ska prata och släpps efter en stunds tystnad.
-  - macOS egen röst Alva via `say` (ingen modell i serverprocessen alls).
-Samma talare kan få en annan karaktär med tempo och en liten tonhöjdsförskjutning (ffmpeg).
+Tre motorer, i den här ordningen, alla i hemnätet (ingen molntjänst):
+  1. Parambe (Chatterbox Multilingual med svenska vikter) på Lenovons RTX 5050, via rösttjänsten i
+     drift/rost_tjanst.py över Tailscale. Klonar röster ur röstbanken (~/Desktop/claude/rostbank).
+  2. Samma modell på Mac minins MPS, bara när språkmodellen inte är laddad och minnet räcker (en
+     engångsprocess som avslutas direkt, så att den aldrig ligger kvar och trängs med Qwen).
+  3. Piper (VITS på CPU, rhasspy/piper-voices) och macOS Alva, när Lenovon är avstängd.
+Röstbankens referensklipp gjordes ursprungligen med ElevenLabs (syntetiska röster, gratisplan,
+icke-kommersiellt). Själva syntesen här är lokal.
 
-Rösterna genereras lat, när webben ber om dem (GET /api/rost), aldrig i konsiliets agentloop. En syntes åt
-gången och få CPU-trådar, så att språkmodellen inte märker något. Resultatet cachas som mp3 i
-~/.konsiliet/rost/cache, med nyckel av röst och normaliserad text.
+Säkerhet: inget här tar emot fri text utifrån. API:t (GET /api/rost/{event_id}) läser bara upp
+agent.say-händelser som redan finns i händelseloggen, med agentens egen röst, och har en hastighetsgräns.
 
-    uv run python -m konsiliet.rost "SpO2 98 %, sömn 5 h 40 min"           visar texten som den läses
-    uv run python -m konsiliet.rost --agent somn --ut fil.mp3 "Hej"         syntes till fil
-    uv run python -m konsiliet.rost --forbered rader.json --utkatalog dir   många rader, med manifest
-    uv run python -m konsiliet.rost --hamta                                 hämtar Piper-rösterna (190 MB)
+Rösterna genereras lat, när webben ber om dem, aldrig i konsiliets agentloop. En syntes åt gången.
+Resultatet cachas som Ogg Opus i ~/.konsiliet/rost/cache, med nyckel av motor, röst och normaliserad text.
+
+    uv run python -m konsiliet.rost "SpO2 98 %, sömn 5 h 40 min"            visar texten som den läses
+    uv run python -m konsiliet.rost --agent somn --ut fil.ogg "Hej"          syntes till fil (lokalt verktyg)
+    uv run python -m konsiliet.rost --forbered rader.json --utkatalog dir    demorepliker till <nr>.ogg
+    uv run python -m konsiliet.rost --hamta                                  hämtar Piper-rösterna (190 MB)
 """
 from __future__ import annotations
 
@@ -28,6 +33,7 @@ import tempfile
 import threading
 import time
 import wave
+from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -38,7 +44,14 @@ CACHE_MAX_MB = 300
 LEDIG_S = 300          # släpp en Piper-röst ur minnet efter så här länge utan repliker
 TRADAR = 2             # onnxruntime-trådar, så att resten av datorn får vara i fred
 MAX_TECKEN = 1500
-VERSION = "3"          # höjs när normaliseringen eller rösterna ändras, så att cachen byggs om
+VERSION = "4"          # höjs när normaliseringen eller rösterna ändras, så att cachen byggs om
+REPO = Path(__file__).resolve().parents[3]
+LENOVO = os.environ.get("KONSILIET_ROST_LENOVO", "http://100.110.236.58:8796")
+HEMLIGHET = Path(os.environ.get("KONSILIET_ROST_HEMLIGHET", Path.home() / ".konsiliet" / "rost_hemlighet"))
+ROSTBANK = Path(os.environ.get("ROSTBANK", Path.home() / "Desktop" / "claude" / "rostbank"))
+MPS_PYTHON = Path(os.environ.get("KONSILIET_ROST_MPS_PYTHON",
+                                 Path.home() / "Desktop" / "claude" / "pätches-videos" / "_tools" / "venv" / "bin" / "python"))
+LENOVO_MAX = 600       # tecken per anrop till rösttjänsten (samma gräns som tjänsten)
 
 
 # ------------------------------------------------------------------ röster per läkare
@@ -72,6 +85,40 @@ ROSTER: dict[str, Rost] = {
     "granskare": Rost("say", "Alva", tempo=1.0),
 }
 STANDARD = Rost("piper", "sv_SE-nst-medium")
+
+
+@dataclass(frozen=True)
+class BankRost:
+    """En röst ur röstbanken, klonad med Parambe. uttryck = Chatterbox exaggeration, cfg = cfg_weight."""
+    namn: str
+    uttryck: float = 0.5
+    cfg: float = 0.5
+
+    def nyckel(self) -> str:
+        return f"parambe:{self.namn}:{self.uttryck}:{self.cfg}"
+
+
+# Valda ur röstbankens roller (ROSTER.md) och mätta med Chatterbox röstavtryck (cosinuslikhet mellan
+# referensklippen, RESAN.md): inget par i teamet över 0,79, och de två som oftast pratar i följd
+# (Trådstartaren och Kardiologen) 0,71.
+#   ordforande  Jan          "läkare/expert man", lugn pedagog, Trådstartaren
+#   kardiolog   Melanie      "expert/läkare kvinna", varm och tydlig
+#   somn        Petra        expert/läkare kvinna (reserv), 0,69 mot Melanie (Elin 0,77, Lea 0,82: för lika)
+#   idrott      Martin       varm, självsäker, mest uttryck av männen
+#   stress      Louise       varm och lugn, 0,68 mot Melanie (Lea, som föreslogs, låg på 0,82)
+#   labb        Christopher  lugn och förtroendeingivande (Anders låg 0,80 mot Jan)
+#   advokat     Kille-UGC2   snabb, kaxig UGC-kille, Trollet, med mer uttryck
+#   granskare   Adam         torr radioröst, lägst grundton (117 Hz), Moderatorn, med minst uttryck
+BANK: dict[str, BankRost] = {
+    "ordforande": BankRost("Jan", uttryck=0.45),
+    "kardiolog": BankRost("Melanie"),
+    "somn": BankRost("Petra"),
+    "idrott": BankRost("Martin", uttryck=0.55),
+    "stress": BankRost("Louise", uttryck=0.45),
+    "labb": BankRost("Christopher"),
+    "advokat": BankRost("Kille-UGC2", uttryck=0.7, cfg=0.45),
+    "granskare": BankRost("Adam", uttryck=0.3),
+}
 
 
 def rost_for(agent: str) -> Rost:
@@ -168,9 +215,8 @@ _ORD = [
     (r"\bca\.?(?=\s\d)", "cirka"),
     (r"\bvs\.?(?=\s)", "mot"),
     (r"\bz-poäng", "z poäng"),
-    (r"muskel", "musskel"),
-    (r"Muskel", "Musskel"),
 ]
+_ESPEAK = [(re.compile(r"muskel"), "musskel"), (re.compile(r"Muskel"), "Musskel")]
 _ORD_RE = [(re.compile(m), r) for m, r in _ORD]
 _REF = re.compile(r"\(\s*(?:Ref|Källa|källa)?:?\s*[A-Z]:[^)]*\)|\[\s*[A-Z]:[^\]]*\]|\b(?:Ref:\s*)?[FSBJLNM]:[\w:.\-]+")
 _AKRONYM = re.compile(r"\b([A-ZÅÄÖ]{2,5})\b")
@@ -226,6 +272,9 @@ def for_tal(text: str, motor: str = "piper") -> str:
     t = _AKRONYM.sub(lambda m: " ".join(m[1]) if m[1] not in ("OK", "POST") else {"OK": "okej"}.get(m[1], m[1].lower()), t)
     for r, fon, stavning in _ENGELSKA:
         t = r.sub(fon if motor == "piper" else stavning, t)
+    if motor == "piper":
+        for r, s in _ESPEAK:
+            t = r.sub(s, t)
     t = re.sub(r"\s+([.,;:!?])", r"\1", t)
     t = re.sub(r"([.!?])(?:\s*[.!?])+", r"\1", t)
     t = re.sub(r"\(\s*\)|\[\s*\]", "", t)
@@ -312,49 +361,224 @@ def _wav_say(r: Rost, text: str) -> bytes:
                               check=True, capture_output=True, timeout=60).stdout
 
 
-def _till_mp3(wav: bytes, ton: float) -> bytes:
+def _koda(wav: bytes, ton: float = 1.0) -> bytes:
+    """WAV till Ogg Opus, med jämn ljudnivå mellan rösterna och en kort tystnad först."""
     filt = []
     if abs(ton - 1.0) > 1e-3:
         # tonhöjd utan att ändra tempot: spela upp i annan takt och sträck tillbaka
         filt += [f"asetrate=22050*{ton}", "aresample=22050", f"atempo={1 / ton:.4f}"]
-    # jämn ljudnivå mellan rösterna och en kort tystnad först, så att första stavelsen inte klipps
-    filt += ["adelay=120", "loudnorm=I=-19:TP=-2:LRA=9", "aresample=24000"]
+    filt += ["adelay=120", "loudnorm=I=-19:TP=-2:LRA=9", "aresample=48000"]
     return subprocess.run(["ffmpeg", "-loglevel", "error", "-f", "wav", "-i", "-", "-af", ",".join(filt),
-                           "-ac", "1", "-c:a", "libmp3lame", "-b:a", "48k", "-f", "mp3", "-"],
+                           "-ac", "1", "-c:a", "libopus", "-b:a", "32k", "-application", "voip", "-f", "ogg", "-"],
                           input=wav, check=True, capture_output=True, timeout=120).stdout
 
 
-def nyckel(agent: str, text: str) -> tuple[str, str, Rost]:
-    r = rost_for(agent)
-    talt = for_tal(text, r.motor)
-    h = hashlib.sha256(f"{VERSION}|{r.nyckel()}|{talt}".encode()).hexdigest()[:32]
-    return h, talt, r
+def _bitar(text: str, n: int) -> list[str]:
+    """Delar vid meningsslut i bitar om högst n tecken."""
+    ut, nu = [], ""
+    for m in re.split(r"(?<=[.!?])\s+", text):
+        while len(m) > n:
+            i = m.rfind(" ", 0, n)
+            i = i if i > 0 else n
+            ut.append(m[:i]); m = m[i:].strip()
+        if nu and len(nu) + len(m) + 1 > n:
+            ut.append(nu); nu = m
+        else:
+            nu = f"{nu} {m}".strip()
+    return ut + ([nu] if nu else [])
 
 
-def ljud(agent: str, text: str) -> Path | None:
-    """Sökväg till en mp3 med repliken, genererad vid behov. None om det inte finns något att säga."""
-    h, talt, r = nyckel(agent, text)
-    if not re.search(r"\w", talt):
+def _skarva(wavar: list[bytes], paus_s: float = 0.25) -> bytes:
+    ut = io.BytesIO()
+    with wave.open(ut, "wb") as w:
+        for i, b in enumerate(wavar):
+            with wave.open(io.BytesIO(b)) as r:
+                if i == 0:
+                    w.setparams(r.getparams())
+                else:
+                    w.writeframes(b"\0" * (2 * int(r.getframerate() * paus_s)))
+                w.writeframes(r.readframes(r.getnframes()))
+    return ut.getvalue()
+
+
+_lenovo_nere_till = 0.0
+
+
+def _wav_lenovo(b: BankRost, text: str) -> bytes | None:
+    """Rösttjänsten på Lenovon. None om den inte svarar (då provas nästa motor, och Lenovon vilar i 60 s)."""
+    global _lenovo_nere_till
+    if time.time() < _lenovo_nere_till or not HEMLIGHET.exists():
         return None
-    ut = CACHE / f"{h}.mp3"
-    if ut.exists():
-        os.utime(ut)
-        return ut
+    import httpx
+
+    hemlis = HEMLIGHET.read_text(encoding="utf-8").strip()
+    try:
+        wavar = []
+        for bit in _bitar(text, LENOVO_MAX):
+            r = httpx.post(f"{LENOVO}/tal", headers={"X-Rost-Hemlighet": hemlis}, timeout=httpx.Timeout(120, connect=3),
+                           json={"rost": b.namn, "text": bit, "uttryck": b.uttryck, "cfg": b.cfg})
+            r.raise_for_status()
+            wavar.append(r.content)
+        return _skarva(wavar)
+    except Exception:
+        _lenovo_nere_till = time.time() + 60
+        return None
+
+
+def _sprakmodell_laddad() -> bool:
+    import httpx
+
+    try:
+        return bool(httpx.get("http://127.0.0.1:11434/api/ps", timeout=2).json().get("models"))
+    except Exception:
+        return False   # Ollama nere: ingen språkmodell i minnet
+
+
+def _fritt_minne_procent() -> int:
+    try:
+        ut = subprocess.run(["memory_pressure", "-Q"], capture_output=True, text=True, timeout=5).stdout
+        return int(re.search(r"(\d+)%", ut).group(1))
+    except Exception:
+        return 0
+
+
+def _wav_mps(b: BankRost, text: str) -> bytes | None:
+    """Parambe på Mac minins MPS, som en engångsprocess. Bara när Qwen inte är laddad och minnet räcker."""
+    skript = REPO / "drift" / "rost_tjanst.py"
+    if not (MPS_PYTHON.exists() and skript.exists() and ROSTBANK.exists()):
+        return None
+    if _sprakmodell_laddad() or _fritt_minne_procent() < 45:
+        return None
+    with tempfile.TemporaryDirectory() as d:
+        jobb = Path(d) / "jobb.json"
+        jobb.write_text(json.dumps([{"id": "a", "rost": b.namn, "text": text, "uttryck": b.uttryck, "cfg": b.cfg}]),
+                        encoding="utf-8")
+        try:
+            subprocess.run([str(MPS_PYTHON), str(skript), "--rostbank", str(ROSTBANK), "--en-gang", str(jobb),
+                            "--ut-mapp", d], check=True, capture_output=True, timeout=600,
+                           env={**os.environ, "HF_HUB_OFFLINE": "1"})
+            return (Path(d) / "a.wav").read_bytes()
+        except Exception:
+            return None
+
+
+def _cachefil(motor: str, spec: str, talt: str) -> Path:
+    h = hashlib.sha256(f"{VERSION}|{motor}|{spec}|{talt}".encode()).hexdigest()[:32]
+    return CACHE / f"{h}.ogg"
+
+
+def _spara(ut: Path, data: bytes) -> Path:
+    CACHE.mkdir(parents=True, exist_ok=True)
+    tmp = ut.with_suffix(".tmp")
+    tmp.write_bytes(data)
+    tmp.replace(ut)
+    return ut
+
+
+def ljud(agent: str, text: str, motorer: tuple[str, ...] = ("lenovo", "mps", "piper")) -> Path | None:
+    """Ogg Opus med repliken, genererad vid behov. None om det inte finns något att säga.
+    Bara för kod i servern: API:t anropar den med text ur händelseloggen, aldrig med text från en klient."""
+    b = BANK.get(agent, BankRost("Jan"))
+    r = rost_for(agent)
+    talt_bank = for_tal(text, "parambe")
+    if not re.search(r"\w", talt_bank):
+        return None
+    bank_fil = _cachefil("parambe", b.nyckel(), talt_bank)
+    talt_res = for_tal(text, r.motor)
+    res_fil = _cachefil(r.motor, r.nyckel(), talt_res)
+    for f in (bank_fil,):
+        if f.exists():
+            os.utime(f)
+            return f
     with _las:
-        if ut.exists():
-            return ut
-        wav = _wav_say(r, talt) if r.motor == "say" else _wav_piper(r, talt)
-        mp3 = _till_mp3(wav, r.ton)
-        CACHE.mkdir(parents=True, exist_ok=True)
-        tmp = ut.with_suffix(".tmp")
-        tmp.write_bytes(mp3)
-        tmp.replace(ut)
+        if bank_fil.exists():
+            return bank_fil
+        wav = None
+        if "lenovo" in motorer:
+            wav = _wav_lenovo(b, talt_bank)
+        if wav is None and "mps" in motorer:
+            wav = _wav_mps(b, talt_bank)
+        if wav is not None:
+            ut = _spara(bank_fil, _koda(wav))
+        elif res_fil.exists():
+            os.utime(res_fil)
+            return res_fil
+        elif "piper" in motorer:
+            wav = _wav_say(r, talt_res) if r.motor == "say" else _wav_piper(r, talt_res)
+            ut = _spara(res_fil, _koda(wav, r.ton))
+        else:
+            return None
     _stada_cache()
     return ut
 
 
+# ------------------------------------------------------------------ för API:t
+
+_anrop: dict[str, deque] = {}
+PER_MINUT = 40
+
+
+def hastighet_ok(klient: str) -> bool:
+    """Enkel hastighetsgräns per klient: högst PER_MINUT anrop under den senaste minuten."""
+    nu = time.time()
+    q = _anrop.setdefault(klient, deque())
+    while q and nu - q[0] > 60:
+        q.popleft()
+    if len(q) >= PER_MINUT:
+        return False
+    q.append(nu)
+    if len(_anrop) > 1000:
+        _anrop.clear()
+    return True
+
+
+def replik(event_id: int) -> tuple[str, str] | None:
+    """(agent, text) för en agent.say-händelse i loggen, annars None."""
+    from . import db
+
+    r = db.conn().execute("SELECT kind, payload FROM events WHERE id=?", (event_id,)).fetchone()
+    if not r or r["kind"] != "agent.say":
+        return None
+    p = json.loads(r["payload"])
+    agent, text = str(p.get("agent", "")), str(p.get("text", ""))
+    return (agent, text) if agent and text.strip() else None
+
+
+_forvarmning: threading.Thread | None = None
+_senast_fragad = 0.0
+
+
+def forvarm() -> None:
+    """Startas när någon lyssnar: nya repliker i loggen genereras direkt i bakgrunden, så att rösten är
+    klar när webben ber om den. Stannar efter 20 minuter utan anrop."""
+    global _forvarmning, _senast_fragad
+    _senast_fragad = time.time()
+    if _forvarmning and _forvarmning.is_alive():
+        return
+    _forvarmning = threading.Thread(target=_forvarm_loop, name="rost-forvarmning", daemon=True)
+    _forvarmning.start()
+
+
+def _forvarm_loop() -> None:
+    from . import db
+
+    sist = db.conn().execute("SELECT COALESCE(MAX(id), 0) FROM events").fetchone()[0]
+    while time.time() - _senast_fragad < 1200:
+        time.sleep(1.5)
+        try:
+            rader = db.conn().execute("SELECT id FROM events WHERE id > ? AND kind='agent.say' ORDER BY id",
+                                      (sist,)).fetchall()
+            for (eid,) in rader:
+                sist = eid
+                rep = replik(eid)
+                if rep:
+                    ljud(*rep)
+        except Exception:
+            time.sleep(10)
+
+
 def _stada_cache() -> None:
-    filer = sorted(CACHE.glob("*.mp3"), key=lambda p: p.stat().st_mtime)
+    filer = sorted(CACHE.glob("*.ogg"), key=lambda p: p.stat().st_mtime)
     total = sum(p.stat().st_size for p in filer)
     while filer and total > CACHE_MAX_MB * 2**20:
         p = filer.pop(0)
@@ -386,17 +610,21 @@ def hamta() -> None:
             print("hämtade", ut)
 
 
-def forbered(rader: list[dict], utkatalog: Path) -> dict[str, str]:
-    """Genererar ljud för en lista {agent, text} och kopierar till utkatalog. Manifest: "agent|text" -> fil."""
+def forbered(rader: list[dict], utkatalog: Path) -> list[dict]:
+    """Demorepliker till statiska filer <nr>.ogg i utkatalog, med index.json [{nr, agent, text, fil}].
+    Webben spelar en fil bara om agent och text stämmer med manuset. Kräver Parambe (Lenovo eller MPS)."""
     utkatalog.mkdir(parents=True, exist_ok=True)
-    manifest: dict[str, str] = {}
-    for rad in rader:
-        p = ljud(rad["agent"], rad["text"])
-        if p:
-            (utkatalog / p.name).write_bytes(p.read_bytes())
-            manifest[f"{rad['agent']}|{rad['text']}"] = p.name
-    (utkatalog / "index.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1), encoding="utf-8")
-    return manifest
+    index = []
+    for nr, rad in enumerate(rader):
+        p = ljud(rad["agent"], rad["text"], motorer=("lenovo", "mps"))
+        if not p:
+            print(f"ingen Parambe-röst för rad {nr} ({rad['agent']}), hoppar över")
+            continue
+        fil = f"{nr}.ogg"
+        (utkatalog / fil).write_bytes(p.read_bytes())
+        index.append({"nr": nr, "agent": rad["agent"], "text": rad["text"], "fil": fil})
+    (utkatalog / "index.json").write_text(json.dumps(index, ensure_ascii=False, indent=1), encoding="utf-8")
+    return index
 
 
 if __name__ == "__main__":
@@ -414,7 +642,7 @@ if __name__ == "__main__":
         hamta()
     elif a.forbered:
         m = forbered(json.loads(Path(a.forbered).read_text(encoding="utf-8")), Path(a.utkatalog))
-        print(f"{len(m)} repliker i {a.utkatalog}")
+        print(f"{len(m)} av {len(json.loads(Path(a.forbered).read_text(encoding='utf-8')))} repliker i {a.utkatalog}")
     elif a.ut:
         p = ljud(a.agent, a.text)
         if p:

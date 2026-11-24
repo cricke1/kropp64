@@ -9,7 +9,7 @@ GET  /api/consults          konsiliemöten
 GET  /api/consults/{id}     ett möte med hela samtalet
 POST /api/consult           starta ett konsilium manuellt (fråga från användaren)
 GET  /api/journal           journal och provsvar
-GET  /api/rost              en replik uppläst (mp3), ?agent=..&text=.. eller ?event=<id>
+GET  /api/rost/{event_id}   en agent.say-replik uppläst (Ogg Opus), aldrig fri text
 POST /api/sync/1177         starta journalhämtning (kräver BankID i mobilen)
 WS   /ws                    live-ström av alla händelser (se bus.py för typer)
 
@@ -374,26 +374,25 @@ def besoksunderlag() -> Response:
                     headers={"Content-Disposition": 'inline; filename="besoksunderlag.pdf"'})
 
 
-@app.get("/api/rost", dependencies=[Depends(auth)])
-def rost_ljud(agent: str = "", text: str = "", event: int | None = None) -> Response:
-    """Repliken som ljud med läkarens egen röst. Genereras lokalt första gången och cachas (rost.py)."""
+@app.get("/api/rost/{event_id}", dependencies=[Depends(auth)])
+def rost_ljud(event_id: int, request: Request) -> Response:
+    """En replik ur händelseloggen uppläst med läkarens röst (Ogg Opus). Tar aldrig emot text: bara
+    agent.say-händelser som redan finns kan läsas upp, så att ingen kan få en klonad röst att säga något annat."""
     from . import rost
 
-    if event is not None:
-        r = db.conn().execute("SELECT kind, payload FROM events WHERE id=?", (event,)).fetchone()
-        if not r or r["kind"] != "agent.say":
-            raise HTTPException(404)
-        p = json.loads(r["payload"])
-        agent, text = str(p.get("agent", "")), str(p.get("text", ""))
-    if not re.fullmatch(r"[a-z_]{1,40}", agent) or not text.strip() or len(text) > 4000:
-        raise HTTPException(400, "agent och text krävs")
+    if not rost.hastighet_ok(request.client.host if request.client else ""):
+        raise HTTPException(429, "För många anrop")
+    rep = rost.replik(event_id)
+    if rep is None:
+        raise HTTPException(404)
+    rost.forvarm()
     try:
-        fil = rost.ljud(agent, text)
+        fil = rost.ljud(*rep)
     except FileNotFoundError as e:
         raise HTTPException(503, str(e))
     if fil is None:
         return Response(status_code=204)
-    return FileResponse(fil, media_type="audio/mpeg", headers={"Cache-Control": "private, max-age=31536000, immutable"})
+    return FileResponse(fil, media_type="audio/ogg", headers={"Cache-Control": "private, max-age=300"})
 
 
 def _mac_minne() -> dict[str, Any]:
