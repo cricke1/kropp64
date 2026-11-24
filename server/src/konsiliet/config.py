@@ -27,6 +27,8 @@ class Settings:
     # Modellval sätts efter mätningarna i bench/. Se bench/RESULTAT.md.
     model_orchestrator: str = _env("MODEL_ORCH", "qwen3.5:9b")
     model_specialist: str = _env("MODEL_SPEC", "medgemma:4b")
+    # Vem datan gäller. Läses av konsiliet och morgonbriefen i stället för att stå hårdkodat i prompterna.
+    profil: str = _env("PROFIL", "18 år, sitter mycket inne och bygger saker med AI på datorn, vill börja träna mer")
     # Enhetstoken för mobilappen. Cloudflare Access skyddar dessutom allt utifrån.
     device_tokens: tuple[str, ...] = field(default_factory=lambda: _tokens())
 

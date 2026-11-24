@@ -116,13 +116,28 @@ def morgonbrief() -> dict[str, Any]:
     steg = sum(v for _, v in db.query_samples("steps", igar))
     dator = {k: len(db.query_samples(f"dator_{k}", igar)) for k in ("kod", "spel", "chatt", "webb")}
     fakta = {"aterhamtning": ah, "steg_senaste_dygnet": int(steg), "minuter_vid_datorn": dator}
-    r = llm.chat(settings.model_orchestrator, [
+    from .konsiliet import kontrollera
+
+    msgs = [
         {"role": "system", "content": "Du är idrottsläkare i ett läkarteam. Skriv en morgonbrief på svenska till en "
-         "18-åring som sitter mycket vid datorn och vill börja träna. Max 4 meningar. Använd bara siffrorna i "
-         "datan, hitta inte på några. Avsluta med ett konkret träningsförslag för dagen anpassat efter "
-         "återhämtningen (vila, lätt promenad, intervaller eller styrka)."},
-        {"role": "user", "content": json.dumps(fakta, ensure_ascii=False)}])
-    brief = {"datum": datetime.now().strftime("%Y-%m-%d"), "text": r.content.strip(), "fakta": fakta}
+         f"person ({settings.profil}). Max 4 meningar. Använd bara siffrorna i datan, exakt som de står, och räkna "
+         "inte om dem. Avsluta med ett konkret träningsförslag för dagen anpassat efter återhämtningen (vila, lätt "
+         "promenad, intervaller eller styrka)."},
+        {"role": "user", "content": json.dumps(fakta, ensure_ascii=False)}]
+    refs = {"F:morgon": {"ref": "F:morgon", **fakta}}
+    text, skal = "", None
+    for _ in range(2):  # siffrorna granskas som i konsiliet; ett nytt försök om något inte stämmer
+        text = llm.chat(settings.model_orchestrator, msgs).content.strip()
+        skal = next((s for s in (kontrollera(m, ["F:morgon"], refs) for m in text.split(". ") if m) if s), None)
+        if not skal:
+            break
+        msgs += [{"role": "assistant", "content": text},
+                 {"role": "user", "content": f"Granskaren: {skal}. Skriv om briefen med bara siffror ur datan."}]
+    if skal:
+        p = ah.get("poang")
+        text = (f"Återhämtningspoäng {p} av 100. " if p is not None else "") + \
+               f"{int(steg)} steg senaste dygnet. Lyssna på kroppen och ta en promenad i dag."
+    brief = {"datum": datetime.now().strftime("%Y-%m-%d"), "text": text, "fakta": fakta, "granskad": not skal}
     bus.publish("brief.morgon", brief)
     return brief
 

@@ -56,20 +56,18 @@ def hamta_serie(metric: str, timmar_bakat: float = 24, slut_timmar_bakat: float 
 
 
 def jamfor_baslinje(metric: str, timme: int | None = None, dagar: int = 28) -> dict[str, Any]:
+    """Samma baslinje som vakten larmar mot (vakt.baslinje: vilominuter för puls, median och robust spridning)."""
+    from . import vakt
+
     timme = datetime.now().hour if timme is None else int(timme)
-    now = time.time()
-    rows = db.conn().execute(
-        "SELECT ts, value FROM samples WHERE metric=? AND ts BETWEEN ? AND ?",
-        (metric, now - dagar * 86400, now),
-    ).fetchall()
-    vals = np.array([v for ts, v in rows if datetime.fromtimestamp(ts).hour == timme])
     ref = f"B:{metric}:h{timme}"
-    if len(vals) < 30:
-        return {"ref": ref, "kommentar": f"för lite historik ({len(vals)} punkter) för baslinje"}
-    med = float(np.median(vals))
-    return {"ref": ref, "metric": metric, "timme": timme, "dagar": dagar, "antal": int(len(vals)),
-            "median": round(med, 1), "p10": round(float(np.percentile(vals, 10)), 1),
-            "p90": round(float(np.percentile(vals, 90)), 1)}
+    b = vakt.baslinje(metric, timme)
+    if not b:
+        return {"ref": ref, "kommentar": "för lite historik för baslinje vid den här timmen"}
+    med, sd, n = b
+    return {"ref": ref, "metric": metric, "timme": timme, "dagar": 28, "antal": int(n),
+            "median": round(med, 1), "sd": round(sd, 1),
+            "p10": round(med - 1.2816 * sd, 1), "p90": round(med + 1.2816 * sd, 1)}
 
 
 def hamta_somn(natter: int = 7) -> dict[str, Any]:

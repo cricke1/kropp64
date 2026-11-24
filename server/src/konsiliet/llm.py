@@ -41,8 +41,49 @@ class Usage:
                 "seconds": round(self.seconds, 2), "per_model": self.per_model}
 
 
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS llm_calls (
+    ts REAL NOT NULL, model TEXT NOT NULL, prompt_tokens INTEGER NOT NULL, output_tokens INTEGER NOT NULL,
+    prompt_s REAL NOT NULL, eval_s REAL NOT NULL, seconds REAL NOT NULL, consult_id TEXT);
+CREATE INDEX IF NOT EXISTS llm_calls_ts ON llm_calls(ts);
+"""
+
+
+class _Totalt(Usage):
+    """Totalräknare för tokenredovisningen. Läses ur tabellen llm_calls så att den överlever omstart."""
+
+    def as_dict(self) -> dict[str, Any]:
+        try:
+            from . import db
+            c = db.conn()
+            c.executescript(SCHEMA)
+            rows = c.execute("SELECT model, COUNT(*), SUM(prompt_tokens), SUM(output_tokens), SUM(seconds), "
+                             "SUM(prompt_s), SUM(eval_s) FROM llm_calls GROUP BY model").fetchall()
+        except Exception:
+            return super().as_dict()
+        pm = {r[0]: {"calls": r[1], "prompt_tokens": r[2], "output_tokens": r[3], "seconds": round(r[4], 2),
+                     "prompt_eval_s": round(r[5], 2), "eval_s": round(r[6], 2),
+                     "gen_tokens_per_s": round(r[3] / r[6], 1) if r[6] else 0.0,
+                     "prompt_tokens_per_s": round(r[2] / r[5], 1) if r[5] else 0.0} for r in rows}
+        return {"calls": sum(v["calls"] for v in pm.values()), "prompt_tokens": sum(v["prompt_tokens"] for v in pm.values()),
+                "output_tokens": sum(v["output_tokens"] for v in pm.values()),
+                "seconds": round(sum(v["seconds"] for v in pm.values()), 2), "per_model": pm}
+
+
+def _logga(model: str, p: int, o: int, p_s: float, o_s: float, s: float) -> None:
+    try:
+        from . import db
+        with db.tx() as c:
+            c.executescript(SCHEMA)
+            c.execute("INSERT INTO llm_calls VALUES (?,?,?,?,?,?,?,?)",
+                      (time.time(), model, p, o, p_s, o_s, s, getattr(kontext, "consult_id", None)))
+    except Exception:
+        pass  # tokenloggen får aldrig stoppa ett möte
+
+
 # Totalräknare sedan start, för tokenredovisningen i tävlingsbidraget.
-total_usage = Usage()
+total_usage = _Totalt()
+kontext = threading.local()  # consult_id för loggen sätts av konsiliet
 _lock = threading.Lock()
 _client = httpx.Client(base_url=settings.ollama_url, timeout=httpx.Timeout(600, connect=5))
 
@@ -74,7 +115,10 @@ def chat(model: str, messages: list[dict[str, Any]], tools: list[dict[str, Any]]
     if fmt:
         body["format"] = fmt  # strukturerad utdata enligt JSON-schema
     t0 = time.time()
-    r = _client.post("/api/chat", json=body)
+    try:
+        r = _client.post("/api/chat", json=body)
+    except httpx.TimeoutException:
+        r = _client.post("/api/chat", json=body)  # ett nytt försök, t.ex. om modellen laddades om
     if r.status_code >= 500:
         body["options"]["num_predict"] = max_tokens * 2
         r = _client.post("/api/chat", json=body)
@@ -89,6 +133,7 @@ def chat(model: str, messages: list[dict[str, Any]], tools: list[dict[str, Any]]
         total_usage.add(model, p, o, dt, prompt_s, eval_s)
         if usage is not None:
             usage.add(model, p, o, dt, prompt_s, eval_s)
+    _logga(model, p, o, prompt_s, eval_s, dt)
     calls = []
     for tc in msg.get("tool_calls") or []:
         fn = tc.get("function", {})
