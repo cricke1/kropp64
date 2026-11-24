@@ -480,3 +480,22 @@ inte finns i faktabladet; det är noterat för den som äger konsiliets kvalitet
 - *Wear OS fäller ut en notis vid första trycket.* "Ett tryck från passpåminnelsen" blev två: fäll ut, Starta pass.
 - *Bakgrundsstart av en skärm på klockan* stoppas av systemet, så "Andas 60 s" från mobilen blir en notis på
   klockan som öppnar andningen.
+
+**Android med hårdvaru-GPU: emulatorn kan inte mäta riggen.** Efter att ha väntat på minne (kontroll var 10:e
+minut, 2,2-2,8 GB ledigt tills 00:32 då 4,5 GB var ledigt) startades en egen skrivskyddad instans av
+Pixel_8_Kropp64_B utan fönster.
+- `-gpu host`: hårdvaru-GPU, SurfaceFlinger rapporterar "Android Emulator OpenGL ES Translator (NVIDIA GeForce
+  RTX 5050 Laptop GPU)", och WebGL i Chrome 133 och i appens WebView fick samma renderare. Men bildtakten
+  pendlade mellan 1-5 och 18-46 fps oavsett upplösning (pixeltäthet 1,5 ned till 0,75 gav samma mönster), och
+  riggen gick till slut över till stillbilden. Orsaken är emulatorn, inte riggen: en tom requestAnimationFrame-
+  slinga utan 3D fick 29 fps i WebView och 31 fps i Chrome med upp till 0,6-1,4 s långa stopp, och att bara
+  tömma en 400x400-duk med WebGL varje bild gav 16-18 fps med 95:e percentilen på 170-200 ms. Emulatorn utan
+  fönster levererar alltså bilder ojämnt även när GPU:n inte gör någonting.
+- `-gpu angle_indirect`: emulatorn föll tillbaka på SwiftShader (mjukvara), "OpenGL ES 3.0 SwiftShader 4.0.0.1".
+  Ingen hårdvaru-GPU.
+- Appens WebView mättes genom att låta den skrivskyddade instansen peka på demobygget (sms avstängt i den
+  kopian först, eftersom den hade sms till en testkontakt påslaget) och navigera WebView-sidan till Riggen via
+  WebView-felsökningen (appen är ett debug-bygge).
+Slutsats: det finns ingen trovärdig mobilsiffra från emulatorn. Det som är verifierat för telefoner är
+mobillayouten (375-442 px), att riggen sänker kvaliteten i steg och att den går över till stillbilden när
+bildtakten inte räcker. En riktig mellanklassmobil behövs för en siffra.
