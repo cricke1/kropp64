@@ -3,7 +3,7 @@ import { useEffect, useState } from 'preact/hooks'
 import './styles.css'
 import './office/office.css'
 import './views/views.css'
-import { live } from './api'
+import { api, live } from './api'
 import { dismissToast, useLive, useRoute, useSide } from './store'
 import { Kontoret } from './views/Kontoret'
 import { Oversikt } from './views/Oversikt'
@@ -31,6 +31,27 @@ const NAV: [string, string][] = __PUBLIK_DEMO__
       ['fraga', 'Fråga'],
       ['systemet', 'Systemet'],
     ]
+
+const TESTMONSTER = /emulator|syntetisk|test/i
+
+/** Syns på alla sidor så fort databasen har punkter från en testkälla (emulator, dev-syntetisk, test). */
+function TestdataBanner() {
+  const [k, setK] = useState<{ source: string; n: number }[]>([])
+  useEffect(() => {
+    let alive = true
+    const load = () => api.kallor().then((rows) => { if (alive) setK(rows.filter((r) => r.test || TESTMONSTER.test(r.source))) }).catch(() => {})
+    load()
+    const t = setInterval(load, 120000)
+    return () => { alive = false; clearInterval(t) }
+  }, [])
+  if (!k.length) return null
+  return (
+    <div class="demo-banner publik" role="note">
+      <strong>Syntetisk testdata i databasen.</strong>
+      <span>Källor: {k.map((r) => `${r.source} (${r.n.toLocaleString('sv-SE')} punkter)`).join(', ')}. Värden från de källorna är inte uppmätta på en människa.</span>
+    </div>
+  )
+}
 
 function DemoBanner() {
   return (
@@ -106,7 +127,7 @@ function App() {
         <Conn />
         <ThemeButton />
       </header>
-      {__PUBLIK_DEMO__ && <DemoBanner />}
+      {__PUBLIK_DEMO__ ? <DemoBanner /> : <TestdataBanner />}
       <main class="page">
         {view === 'kontoret' && <Kontoret query={r.query} />}
         {view === 'oversikt' && <Oversikt />}

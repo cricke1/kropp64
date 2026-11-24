@@ -25,6 +25,7 @@ fi
 TMP="$(mktemp -d "${TMPDIR:-/tmp}/konsiliet-publik-demo.XXXXXX")"
 export KONSILIET_DB="$TMP/demo.db"
 export KONSILIET_DATORN=0
+export KONSILIET_TILLAT_EMULATOR=1   # demodatan har källan dev-syntetisk; den riktiga servern visar inte sådan data
 export KONSILIET_DEVICE_TOKENS=""
 echo "Engångsdatabas: $KONSILIET_DB"
 

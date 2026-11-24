@@ -18,6 +18,8 @@ from pathlib import Path
 DB = os.environ.get("KONSILIET_DB", "")
 if not DB or os.path.realpath(os.path.expanduser(DB)) == os.path.realpath(os.path.expanduser("~/.konsiliet/konsiliet.db")):
     raise SystemExit("Publik demo vägrar starta utan egen databas (KONSILIET_DB). Använd drift/publik-demo.sh.")
+if os.environ.get("KONSILIET_TILLAT_EMULATOR") != "1":
+    raise SystemExit("Publik demo kräver KONSILIET_TILLAT_EMULATOR=1 (demodatan har källan dev-syntetisk).")
 if os.environ.get("KONSILIET_DATORN", "1") != "0":
     raise SystemExit("Publik demo kräver KONSILIET_DATORN=0.")
 
@@ -33,6 +35,18 @@ vakt.start = lambda: None
 rutiner.start = lambda: None
 datorn.start = lambda: None
 
+# Värdkontrollen (skydd mot DNS rebinding) släpper också igenom en Cloudflare quick tunnel, vars namn
+# slumpas fram vid start. Demon har inget att skydda utöver demodatan.
+_host_ok_orig = api._host_ok
+
+
+def _host_ok_demo(host_header: str | None) -> bool:
+    h = (host_header or "").rsplit(":", 1)[0].lower()
+    return h.endswith(".trycloudflare.com") or _host_ok_orig(host_header)
+
+
+api._host_ok = _host_ok_demo
+
 # Behörigheten ersätts av vitlistan nedan. Allt som släpps igenom är läsande och visar bara demodatan.
 api.app.dependency_overrides[api.auth] = lambda: None
 
@@ -45,7 +59,7 @@ from fastapi.staticfiles import StaticFiles  # noqa: E402
 api.app.router.routes = [r for r in api.app.router.routes if getattr(r, "name", None) != "web"]
 api.app.mount("/", StaticFiles(directory=WEB, html=True), name="web-demo")
 
-LASA = re.compile(r"^/api/(health|metrics|series/[a-z0-9_]+|sleep|events|journal|aterhamtning|datorn|system)$")
+LASA = re.compile(r"^/api/(health|metrics|kallor|series/[a-z0-9_]+|sleep|events|journal|aterhamtning|datorn|system)$")
 FYLLA = re.compile(r"^/api/ingest(/sleep)?$")
 
 

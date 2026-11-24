@@ -246,6 +246,13 @@ def metrics() -> list[dict[str, Any]]:
     return db.metrics_available()
 
 
+@app.get("/api/kallor", dependencies=[Depends(auth)])
+def kallor() -> list[dict[str, Any]]:
+    """Vilka källor datan kommer från, så att webben kan märka syntetisk testdata tydligt."""
+    rows = db.conn().execute("SELECT source, COUNT(*) n, MIN(ts) first, MAX(ts) last FROM samples GROUP BY source").fetchall()
+    return [{**dict(r), "test": db.ar_testkalla(r["source"])} for r in rows]
+
+
 @app.get("/api/series/{metric}", dependencies=[Depends(auth)])
 def series(metric: str, hours: float = 24, step: float = 0) -> dict[str, Any]:
     """Utan step: [ts, värde]. Med step (sekunder): en punkt per hink, [ts, min, max, median]."""
@@ -418,7 +425,8 @@ async def ws(sock: WebSocket) -> None:
     try:
         # Skicka historik först så att en ny klient ser vad som pågår.
         for ev in db.recent_events(300):
-            await sock.send_json(ev)
+            # Märkt så att ingen klient agerar på gamla händelser (t.ex. startar sms för ett gammalt larm).
+            await sock.send_json({**ev, "replay": True})
         while True:
             ev = await q.get()
             await sock.send_json(ev)

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'preact/hooks'
-import { api, live, type Ev, type SleepSession } from '../api'
+import { api, live, type Ev, type Series, type SleepSession } from '../api'
 import { Hypnogram, normStage, Spark, STAGES, Timeline, type Band, type Marker } from '../charts/charts'
 import { dayMonth, duration, fmtNum, hm, metricMeta, ymd } from '../format'
 import { anomalies, useAsync, useLive } from '../store'
@@ -24,9 +24,9 @@ export function Oversikt() {
   useEffect(() => { const t = setInterval(() => setTick((x) => x + 1), 30000); return () => clearInterval(t) }, [])
   // de senaste timmarna per mätvärde, för mätartavlorna
   const recent = useAsync(async () => {
-    const out: Record<string, [number, number][]> = {}
+    const out: Record<string, Series> = {}
     await Promise.all(TILES.map(async (m) => {
-      try { out[m] = (await api.series(m, m === 'steps' || m === 'hrv_rmssd' ? 24 : 2, 30)).points } catch { out[m] = [] }
+      try { out[m] = await api.series(m, m === 'steps' || m === 'hrv_rmssd' ? 24 : 2, 30) } catch { out[m] = { metric: m, points: [], band: null } }
     }))
     return out
   }, [tick])
@@ -41,7 +41,7 @@ export function Oversikt() {
         <Sync1177 />
       </div>
       <div class="tiles">
-        {TILES.map((m) => <Tile metric={m} pts={recent.data?.[m] ?? []} latest={l.latest.get(m)} />)}
+        {TILES.map((m) => <Tile metric={m} pts={recent.data?.[m]?.points ?? []} band={recent.data?.[m]?.band ?? null} latest={l.latest.get(m)} />)}
       </div>
       <div class="grid two">
         <RecoveryScore />
@@ -60,7 +60,7 @@ export function Oversikt() {
   )
 }
 
-function Tile({ metric, pts, latest }: { metric: string; pts: [number, number][]; latest?: { ts: number; value: number } }) {
+function Tile({ metric, pts, band, latest }: { metric: string; pts: [number, number][]; band: [number, number, number][] | null; latest?: { ts: number; value: number } }) {
   const meta = metricMeta(metric)
   const merged = useMemo(() => {
     if (!latest) return pts
@@ -77,8 +77,11 @@ function Tile({ metric, pts, latest }: { metric: string; pts: [number, number][]
   } else if (merged.length) {
     const last = merged[merged.length - 1]
     value = last[1]; ts = last[0]
-    const hour = merged.filter((p) => p[0] > Date.now() / 1000 - 3600).map((p) => p[1])
-    if (hour.length > 2) sub = `${fmtNum(Math.min(...hour), meta.digits)}-${fmtNum(Math.max(...hour), meta.digits)} senaste timmen`
+    // spann senaste timmen: hinkarnas riktiga min och max om servern tunnat ut, annars punkterna
+    const cut = Date.now() / 1000 - 3600
+    const lo = band ? band.filter((b) => b[0] > cut).map((b) => b[1]) : merged.filter((p) => p[0] > cut).map((p) => p[1])
+    const hi = band ? band.filter((b) => b[0] > cut).map((b) => b[2]) : lo
+    if (lo.length > 2) sub = `${fmtNum(Math.min(...lo), meta.digits)}-${fmtNum(Math.max(...hi), meta.digits)} senaste timmen`
   }
   const stale = ts != null && Date.now() / 1000 - ts > 900
   return (
@@ -86,7 +89,7 @@ function Tile({ metric, pts, latest }: { metric: string; pts: [number, number][]
       <div class="tile-top"><span>{meta.label}</span>{ts != null && <span class="faint num">{ago(ts)}</span>}</div>
       <div class="tile-val num"><b>{value == null ? '-' : fmtNum(value, metric === 'steps' ? 0 : meta.digits)}</b><span>{meta.unit}</span></div>
       <div class="tile-sub faint">{value == null ? 'Ingen data än' : sub || ' '}</div>
-      {metric !== 'steps' && <Spark points={merged.slice(-400)} color={meta.color} />}
+      {metric !== 'steps' && <Spark points={merged.slice(-400)} band={band} color={meta.color} />}
     </div>
   )
 }

@@ -50,11 +50,33 @@ export async function postJSON<T>(path: string, body: unknown): Promise<T> {
   return r.json() as Promise<T>
 }
 
+export interface Series {
+  metric: string
+  /** [ts, värde]. Med step: hinkens median. */
+  points: [number, number][]
+  /** [ts, min, max] per hink, bara när servern tunnat ut (step > 0). */
+  band: [number, number, number][] | null
+}
+
+// Med step svarar servern med en punkt per hink: [ts, min, max, median] (db.downsample).
+// Steg summeras i klienten och ska därför aldrig tunnas ut till median.
+async function fetchSeries(metric: string, hours: number, step?: number): Promise<Series> {
+  const st = metric === 'steps' ? 0 : step ?? 0
+  const r = await getJSON<{ metric: string; points: number[][] }>(`/api/series/${encodeURIComponent(metric)}?hours=${hours}${st ? `&step=${st}` : ''}`)
+  const raw = r.points ?? []
+  const wide = raw.length > 0 && raw[0].length >= 4
+  return {
+    metric: r.metric,
+    points: raw.map((p) => [p[0], wide ? p[3] : p[1]] as [number, number]),
+    band: wide ? raw.map((p) => [p[0], p[1], p[2]] as [number, number, number]) : null,
+  }
+}
+
 export const api = {
   health: () => getJSON<{ ok: boolean; ts: number }>('/api/health'),
+  kallor: () => getJSON<{ source: string; n: number; first: number; last: number; test: boolean }[]>('/api/kallor'),
   metrics: () => getJSON<{ metric: string; n: number; first: number; last: number }[]>('/api/metrics'),
-  // step (sekunder) ignoreras av servern än så länge, se docs/API-ONSKEMAL.md. Klienten tunnar ut själv.
-  series: (metric: string, hours: number, step?: number) => getJSON<{ metric: string; points: [number, number][] }>(`/api/series/${encodeURIComponent(metric)}?hours=${hours}${step ? `&step=${step}` : ''}`),
+  series: (metric: string, hours: number, step?: number) => fetchSeries(metric, hours, step),
   sleep: (days = 14) => getJSON<SleepSession[]>(`/api/sleep?days=${days}`),
   events: (limit = 500) => getJSON<Ev[]>(`/api/events?limit=${limit}`),
   consults: () => getJSON<Consult[]>('/api/consults'),

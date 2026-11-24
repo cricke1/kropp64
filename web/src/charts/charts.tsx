@@ -146,16 +146,22 @@ function span(t: number, range: number) {
 }
 
 /** Liten kurva utan axlar, för mätartavlorna. */
-export function Spark({ points, color, height = 28 }: { points: [number, number][]; color: string; height?: number }) {
+/** Liten kurva. Med band ritas hinkarnas min-max som en ljus yta bakom medianen. */
+export function Spark({ points, color, height = 28, band }: { points: [number, number][]; color: string; height?: number; band?: [number, number, number][] | null }) {
   if (points.length < 2) return <svg class="spark" height={height} />
   const W = 120
   const [xs, ys] = downsample(points, 60)
   const t0 = xs[0], t1 = xs[xs.length - 1] || t0 + 1
-  let lo = Math.min(...ys), hi = Math.max(...ys)
+  const bd = (band ?? []).filter((b) => b[0] >= t0 && b[0] <= t1)
+  let lo = Math.min(...ys, ...bd.map((b) => b[1])), hi = Math.max(...ys, ...bd.map((b) => b[2]))
   if (hi - lo < 1e-6) { hi += 1; lo -= 1 }
-  const d = xs.map((x, i) => `${i ? 'L' : 'M'}${(((x - t0) / (t1 - t0)) * W).toFixed(1)},${(height - 2 - ((ys[i] - lo) / (hi - lo)) * (height - 4)).toFixed(1)}`).join('')
+  const X = (x: number) => (((x - t0) / (t1 - t0)) * W).toFixed(1)
+  const Y = (v: number) => (height - 2 - ((v - lo) / (hi - lo)) * (height - 4)).toFixed(1)
+  const d = xs.map((x, i) => `${i ? 'L' : 'M'}${X(x)},${Y(ys[i])}`).join('')
+  const area = bd.length > 1 ? `M${bd.map((b) => `${X(b[0])},${Y(b[2])}`).join('L')}L${[...bd].reverse().map((b) => `${X(b[0])},${Y(b[1])}`).join('L')}Z` : ''
   return (
     <svg class="spark" viewBox={`0 0 ${W} ${height}`} preserveAspectRatio="none" height={height}>
+      {area && <path d={area} fill={color} opacity="0.18" stroke="none" />}
       <path d={d} fill="none" stroke={color} stroke-width="1.25" vector-effect="non-scaling-stroke" />
     </svg>
   )
