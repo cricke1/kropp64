@@ -1,0 +1,112 @@
+{
+ "modell": "qwen3.5:9b",
+ "tid": "2026-11-24 16:41",
+ "maskin": "Mac mini M4 16 GB",
+ "hastighet": {
+  "gen_tok_s": 17.4,
+  "prompt_tok_s": 75.4,
+  "laddning_s": 20.5,
+  "minne_gb": 7.21
+ },
+ "verktyg": {
+  "ratt_verktyg": "9/10",
+  "ratt_argument": "8/10",
+  "median_s": 1.38,
+  "detaljer": [
+   {
+    "fraga": "Hur har min puls varit det senaste dygnet?",
+    "valde": "hamta_serie",
+    "args": {
+     "metric": "hr",
+     "timmar_bakat": 24
+    },
+    "ratt_verktyg": true,
+    "ratt_argument": true
+   },
+   {
+    "fraga": "Har min HRV sjunkit den här veckan?",
+    "valde": "hamta_serie",
+    "args": {
+     "metric": "hrv_rmssd",
+     "timmar_bakat": 168
+    },
+    "ratt_verktyg": true,
+    "ratt_argument": true
+   },
+   {
+    "fraga": "Hur sov jag i natt?",
+    "valde": "hamta_somn",
+    "args": {
+     "natter": 1
+    },
+    "ratt_verktyg": true,
+    "ratt_argument": true
+   },
+   {
+    "fraga": "Vad var mitt ferritin senast?",
+    "valde": "hamta_labb",
+    "args": {
+     "analyt": "ferritin"
+    },
+    "ratt_verktyg": true,
+    "ratt_argument": true
+   },
+   {
+    "fraga": "Står det något om astma i min journal?",
+    "valde": "sok_journal",
+    "args": {
+     "sokord": "astma"
+    },
+    "ratt_verktyg": true,
+    "ratt_argument": true
+   },
+   {
+    "fraga": "Hur låg var min syremättnad i natt?",
+    "valde": "hamta_somn",
+    "args": {
+     "natter": 1
+    },
+    "ratt_verktyg": false,
+    "ratt_argument": false
+   },
+   {
+    "fraga": "Hur många steg har jag gått senaste tre dagarna?",
+    "valde": "hamta_serie",
+    "args": {
+     "metric": "steps",
+     "timmar_bakat": 72
+    },
+    "ratt_verktyg": true,
+    "ratt_argument": true
+   },
+   {
+    "fraga": "Andas jag snabbare än vanligt?",
+    "valde": "hamta_serie",
+    "args": {
+     "metric": "resp_rate",
+     "timmar_bakat": 24
+    },
+    "ratt_verktyg": true,
+    "ratt_argument": true
+   },
+   {
+    "fraga": "Mitt TSH-värde, vad var det?",
+    "valde": "hamta_labb",
+    "args": {
+     "analyt": "TSH"
+    },
+    "ratt_verktyg": true,
+    "ratt_argument": true
+   },
+   {
+    "fraga": "Hur mycket djupsömn fick jag förra veckan?",
+    "valde": "hamta_somn",
+    "args": {
+     "natter": 1
+    },
+    "ratt_verktyg": true,
+    "ratt_argument": false
+   }
+  ]
+ }
+}

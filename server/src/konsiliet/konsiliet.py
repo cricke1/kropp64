@@ -65,7 +65,7 @@ TEAM: dict[str, Lakare] = {l.id: l for l in [
 ]}
 
 SPECIALISTER = ["kardiolog", "somn", "idrott", "stress", "labb"]
-MAX_STEG = 6
+MAX_STEG = 4
 
 GEMENSAM = (
     "Du är del av ett läkarteam som granskar EN persons egen hälsodata från en Pixel Watch och journal från 1177. "
@@ -81,7 +81,7 @@ BEDOMNING_TOOL = {"type": "function", "function": {
     "description": "Lämna din färdiga bedömning. Anropa när du har utrett klart.",
     "parameters": {"type": "object", "properties": {
         "sammanfattning": {"type": "string", "description": "1-3 meningar"},
-        "pastaenden": {"type": "array", "items": {"type": "object", "properties": {
+        "pastaenden": {"type": "array", "maxItems": 4, "items": {"type": "object", "properties": {
             "text": {"type": "string"},
             "kallor": {"type": "array", "items": {"type": "string"}, "description": "ref:ar från verktygen"}},
             "required": ["text", "kallor"]}},
@@ -125,43 +125,93 @@ def _utlosare_text(trigger: dict[str, Any]) -> str:
     return f"Vakten larmade ({trigger.get('level')}): {trigger.get('title')}. {trigger.get('detail')}"
 
 
-def _specialist(m: Mote, lid: str, uppdrag: str) -> dict[str, Any]:
+BEDOMNING_SCHEMA = BEDOMNING_TOOL["function"]["parameters"]
+
+
+def _forhandsdata(m: Mote) -> list[dict[str, Any]]:
+    """Datan runt utlösaren hämtas innan specialisterna börjar, så att de har bevis från start."""
+    t = m.trigger
+    out = []
+    # Vaktens larmtext är också en källa: siffrorna i den är uppmätta av vakten.
+    if t.get("kind") == "anomaly":
+        m.refs["U:utlosare"] = {"ref": "U:utlosare", "titel": t.get("title"), "detalj": t.get("detail")}
+        out.append(m.refs["U:utlosare"])
+    if t.get("kind") == "anomaly" and t.get("metric"):
+        res = verktyg.run("hamta_serie", {"metric": t["metric"], "timmar_bakat": 2})
+        m.collect_refs(res)
+        out.append(res)
+        base = verktyg.run("jamfor_baslinje", {"metric": t["metric"]})
+        m.collect_refs(base)
+        out.append(base)
+        if t["metric"] == "hr":
+            steg = verktyg.run("hamta_serie", {"metric": "steps", "timmar_bakat": 2})
+            m.collect_refs(steg)
+            out.append(steg)
+    elif t.get("kind") == "question":
+        for metric in ("hr", "hrv_rmssd", "steps"):
+            res = verktyg.run("hamta_serie", {"metric": metric, "timmar_bakat": t.get("hours", 72)})
+            if res.get("antal"):
+                m.collect_refs(res)
+                out.append(res)
+    return out
+
+
+def _specialist(m: Mote, lid: str, uppdrag: str, forhand: list[dict[str, Any]]) -> dict[str, Any]:
     lak = TEAM[lid]
     m.emit("agent.move", agent=lid, to=lak.plats)
     msgs: list[dict[str, Any]] = [
-        {"role": "system", "content": f"{GEMENSAM}\n\nDu är {lak.titel}. Ditt fokus: {lak.fokus}."},
+        {"role": "system", "content": f"{GEMENSAM}\n\nDu är {lak.titel}. Ditt fokus: {lak.fokus}. "
+                                      f"Du har bara dessa verktyg: {', '.join(lak.verktyg)}. Hämta inte samma sak två gånger."},
         {"role": "user", "content": f"{_utlosare_text(m.trigger)}\n\nUppdrag från ordföranden: {uppdrag}\n\n"
-                                    "Utred med verktygen och avsluta med lamna_bedomning."},
+                                    f"Data som redan hämtats åt dig:\n{json.dumps(forhand, ensure_ascii=False)}\n\n"
+                                    f"Hämta högst {MAX_STEG - 1} saker till om du behöver, och svara sedan med din bedömning."},
     ]
-    tools = verktyg.schemas(list(lak.verktyg)) + [BEDOMNING_TOOL]
-    for steg in range(MAX_STEG):
+    tools = verktyg.schemas(list(lak.verktyg))
+    sett: set[str] = set()
+    for _ in range(MAX_STEG - 1):
         m.emit("agent.think", agent=lid)
-        last = steg == MAX_STEG - 1
-        r = llm.chat(settings.model_orchestrator, msgs, tools=[BEDOMNING_TOOL] if last else tools, usage=m.usage)
+        r = llm.chat(settings.model_orchestrator, msgs, tools=tools, usage=m.usage)
         msgs.append(r.message)
         if not r.tool_calls:
-            msgs.append({"role": "user", "content": "Avsluta nu med lamna_bedomning."})
-            continue
+            break  # agenten anser sig klar
         for tc in r.tool_calls:
-            if tc["name"] == "lamna_bedomning":
-                return tc["arguments"]
-            m.emit("agent.tool", agent=lid, tool=tc["name"], args=tc["arguments"])
-            if tc["name"] == "sok_journal":
-                m.emit("agent.move", agent=lid, to="arkivet")
-            res = verktyg.run(tc["name"], tc["arguments"])
-            m.collect_refs(res)
+            nyckel = tc["name"] + json.dumps(tc["arguments"], sort_keys=True)
+            if nyckel in sett:
+                res: dict[str, Any] = {"obs": "Du har redan hämtat exakt detta. Använd det du har."}
+            else:
+                sett.add(nyckel)
+                m.emit("agent.tool", agent=lid, tool=tc["name"], args=tc["arguments"])
+                if tc["name"] == "sok_journal":
+                    m.emit("agent.move", agent=lid, to="arkivet")
+                elif tc["name"] == "hamta_labb":
+                    m.emit("agent.move", agent=lid, to="labbet")
+                res = verktyg.run(tc["name"], tc["arguments"])
+                m.collect_refs(res)
             msgs.append({"role": "tool", "tool_name": tc["name"], "content": json.dumps(res, ensure_ascii=False)})
         m.emit("agent.move", agent=lid, to=lak.plats)
-    return {"sammanfattning": "Hann inte slutföra utredningen.", "pastaenden": [], "osakerhet": "avbruten"}
+    # Slutbedömningen tvingas fram som strukturerad JSON i stället för att hoppas på ett verktygsanrop.
+    m.emit("agent.think", agent=lid)
+    msgs.append({"role": "user", "content": "Lämna nu din bedömning: sammanfattning max 2 meningar, högst 4 påståenden "
+                                            "på max 25 ord vardera. Varje påstående ska ha källor i form av ref:ar "
+                                            f"ur datan ovan. Giltiga ref:ar: {', '.join(sorted(m.refs))}"})
+    r = llm.chat(settings.model_orchestrator, msgs, fmt=BEDOMNING_SCHEMA, usage=m.usage)
+    try:
+        return json.loads(r.content)
+    except json.JSONDecodeError:
+        return {"sammanfattning": r.content.strip()[:500], "pastaenden": [], "osakerhet": "ej strukturerat svar"}
 
 
 # ---------------------------------------------------------------- granskaren
 
 _NUM = re.compile(r"-?\d+(?:[.,]\d+)?")
+_KLOCKA = re.compile(r"\b\d{1,2}[:.]\d{2}\b")        # 16:10, kontrolleras separat
+_DATUM = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+_PERIOD = re.compile(r"\b(\d+)\s*(?:minut|min\b|timm|tim\b|h\b|dygn|natt|nätter|dag|veck|sekund|s\b)", re.I)
 
 
 def _numbers(obj: Any) -> set[float]:
-    s = json.dumps(obj, ensure_ascii=False)
+    s = obj if isinstance(obj, str) else json.dumps(obj, ensure_ascii=False)
+    s = _DATUM.sub(" ", _KLOCKA.sub(" ", s))
     out = set()
     for x in _NUM.findall(s):
         try:
@@ -169,6 +219,19 @@ def _numbers(obj: Any) -> set[float]:
         except ValueError:
             pass
     return out
+
+
+def _belagd(n: float, belagda: set[float]) -> bool:
+    """Ett tal är belagt om det finns i källan, eller är en enkel enhetsomräkning av ett som finns
+    (minuter <-> timmar, avrundning till heltal)."""
+    if n in belagda:
+        return True
+    for b in belagda:
+        if abs(b - n) < 0.051 or round(b) == n:
+            return True
+        if abs(b / 60 - n) < 0.051 or abs(b * 60 - n) < 0.6:
+            return True
+    return False
 
 
 def granska(m: Mote, agent: str, bed: dict[str, Any]) -> list[dict[str, Any]]:
@@ -186,10 +249,11 @@ def granska(m: Mote, agent: str, bed: dict[str, Any]) -> list[dict[str, Any]]:
         elif not giltiga:
             skal = f"källan {kallor[0]} finns inte bland det teamet faktiskt hämtat"
         else:
-            belagda = set().union(*(_numbers(m.refs[k]) for k in giltiga))
-            # Siffror i påståendet (utom årtal och klockslag-delar under 3) ska finnas i källdatan.
-            pastadda = {n for n in _numbers(text) if not (1900 <= n <= 2100)}
-            saknas = [n for n in pastadda if n not in belagda and abs(n) >= 3]
+            belagda = set().union(*(_numbers(m.refs[k]) for k in giltiga), _numbers(m.refs.get("U:utlosare", {})))
+            # Perioder ("senaste 24 timmarna", "10 minuter") är frågans ramar, inte mätvärden.
+            perioder = {float(x) for x in _PERIOD.findall(text)}
+            pastadda = {n for n in _numbers(text) if n not in perioder}
+            saknas = [n for n in pastadda if abs(n) >= 3 and not _belagd(n, belagda)]
             if saknas:
                 skal = f"siffran {saknas[0]:g} finns inte i källdatan"
         if skal:
@@ -238,27 +302,28 @@ def _advokat(m: Mote, bedomningar: dict[str, dict[str, Any]]) -> str:
     return r.content.strip()
 
 
+SLUTSATS_SCHEMA = {"type": "object", "properties": {
+    "sammanfattning": {"type": "string", "description": "max 3 meningar"},
+    "bradska": {"type": "string", "enum": ["ingen", "bevaka", "ta_upp_med_varden", "kontakta_vard_nu"]},
+    "rad": {"type": "array", "maxItems": 4, "items": {"type": "string"}},
+    "fragor_till_varden": {"type": "array", "maxItems": 4, "items": {"type": "string"}}},
+    "required": ["sammanfattning", "bradska", "rad", "fragor_till_varden"]}
+
+
 def _slutsats(m: Mote, godkanda: list[dict[str, Any]], invand: str) -> dict[str, Any]:
-    tool = {"type": "function", "function": {
-        "name": "slutbedomning", "description": "Teamets gemensamma slutbedömning.",
-        "parameters": {"type": "object", "properties": {
-            "sammanfattning": {"type": "string"},
-            "bradska": {"type": "string", "enum": ["ingen", "bevaka", "ta_upp_med_varden", "kontakta_vard_nu"]},
-            "rad": {"type": "array", "items": {"type": "string"}, "description": "konkreta saker personen kan göra"},
-            "fragor_till_varden": {"type": "array", "items": {"type": "string"}}},
-            "required": ["sammanfattning", "bradska", "rad"]}}}
     m.emit("agent.move", agent="ordforande", to="tavlan")
     m.emit("agent.think", agent="ordforande")
     fakta = "\n".join(f"- {p['text']} [{', '.join(p['kallor'])}]" for p in godkanda) or "- (inga belagda påståenden)"
     r = llm.chat(settings.model_orchestrator, [
         {"role": "system", "content": f"{GEMENSAM}\n\nDu är ordförande. Bygg slutbedömningen ENBART på de "
-                                      "granskade påståendena nedan. Väg in advokatens invändningar."},
+                                      "granskade påståendena nedan. Väg in advokatens invändningar. Råden ska vara "
+                                      "konkreta och korta."},
         {"role": "user", "content": f"{_utlosare_text(m.trigger)}\n\nGranskade påståenden:\n{fakta}\n\n"
-                                    f"Advokatens invändningar:\n{invand}"}], tools=[tool], usage=m.usage)
-    for tc in r.tool_calls:
-        if tc["name"] == "slutbedomning":
-            return tc["arguments"]
-    return {"sammanfattning": r.content.strip() or "Teamet kunde inte enas.", "bradska": "bevaka", "rad": []}
+                                    f"Advokatens invändningar:\n{invand}"}], fmt=SLUTSATS_SCHEMA, usage=m.usage)
+    try:
+        return json.loads(r.content)
+    except json.JSONDecodeError:
+        return {"sammanfattning": r.content.strip()[:600] or "Teamet kunde inte enas.", "bradska": "bevaka", "rad": []}
 
 
 def _kor(m: Mote) -> None:
@@ -272,9 +337,10 @@ def _kor(m: Mote) -> None:
     for lid, uppdrag in val:
         m.say("ordforande", f"{TEAM[lid].titel}: {uppdrag}", to=lid)
 
+    forhand = _forhandsdata(m)
     bedomningar: dict[str, dict[str, Any]] = {}
     for lid, uppdrag in val:  # en i taget: 16 GB räcker inte för parallella modellinstanser
-        bedomningar[lid] = _specialist(m, lid, uppdrag)
+        bedomningar[lid] = _specialist(m, lid, uppdrag, forhand)
 
     godkanda: list[dict[str, Any]] = []
     for lid, bed in bedomningar.items():

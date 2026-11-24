@@ -43,7 +43,7 @@ def hamta_serie(metric: str, timmar_bakat: float = 24, slut_timmar_bakat: float 
     a = np.array(pts)
     v = a[:, 1]
     # Nedsampla till högst 48 punkter så att modellen ser formen utan att kontexten svämmar över.
-    bins = np.array_split(a, min(48, len(a)))
+    bins = np.array_split(a, min(16, len(a)))
     kurva = [[_fmt_t(float(b[0, 0])), round(float(np.median(b[:, 1])), 1)] for b in bins if len(b)]
     imax, imin = int(np.argmax(v)), int(np.argmin(v))
     return {
@@ -51,7 +51,6 @@ def hamta_serie(metric: str, timmar_bakat: float = 24, slut_timmar_bakat: float 
         "period": [_fmt_t(start), _fmt_t(end)], "antal": int(len(v)),
         "median": round(float(np.median(v)), 1), "min": [round(float(v[imin]), 1), _fmt_t(float(a[imin, 0]))],
         "max": [round(float(v[imax]), 1), _fmt_t(float(a[imax, 0]))],
-        "p10": round(float(np.percentile(v, 10)), 1), "p90": round(float(np.percentile(v, 90)), 1),
         "kurva_median": kurva,
     }
 
@@ -166,3 +165,5 @@ def run(name: str, args: dict[str, Any]) -> dict[str, Any]:
         return fn(**{k: v for k, v in args.items() if not k.startswith("_")})
     except TypeError as e:
         return {"fel": f"fel argument: {e}"}
+    except Exception as e:  # ett trasigt verktyg ska ge agenten ett felsvar, inte krascha mötet
+        return {"fel": f"verktyget misslyckades: {type(e).__name__}: {e}"}

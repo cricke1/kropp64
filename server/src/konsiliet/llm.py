@@ -54,20 +54,25 @@ class Reply:
 
 
 def chat(model: str, messages: list[dict[str, Any]], tools: list[dict[str, Any]] | None = None,
-         think: bool = False, temperature: float = 0.3, num_ctx: int = 16384,
-         usage: Usage | None = None) -> Reply:
+         think: bool = False, temperature: float = 0.3, num_ctx: int = 8192,
+         usage: Usage | None = None, fmt: dict[str, Any] | None = None, max_tokens: int = 900) -> Reply:
     body: dict[str, Any] = {
         "model": model,
         "messages": messages,
         "stream": False,
         "think": think,
         "keep_alive": "30m",
-        "options": {"temperature": temperature, "num_ctx": num_ctx},
+        "options": {"temperature": temperature, "num_ctx": num_ctx, "num_predict": max_tokens},
     }
     if tools:
         body["tools"] = tools
+    if fmt:
+        body["format"] = fmt  # strukturerad utdata enligt JSON-schema
     t0 = time.time()
     r = _client.post("/api/chat", json=body)
+    if r.status_code >= 500:
+        body["options"]["num_predict"] = max_tokens * 2
+        r = _client.post("/api/chat", json=body)
     r.raise_for_status()
     d = r.json()
     dt = time.time() - t0
