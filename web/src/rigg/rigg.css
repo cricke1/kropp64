@@ -1,0 +1,87 @@
+/* Riggvyn. Scenen är alltid mörk (som en produktbild), oavsett tema, så färgerna här är fasta. */
+
+.rigg { margin-bottom: 16px; }
+.rigg-scen {
+  position: relative; overflow: hidden; border-radius: var(--radius);
+  background: #0e1113; border: 1px solid var(--line);
+  height: clamp(360px, 46vw, 540px);
+  font-family: var(--font); color: #e6e8e7;
+}
+.rigg-full .rigg-scen { height: clamp(440px, calc(100vh - 220px), 820px); }
+.rigg-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+.rigg-poster {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%;
+  transition: opacity 0.6s ease;
+}
+.rigg.klar .rigg-poster { opacity: 0; pointer-events: none; }
+.rigg-laddar {
+  position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%);
+  font-size: 12px; color: #9ba4a9; background: #14181b; border: 1px solid #262d32; border-radius: 4px; padding: 3px 10px;
+}
+
+.rigg-lager { position: absolute; inset: 0; pointer-events: none; }
+.rigg-linjer { position: absolute; inset: 0; width: 100%; height: 100%; }
+.rigg-linjer line { stroke-width: 1; transition: opacity 0.3s; }
+.rigg-linjer circle { transition: opacity 0.3s; }
+
+.rigg-etikett {
+  position: absolute; left: 0; top: 0; opacity: 0;
+  display: flex; flex-direction: column; gap: 1px;
+  background: #12161a; border: 1px solid #2a3238; border-radius: 4px; padding: 6px 10px 7px;
+  min-width: 128px; transition: opacity 0.3s;
+  will-change: transform;
+}
+.rigg-etikett .namn { font-size: 11.5px; color: #9ba4a9; }
+.rigg-etikett .varde { font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 1.15; }
+.rigg-etikett .varde b { font-size: 20px; font-weight: 600; color: var(--c); }
+.rigg-etikett .enhet { font-size: 12.5px; color: #c9cdd0; }
+.rigg-etikett .sub { font-size: 11.5px; color: #7f8a90; font-variant-numeric: tabular-nums; }
+
+.rigg-chips { position: absolute; left: 12px; top: 12px; display: flex; gap: 6px; flex-wrap: wrap; max-width: calc(100% - 220px); }
+.rigg-chips .chip {
+  font-size: 12px; color: #e6e8e7; background: #1a1f23; border: 1px solid #323a40; border-radius: 4px; padding: 2px 8px;
+}
+.rigg-chips .chip.trad { border-color: #3d5a4b; }
+.rigg-demo {
+  position: absolute; right: 12px; top: 12px; font-size: 12px; color: #d9a03f;
+  background: #1a1f23; border: 1px solid #5a4724; border-radius: 4px; padding: 2px 8px;
+}
+.rigg-akut {
+  position: absolute; left: 12px; right: 12px; top: 12px; z-index: 2; pointer-events: auto;
+  display: flex; align-items: flex-start; gap: 12px;
+  background: #1d1212; border: 1px solid #e5574e; border-radius: 4px; padding: 10px 12px;
+  font-size: 14px; color: #f2e4e2; line-height: 1.4;
+}
+.rigg-akut span { flex: 1; }
+.rigg-akut button {
+  font: inherit; font-size: 13px; color: #f2e4e2; background: transparent; border: 1px solid #a5443d; border-radius: 4px;
+  padding: 2px 10px; cursor: pointer;
+}
+.rigg-akut[hidden], .rigg-demo[hidden] { display: none; }
+.rigg-fps { position: absolute; right: 12px; bottom: 10px; font: 12px var(--mono); color: #9ba4a9; }
+.rigg-fps:empty { display: none; }
+
+.rigg-kompakt { display: none; }
+.rigg-lager.smal .rigg-etikett, .rigg-lager.smal .rigg-linjer { display: none; }
+.rigg-lager.smal .rigg-kompakt {
+  position: absolute; left: 8px; right: 8px; bottom: 8px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+  background: #262d32; border: 1px solid #262d32; border-radius: 4px; overflow: hidden;
+}
+.rigg-kompakt .cell { background: #12161a; padding: 5px 8px; display: flex; flex-direction: column; }
+.rigg-kompakt .namn { font-size: 11px; color: #9ba4a9; }
+.rigg-kompakt .varde { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rigg-kompakt .varde b { font-size: 16px; font-weight: 600; }
+.rigg-kompakt .enhet { font-size: 12px; color: #c9cdd0; }
+.rigg-lager.smal .rigg-chips { max-width: calc(100% - 24px); top: 42px; }
+.rigg-lager.smal .rigg-demo { left: 12px; right: auto; }
+.rigg-info { position: absolute; left: 12px; right: 12px; top: 44px; font-size: 12.5px; color: #9ba4a9; }
+
+.rigg-inbaddad .rigg-scen { cursor: grab; }
+.rigg-full .rigg-scen { cursor: grab; }
+.rigg-scen:active { cursor: grabbing; }
+
+@media (max-width: 700px) {
+  .rigg-scen { height: clamp(420px, 118vw, 600px); }
+  .rigg-full .rigg-scen { height: clamp(460px, calc(100vh - 200px), 700px); }
+}

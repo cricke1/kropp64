@@ -5,6 +5,7 @@ import { dayMonth, duration, fmtNum, hm, metricMeta, ymd } from '../format'
 import { anomalies, useAsync, useLive } from '../store'
 import { Sensorpanel } from './Sensorpanel'
 import { BriefPanel, DatornPanel, DatorStrip, RecoveryScore, Sync1177 } from './Halsa'
+import { Riggvyn } from '../rigg/Riggvyn'
 
 const TILES = ['hr', 'hrv_rmssd', 'spo2', 'resp_rate', 'steps', 'skin_temp']
 const RANGES: [number, string][] = [[6, '6 h'], [24, '24 h'], [72, '3 d'], [168, '7 d']]
@@ -41,6 +42,7 @@ export function Oversikt() {
         <span style="flex:1" />
         <Sync1177 />
       </div>
+      <Riggvyn lage="inbaddad" demo={__PUBLIK_DEMO__} />
       <div class="tiles">
         {TILES.map((m) => <Tile metric={m} pts={recent.data?.[m]?.points ?? []} band={recent.data?.[m]?.band ?? null} latest={l.latest.get(m)} />)}
       </div>

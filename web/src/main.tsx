@@ -10,6 +10,7 @@ import { Oversikt } from './views/Oversikt'
 import { Konsilier } from './views/Konsilier'
 import { Fraga } from './views/Fraga'
 import { Systemet } from './views/Systemet'
+import { Riggen } from './views/Riggen'
 
 type Theme = 'system' | 'light' | 'dark'
 
@@ -23,10 +24,11 @@ function applyTheme(t: Theme) {
 
 // I den publika demon finns inga sparade konsilier och inget som startar språkmodellen.
 const NAV: [string, string][] = __PUBLIK_DEMO__
-  ? [['kontoret', 'Kontoret'], ['oversikt', 'Översikt'], ['systemet', 'Systemet']]
+  ? [['kontoret', 'Kontoret'], ['oversikt', 'Översikt'], ['riggen', 'Riggen'], ['systemet', 'Systemet']]
   : [
       ['kontoret', 'Kontoret'],
       ['oversikt', 'Översikt'],
+      ['riggen', 'Riggen'],
       ['konsilier', 'Trådar'],
       ['fraga', 'Ny tråd'],
       ['systemet', 'Systemet'],
@@ -138,6 +140,7 @@ function App() {
       <main class="page">
         {view === 'kontoret' && <Kontoret query={r.query} />}
         {view === 'oversikt' && <Oversikt />}
+        {view === 'riggen' && <Riggen query={r.query} />}
         {view === 'konsilier' && <Konsilier id={r.arg} />}
         {view === 'fraga' && <Fraga />}
         {view === 'systemet' && <Systemet />}
