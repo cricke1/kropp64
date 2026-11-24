@@ -414,3 +414,22 @@ Webben: `web/src/rigg/` (three.js 0.187.0, låst), överst på Översikt och som
 **Bilder och film.** `docs/bidrag-bilder/11-riggen-demo.png`, `12-riggen-trad-demo.png` och
 `docs/video/riggen-demo-1920x1080.mp4` (14 s, inte i git). Inspelningsläget (`?capture=1`) stegar tiden exakt,
 så filmen blir jämn oavsett dator.
+
+**Riggen på landningssidan (2026-11-25).** Platsen `#riggvyn-plats` i hjälten på kropp64.se visar nu riggen i
+demoläge (syntetiska värden ur manuset, "Demo - syntetisk data" i vyn och i bildtexten). Den byggs separat
+(`web/src/rigg/sajt.ts`, `web/vite.sajt.config.ts`, anropas av `site/bygg.sh`) och laddas först när besökaren
+klickar "Starta riggen", eller av sig själv efter sidladdningen när bilden syns på en dator med mus, WebGL2,
+minst 4 kärnor och 4 GB, utan datasparläge och utan reducerad rörelse. Knappen växlar tillbaka till
+renderingen av kretskortet. Utan WebGL visas riggens stillbild med en saklig bildtext.
+Uppmätt med headless Chromium mot `site/dist`: första skärmen (allt till load) är 181 kB i 7 filer, samma som
+före riggen så när som på 3 kB knapp och skript. Av de 181 kB är 50 kB kontorsfilmens affischbild
+(`bilder/kontoret.webp`) långt ner på sidan, som laddas direkt; med `loading="lazy"` där skulle första skärmen
+bli cirka 130 kB. Riggen hämtar sedan 1,7 MB okomprimerat (rigg.js 665 kB, 174 kB med gzip, modellen 637 kB,
+typsnitt 46 kB, stillbild 42 kB). 61 fps i 1440x900 och i 375x812 på Mac minin, ingen horisontell scroll.
+
+**Referens: Chrome på Lenovon.** Chrome 158 headless, startad över ssh med `--use-angle=d3d11`, fick RTX 5050
+(D3D11): 61 fps i median i översikten på full kvalitet i 1440x900, men ojämnt (enstaka sekunder 20-37 fps) och
+36 fps i median i närbilden. GPU:n var 5 % belastad och processorn 66 % av annat arbete, så det som begränsar
+är processorn och bildtakten i ett fönster utan skärm, inte grafiken. Ett synligt Chrome-fönster på
+skrivbordet valde Intel-grafiken (Optimus) och fick `visibilityState: hidden` eftersom skärmen var avstängd,
+så där ritades ingenting och någon skrivbordssiffra finns inte.
