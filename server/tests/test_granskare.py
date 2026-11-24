@@ -154,3 +154,17 @@ def test_decimal_efter_baslinje():
 
 def test_decimalkomma_efter_baslinje():
     assert ok("Pulsen 65 ligger under baslinjen på 72,5 slag/min.", ["S:hr:1-2", "B:hr:h16"])
+
+def test_somnskuld_kvallar_och_belastning_godkanns():
+    m = mote2()
+    m.refs["F:somnskuld"] = {"ref": "F:somnskuld", "somnbehov_timmar": 8.0, "somnskuld_timmar_senaste_7_natter": 15.3,
+                             "medel_somn_timmar_senaste_7": 5.8, "natter_med_datorn_efter_midnatt": 7}
+    m.refs["F:kvallar"] = {"ref": "F:kvallar", "kvallar_med_datorn_efter_23": 6,
+                           "kvallar": [{"minuter_vid_datorn_efter_23": 125, "sista_datorminut": "01:04"}]}
+    m.refs["F:belastning"] = {"ref": "F:belastning", "antal_traningspass": 3, "traningsminuter_totalt": 180}
+    g = lambda t, k: len(granska(m, "x", {"pastaenden": [{"text": t, "kallor": k}]})) == 1
+    assert g("Sömnskulden är 15,3 timmar på sju nätter, med 5,8 timmars sömn i snitt mot behovet 8 timmar.", ["F:somnskuld"])
+    assert g("Datorn var igång 125 minuter efter 23 och sista minuten var 01:04.", ["F:kvallar"])
+    assert g("3 träningspass på 180 minuter senaste veckan.", ["F:belastning"])
+    assert not g("Sömnskulden är 21 timmar.", ["F:somnskuld"])
+    assert not g("Du har sömnskuld.", ["F:belastning"])

@@ -194,6 +194,9 @@ def natter(nu: float, antal: int = 7) -> dict[str, Any]:
                 skillnad[f] = _r(float(np.mean(vals)) - b, 2 if f == "hudtemp_median_c" else 1)
         out["skillnad_senaste_3_natter_mot_baslinje"] = {
             "beskrivning": "medel av de 3 senaste nätterna minus baslinjen: negativt = lägre än normalt", **skillnad}
+        out["riktning_senaste_3_natter_mot_baslinje"] = {
+            f: ("högre än baslinjen" if v > 0 else "lägre än baslinjen" if v < 0 else "samma som baslinjen")
+            for f, v in skillnad.items()}
         if bas.get("hrv_median_ms") and "hrv_median_ms" in skillnad:
             out["skillnad_senaste_3_natter_mot_baslinje"]["hrv_procent"] = _r(100 * skillnad["hrv_median_ms"] / bas["hrv_median_ms"], 0)
         odi = [n.get("spo2_fall_per_timme") for n in senaste if n.get("spo2_fall_per_timme") is not None]
@@ -302,6 +305,7 @@ def larm(trigger: dict[str, Any], nu: float) -> dict[str, Any] | None:
         out["baslinje_samma_timme_median"] = _r(bas[0], 1)
         out["baslinje_spridning_sd"] = _r(bas[1], 1)
         out["skillnad_observerat_minus_baslinje"] = _r(out["observerat_median"] - bas[0], 1)
+        out["riktning_mot_baslinje"] = "högre" if out["skillnad_observerat_minus_baslinje"] > 0 else "lägre"
     fore = _v(metric, a - 3600, a - 300)
     if len(fore):
         out["median_timmen_fore_larmet"] = _r(np.median(fore[:, 1]), 1)
@@ -401,6 +405,73 @@ def journal(max_antal: int = 6) -> dict[str, Any] | None:
     return {"ref": "F:journal", "anteckningar": [{"ref": f"J:{r.pop('id')}", **r} for r in rows]}
 
 
+def somnskuld(nu: float) -> dict[str, Any] | None:
+    """Sömnskuld med samma räkning som vardagen (vardag.somn): behov minus sovna timmar, summerat över
+    de senaste sju morgnarna. Plus jämförelse mot personens egen baslinje."""
+    try:
+        from . import vardag
+        s = vardag.somn(nu)
+    except Exception:
+        return None
+    nn = s.get("natter") or []
+    if not nn:
+        return None
+    timmar = [n["timmar"] for n in nn]
+    out: dict[str, Any] = {
+        "ref": "F:somnskuld", "beskrivning": "samma räkning som appens sömnskuld: summa av (behov - sömn) per natt",
+        "somnbehov_timmar": s["behov_h"], "natter_med_data": len(nn),
+        "somnskuld_timmar_senaste_7_natter": s["skuld_h"],
+        "medel_somn_timmar_senaste_7": _r(np.mean(timmar), 1),
+        "natter_under_7_timmar": sum(1 for t in timmar if t < 7),
+        "natter_med_datorn_efter_midnatt": s.get("sena_natter_vid_datorn", 0),
+    }
+    aldre = db.conn().execute("SELECT start, end, stages FROM sleep WHERE end <= ? AND end > ? AND source NOT LIKE '%emulator%'",
+                              (nu - 7 * 86400, nu - 28 * 86400)).fetchall()
+    if len(aldre) >= 5:
+        tim = [(e - a - sum(x["end"] - x["start"] for x in json.loads(st) if x["stage"] == "awake")) / 3600 for a, e, st in aldre]
+        out["baslinje_somn_timmar_tidigare_veckor"] = _r(np.median(tim), 1)
+        out["skillnad_medel_somn_mot_baslinje_timmar"] = _r(out["medel_somn_timmar_senaste_7"] - np.median(tim), 1)
+    return out
+
+
+def sena_kvallar(nu: float, antal: int = 7) -> dict[str, Any] | None:
+    """Datorn efter 23:00 per kväll (dator_*-mätvärdena), de senaste kvällarna, nyast först."""
+    idag = datetime.fromtimestamp(nu).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
+    kvallar = []
+    for i in range(antal):
+        a = idag - i * 86400 + 23 * 3600  # 23:00 den kvällen
+        b = min(a + 7 * 3600, nu)        # till 06:00
+        if a >= nu:
+            continue
+        ts = sorted(t for kat in ("kod", "spel", "chatt", "webb", "annat") for t in _v(f"dator_{kat}", a, b)[:, 0])
+        per = {DATORNAMN[k]: len(_v(f"dator_{k}", a, b)) for k in ("kod", "spel", "chatt", "webb", "annat")}
+        kvallar.append({"kvall": _dag(a), "minuter_vid_datorn_efter_23": len(ts),
+                        "sista_datorminut": _hm(ts[-1]) if ts else None,
+                        "per_kategori": {k: v for k, v in per.items() if v} or "inga"})
+    if not any(k["minuter_vid_datorn_efter_23"] for k in kvallar):
+        return {"ref": "F:kvallar", "beskrivning": "datorn efter 23:00", "kvallar_med_datorn_efter_23": 0}
+    return {"ref": "F:kvallar", "beskrivning": "datorn efter 23:00 per kväll, nyast först",
+            "kvallar_med_datorn_efter_23": sum(1 for k in kvallar if k["minuter_vid_datorn_efter_23"]),
+            "kvallar_med_datorn_efter_01": sum(1 for k in kvallar if k["sista_datorminut"] and "01:00" <= k["sista_datorminut"] < "06:00"),
+            "kvallar": kvallar}
+
+
+def traningsbelastning(nu: float, dagar_bakat: int = 7) -> dict[str, Any]:
+    """Träningspass de senaste dygnen och minuter i hög pulszon (vardag.belastning) de senaste tre."""
+    pass_ = _pass(nu - dagar_bakat * 86400, nu)
+    out: dict[str, Any] = {"ref": "F:belastning", "period": f"senaste {dagar_bakat} dygnen",
+                           "antal_traningspass": len(pass_), "traningsminuter_totalt": sum(p["minuter"] for p in pass_),
+                           "pass": pass_ or "inga"}
+    try:
+        from . import vardag
+        b = vardag.belastning(nu)
+        out["minuter_i_zon_4_5_per_dag_senaste_3"] = b.get("hart_min_per_dag") or "inga"
+        out["tranade_igar"] = b.get("tranade_igar")
+    except Exception:
+        pass
+    return out
+
+
 def faktaark(trigger: dict[str, Any], nu: float | None = None) -> dict[str, dict[str, Any]]:
     nu = nu or time.time()
     timmar = float(trigger.get("hours") or 24)
@@ -411,6 +482,9 @@ def faktaark(trigger: dict[str, Any], nu: float | None = None) -> dict[str, dict
         natter(nu),
         dagar(nu, 14 if timmar > 200 else 7),
         aktivitet_och_aterhamtning(nu) if timmar > 200 else None,
+        somnskuld(nu),
+        sena_kvallar(nu),
+        traningsbelastning(nu),
         prover(nu),
         journal(),
     ]

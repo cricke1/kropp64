@@ -279,5 +279,14 @@
   },
   "fran_vakt": false,
   "nu": 1795525200
+ },
+ "trott_spelkvallar": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Varför är jag så trött?",
+   "hours": 168
+  },
+  "fran_vakt": false,
+  "nu": 1795534200
  }
 }

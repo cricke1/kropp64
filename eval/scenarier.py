@@ -479,6 +479,30 @@ F_STRESS = Facit(
     "Fel: sjukdomsdiagnoser eller akut larm.")
 
 
+# ------------------------------------------------------------------ 16. trött efter sena spelkvällar (från användbarhetstestet)
+
+def s_trott_spel(s: Sim) -> dict[str, Any]:
+    s.standard(till_dag=7)
+    for d in range(6, -1, -1):
+        s.natt(d, 115 + s.rng.normal(0, 12), 420 + s.rng.normal(0, 6))  # somnar cirka 01:55, vaknar 07:00
+        s.datorblock(d + 1, 19 * 60, 24 * 60 + 100 + s.rng.normal(0, 10), "spel")
+        for st, m in ((440, 15), (720, 10), (960, 15)):
+            s.gang(d, st, m)
+    s.standardprover()
+    return _fraga("Varför är jag så trött?", 168)
+
+
+F_TROTT_SPEL = Facit(
+    "bevaka", ("ingen", "bevaka"),
+    [("sömnskuld / sömnbrist", r"sömnskuld|sömnbrist|för lite sömn|sover för lite|kort(are)? sömn|\b[45][,.]\d\s*(h|tim)|\b(1\d|2\d)[,.]?\d?\s*timmar? (sömn)?skuld"),
+     ("sena kvällar vid datorn", r"sen(a|t)? (kväll|natt)|efter (23|midnatt|01)|0?1[:.]\d\d|spel|dator")],
+    [("sjukdom som förklaring", r"(tyder på|beror på) (en )?(infektion|järnbrist|anemi|sjukdom)"),
+     ("akut", r"kontakta vården (nu|omedelbart|direkt)")],
+    "Sju nätter: spelar på datorn till cirka 01:40, somnar cirka 01:55 och vaknar 07:00, cirka 5 timmars sömn mot "
+    "behovet 8: sömnskuld på cirka 20 timmar på en vecka. Rätt: tröttheten förklaras av sömnskuld efter sena "
+    "spelkvällar; råd om skärmstopp och läggtid. Fel: sjukdom eller akut larm.")
+
+
 SCENARIER: list[Scenario] = [
     Scenario("akut_takykardi", "Äkta pulsrusning i vila", "21:40", s_akut_takykardi, F_AKUT),
     Scenario("traning_puls", "Hög puls som är ett löppass", "18:30", s_traning, F_TRANING),
@@ -495,6 +519,7 @@ SCENARIER: list[Scenario] = [
     Scenario("spo2_akut", "Lågt syre i vila med astma", "14:20", s_spo2_akut, F_SPO2_AKUT),
     Scenario("aterkommande_hopp", "Återkommande pulshopp i vila", "16:05", s_aterkommande, F_ATERK),
     Scenario("stress_projekt", "Stress under projektvecka", "14:00", s_stress, F_STRESS),
+    Scenario("trott_spelkvallar", "Trött efter sena spelkvällar", "16:30", s_trott_spel, F_TROTT_SPEL),
 ]
 SCENARIO = {s.id: s for s in SCENARIER}
 

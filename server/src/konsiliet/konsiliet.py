@@ -58,7 +58,8 @@ TEAM: dict[str, Lakare] = {l.id: l for l in [
     Lakare("somn", "Sömnläkare",
            "sömnlängd, insomningstid, nattlig syremättnad och andning, regelbundenhet",
            ("hamta_somn", "hamta_serie", "jamfor_baslinje"), "skrivbord_somn",
-           "En 18-åring behöver 7-9 timmar sömn. Sen skärmtid (datorminuter efter 23) skjuter insomningen. "
+           "En 18-åring behöver 7-9 timmar sömn. Börja i F:somnskuld (sömnskuld i timmar mot behovet och mot egen "
+           "baslinje) och F:kvallar (minuter vid datorn efter 23). Sen skärmtid skjuter insomningen. "
            "Minst 5 syrefall per timme flera nätter är ett mönster som vid andningsuppehåll i sömnen och bör "
            "utredas av vården (inte akut). Enstaka fall en natt kan vara mätfel eller sovställning."),
     Lakare("idrott", "Idrottsläkare",
@@ -91,7 +92,9 @@ NIVAER = fakta.NIVAER
 # Verktyg som visas i kontoret när faktabladets delar läses (de är förhämtade av systemet, forhamtat=True)
 DEL_TILL_VERKTYG = {"F:larm": ("hamta_serie", "metric"), "F:puls": ("hamta_serie", "hr"), "F:natter": ("hamta_somn", None),
                     "F:dagar": ("hamta_serie", "steps"), "F:prover": ("hamta_labb", None),
-                    "F:journal": ("sok_journal", None), "F:aktivitet": ("jamfor_baslinje", "steps")}
+                    "F:journal": ("sok_journal", None), "F:aktivitet": ("jamfor_baslinje", "steps"),
+                    "F:somnskuld": ("hamta_somn", None), "F:kvallar": ("hamta_serie", "dator_spel"),
+                    "F:belastning": ("hamta_serie", "steps")}
 
 
 def lage() -> dict[str, Any]:
@@ -202,6 +205,7 @@ def _forbered(m: Mote) -> None:
     # Regelverkets tolkning blir en egen källa, så att teamet kan peka på den (t.ex. "ser ut som mätfel").
     if m.lage["tolkning"]:
         m.fakta["F:tolkning"] = {"ref": "F:tolkning", "beskrivning": "deterministiska regler, inte en språkmodell",
+                                 "metric": m.trigger.get("metric"),
                                  "brådska_enligt_regler": m.regel[0], "skal": m.regel[1] or ["inga regler slog till"]}
     m.collect_refs(m.fakta)
     if m.lage["medgemma"]:
@@ -309,13 +313,13 @@ ENHET_FAMILJ = [(re.compile(r"^\s*(slag|bpm)", re.I), "puls"), (re.compile(r"^\s
                 (re.compile(r"^\s*(minut|min\b|timm|tim\b|h\b)", re.I), "tid")]
 # Medicinska slutsatser kräver en källa av rätt typ, även utan siffror.
 SLUTSATSER = [
-    (re.compile(r"infektion|förkyl|virus|feber", re.I), {"temp", "hrv", "puls", "andning", "journal"}),
+    (re.compile(r"infektion|förkyl|virus|feber", re.I), {"temp", "hrv", "puls", "andning", "journal", "labb"}),
     (re.compile(r"sömnapn|andningsuppeh|andningsstörning", re.I), {"spo2", "andning"}),
     (re.compile(r"järnbrist|järnförråd|anemi|blodbrist|ferritin", re.I), {"labb"}),
     (re.compile(r"arytmi|takykardi|hjärtrusning|förmaksflimmer|rytmrubbning|\bsvt\b", re.I), {"puls"}),
     (re.compile(r"mätfel|artefakt|sitter löst|sensorfel|felmätning", re.I), {"puls", "spo2"}),
     (re.compile(r"astma", re.I), {"journal"}),
-    (re.compile(r"sömnbrist|för lite sömn|kort sömn|sover för lite", re.I), {"somn"}),
+    (re.compile(r"sömnbrist|sömnskuld|för lite sömn|kort sömn|sover för lite", re.I), {"somn"}),
 ]
 
 
@@ -328,12 +332,20 @@ _PERIOD_ORD = re.compile(r"(?<![\d.,])(\d+)\s*(minut\w*|min\b|timm\w*|tim\b|h\b|
                          r"veck\w*|sekund\w*|s\b|gång\w*|episod\w*|tillfäll\w*|år\b|månad\w*|påstående\w*)", re.I)
 
 
+_PERIOD_FORE = re.compile(r"(senaste|under|inom|per|varje|efter|för|på|de|i|om|till|sista)\s+(ca\s+|cirka\s+)?$", re.I)
+_PERIOD_EFTER = re.compile(r"^\s*(sedan|bakåt|i rad|framåt|innan|före)", re.I)
+
+
 def _perioder(text: str) -> set[float]:
+    """Tal som anger frågans tidsram ("senaste 3 nätterna", "under 10 minuter", "2 dagar sedan"), inte mätvärden.
+    Kräver ett ramord före eller efter: "sömnskulden är 21 timmar" är ett påstående som ska kontrolleras."""
     out = set()
-    for tal, ord_ in _PERIOD_ORD.findall(text):
-        n = float(tal)
-        grans = next((g for rx, g in PERIOD_MAX if rx.match(ord_)), 20)
-        if n <= grans:
+    for mt in _PERIOD_ORD.finditer(text):
+        n = float(mt.group(1))
+        grans = next((g for rx, g in PERIOD_MAX if rx.match(mt.group(2))), 20)
+        fore, efter = text[max(0, mt.start() - 14):mt.start()], text[mt.end():mt.end() + 10]
+        if n <= grans and (_PERIOD_FORE.search(fore) or _PERIOD_EFTER.match(efter)
+                           or re.match(r"(gång|episod|tillfäll|påstående)", mt.group(2), re.I)):
             out.add(n)
     return out
 
