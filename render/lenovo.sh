@@ -3,7 +3,7 @@
 #   lenovo.sh push                      kopiera render/*.py och tex_*.png
 #   lenovo.sh run <skript.py> <args..>  starta blender -b -P (frikopplat, logg i ut\<skript>.log)
 #   lenovo.sh get <fjarrfil> <lokal>    hamta en fil och verifiera storleken
-H=crick@100.110.236.58
+H=${LENOVO:?satt LENOVO=anvandare@vard for laptopen}
 R='C:\Users\crick\Desktop\_lenovo\konsiliet3d'
 RF=C:/Users/crick/Desktop/_lenovo/konsiliet3d
 B='C:\Users\crick\Desktop\_lenovo\patches3d\blender-4.5.3-windows-x64\blender.exe'
