@@ -102,6 +102,7 @@ def lage() -> dict[str, Any]:
         "medgemma": e("KONSILIET_LAGE_MEDGEMMA", "0") == "1",
         "temperatur": float(e("KONSILIET_LAGE_TEMP", "0.2")),
         "max_specialister": int(e("KONSILIET_LAGE_MAX_SPEC", "3")),
+        "tolkning": e("KONSILIET_LAGE_TOLKNING", "1") == "1",  # regelverkets tolkning som källa F:tolkning
     }
 
 
@@ -196,8 +197,9 @@ def _forbered(m: Mote) -> None:
                                 "detalj": m.trigger.get("detail")}
     m.regel = fakta.regelbradska(m.trigger, m.fakta)
     # Regelverkets tolkning blir en egen källa, så att teamet kan peka på den (t.ex. "ser ut som mätfel").
-    m.fakta["F:tolkning"] = {"ref": "F:tolkning", "beskrivning": "deterministiska regler, inte en språkmodell",
-                             "brådska_enligt_regler": m.regel[0], "skal": m.regel[1] or ["inga regler slog till"]}
+    if m.lage["tolkning"]:
+        m.fakta["F:tolkning"] = {"ref": "F:tolkning", "beskrivning": "deterministiska regler, inte en språkmodell",
+                                 "brådska_enligt_regler": m.regel[0], "skal": m.regel[1] or ["inga regler slog till"]}
     m.collect_refs(m.fakta)
     if m.lage["medgemma"]:
         # Bakgrundskunskap från den medicinska modellen, en gång per möte. Ingen ref: kunskap, inte data.
@@ -507,12 +509,14 @@ def kontrollera(text: str, kallor: list[str], refs: dict[str, dict[str, Any]], t
                 return f"{n:g} beskrivs som en ökning men källan visar en minskning"
     # "baslinje(n) ... X": talet direkt efter ordet baslinje måste vara ett baslinjevärde
     for mt in re.finditer(r"baslinje\w*", ren, re.I):
-        seg = re.split(r"[.;](?!\d)", ren[mt.end():mt.end() + 40])[0]
+        seg = re.split(r"[;(]|,(?!\d)|\boch\b|\.(?!\d)", ren[mt.end():mt.end() + 30])[0]
         tal = [n for n in _tal_text(seg) if n not in perioder]
         if tal and not _belagd(tal[0], bas):
             return f"{tal[0]:g} kallas baslinje men är inget baslinjevärde i källan"
+    kalltext = json.dumps([refs[k] for k in giltiga], ensure_ascii=False).lower()
     for rx, behov in SLUTSATSER:
-        if rx.search(ren) and not (familjer & behov):
+        # en källa som själv nämner slutsatsen (t.ex. F:tolkning: "ser ut som mätfel") räcker också
+        if rx.search(ren) and not (familjer & behov) and not rx.search(kalltext):
             return f"slutsatsen '{rx.search(ren).group()}' saknar källa av rätt typ"
     return None
 
@@ -659,7 +663,8 @@ def _slutsats(m: Mote, godkanda: list[dict[str, Any]], debatt: str) -> dict[str,
                      "Följ regelverket om inte de granskade påståendena tydligt visar något annat.")
     r = m.chat([{"role": "user", "content": "Du är ordförande. Skriv slutbedömningen ENBART utifrån de granskade "
                  "påståendena och diskussionen nedan. Sammanfattningen ska svara direkt på utlösaren eller frågan och "
-                 "nämna det viktigaste fyndet med dess siffra. Råden ska vara konkreta och korta. Brådska: "
+                 "nämna det viktigaste fyndet med dess siffra. Råden (rad) ska vara konkreta HANDLINGAR för personen "
+                 "(vad hen ska göra), inte en upprepning av fynden. Brådska: "
                  f"{BRADSKA_TEXT}{regeltext}\n\nGranskade påståenden:\n{fakta_}\n\nDiskussionen:\n{debatt or '(ingen)'}"}],
                fmt=SLUTSATS_SCHEMA, think=m.lage["think"], max_tokens=2500 if m.lage["think"] else 700)
     v = _json(r, {"sammanfattning": r.content.strip()[:600] or "Teamet kunde inte enas.", "bradska": "bevaka",

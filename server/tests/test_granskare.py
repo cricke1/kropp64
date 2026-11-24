@@ -151,3 +151,6 @@ def test_tid_i_timmar_och_minuter():
 
 def test_decimal_efter_baslinje():
     assert ok("Baslinjen är 72.5 slag/min och pulsen 65.", ["S:hr:1-2", "B:hr:h16"])
+
+def test_decimalkomma_efter_baslinje():
+    assert ok("Pulsen 65 ligger under baslinjen på 72,5 slag/min.", ["S:hr:1-2", "B:hr:h16"])

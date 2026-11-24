@@ -51,9 +51,11 @@ def _pass(a: float, b: float) -> list[dict[str, Any]]:
     out = []
     for s, e, typ in rows:
         hr = _v("hr", s, e)
+        efter = _v("hr", e + 600, e + 1200)
         out.append({"typ": typ, "start": _hm(s), "minuter": int((e - s) / 60),
                     "medelpuls_under_passet": _r(hr[:, 1].mean(), 0) if len(hr) else None,
-                    "maxpuls_under_passet": _r(hr[:, 1].max(), 0) if len(hr) else None})
+                    "maxpuls_under_passet": _r(hr[:, 1].max(), 0) if len(hr) else None,
+                    "puls_10_till_20_min_efter_passet": _r(np.median(efter[:, 1]), 0) if len(efter) else None})
     return out
 
 
@@ -82,10 +84,17 @@ def _kvalitet(hr: np.ndarray) -> dict[str, Any]:
             spikar.append({"tid": _hm(t[i]), "varde": _r(v[i], 0), "grannarnas_medel": _r((v[i - 1] + v[i + 1]) / 2, 0)})
     span_min = (t[-1] - t[0]) / 60
     forvantat = span_min + 1 if np.median(dt) <= 90 else span_min / 5 + 1
+    hopp = float((d[tata] > 25).mean()) if tata.any() else 0.0
+    saknas = max(0.0, 1 - len(v) / forvantat)
+    if hopp >= 0.25 or saknas >= 0.25:
+        tolkning = "hoppig signal med luckor: klockan sitter troligen löst, värdena är inte tillförlitliga"
+    elif spikar:
+        tolkning = "enstaka isolerade spikar med normala grannvärden: sannolikt mätfel, inte verklig puls"
+    else:
+        tolkning = "ren signal, inga tecken på mätfel"
     return {
-        "andel_hopp_over_25_slag_mellan_minuter": _r(float((d[tata] > 25).mean()) if tata.any() else 0.0, 2),
-        "andel_saknade_minuter": _r(max(0.0, 1 - len(v) / forvantat), 2),
-        "isolerade_spikar": spikar[:8], "antal_isolerade_spikar": len(spikar),
+        "andel_hopp_over_25_slag_mellan_minuter": _r(hopp, 2), "andel_saknade_minuter": _r(saknas, 2),
+        "isolerade_spikar": spikar[:8], "antal_isolerade_spikar": len(spikar), "tolkning": tolkning,
     }
 
 
@@ -190,6 +199,7 @@ def natter(nu: float, antal: int = 7) -> dict[str, Any]:
         odi = [n.get("spo2_fall_per_timme") for n in senaste if n.get("spo2_fall_per_timme") is not None]
         if odi:
             out["natter_med_minst_5_syrefall_per_timme"] = sum(1 for x in odi if x >= 5)
+            out["syrefall_definition"] = "fall på minst 4 procentenheter under nattens 90:e percentil (som ODI)"
         sov = [n["somn_timmar"] for n in senaste if n.get("somn_timmar")]
         if sov:
             out["medel_somn_timmar_senaste"] = _r(np.mean(sov), 1)
@@ -464,7 +474,15 @@ def regelbradska(trigger: dict[str, Any], f: dict[str, dict[str, Any]]) -> tuple
         tecken = [t for t, ok in (("hudtemperatur upp", (sk.get("hudtemp_median_c") or 0) >= 0.3),
                                   ("andning upp", (sk.get("andning_median_per_min") or 0) >= 1),
                                   ("nattpuls upp", (sk.get("nattpuls_lagsta_10min") or 0) >= 4)) if ok]
-        hoj("bevaka", "HRV under baslinjen tre nätter" + (f" med {', '.join(tecken)}" if tecken else ""))
+        pass_ = [p for d in (f.get("F:dagar") or {}).get("dagar", [])[:4] for p in d.get("traningspass", [])]
+        if (sk.get("hudtemp_median_c") or 0) >= 0.3:
+            tolkning = "hudtemperaturen har stigit: mönstret talar för begynnande infektion"
+        elif pass_:
+            tolkning = (f"{len(pass_)} träningspass senaste dygnen och normal hudtemperatur: talar för "
+                        "träningsbelastning snarare än infektion")
+        else:
+            tolkning = "ingen träning och normal temperatur: belastning, sömn eller stress, följ upp"
+        hoj("bevaka", "HRV under baslinjen tre nätter" + (f" med {', '.join(tecken)}" if tecken else "") + f"; {tolkning}")
     if (N.get("medel_somn_timmar_senaste") or 9) < 6:
         hoj("bevaka", f"medelsömn {N['medel_somn_timmar_senaste']} timmar")
     return NIVAER[niva], skal
