@@ -11,7 +11,8 @@ att säga saker:
   - ingen fri text kommer hit från internet: Mac minin skickar bara repliker som redan finns i dess
     händelselogg (GET /api/rost/{event_id}), aldrig text från en klient
 
-Start på Lenovon (miljön med chatterbox-tts 0.1.7 finns redan):
+Start på Lenovon (miljön med chatterbox-tts 0.1.7 finns redan), i praktiken via en .bat som startar om
+tjänsten efter 60 s om den faller (vid start kan Lenovon sakna minne när andra jobb kör där):
   set HF_HUB_OFFLINE=1
   parambe\\Scripts\\python.exe rost_tjanst.py --lyssna 100.110.236.58 --tillat 100.69.247.16 ^
       --hemlighet-fil %USERPROFILE%\\.konsiliet\\rost_hemlighet --rostbank C:\\Users\\crick\\tts-test\\rostbank
@@ -62,13 +63,23 @@ class Parambe:
             perth.PerthImplicitWatermarker = _Ingen
         from chatterbox.mtl_tts import ChatterboxMultilingualTTS
         from huggingface_hub import hf_hub_download
-        from safetensors.torch import load_file
+        from safetensors import safe_open
 
         t0 = time.time()
         self.enhet = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
         m = ChatterboxMultilingualTTS.from_pretrained(device=self.enhet)
-        sd = load_file(hf_hub_download("Parambe/Chatterbox-Swedish-Parambe-V1", "parambe_swedish_v1.safetensors"))
-        m.t3.load_state_dict({k.replace("t3.", ""): v for k, v in sd.items() if k.startswith("t3.")}, strict=False)
+        # En tensor i taget direkt till rätt enhet: load_file på hela filen kraschade (access violation) på
+        # Windows när Lenovon hade ont om ledigt minne.
+        fil = hf_hub_download("Parambe/Chatterbox-Swedish-Parambe-V1", "parambe_swedish_v1.safetensors")
+        sd = m.t3.state_dict()
+        n = 0
+        with torch.no_grad(), safe_open(fil, framework="pt", device=self.enhet if self.enhet != "mps" else "cpu") as f:
+            for k in f.keys():
+                if k.startswith("t3.") and k[3:] in sd:
+                    sd[k[3:]].copy_(f.get_tensor(k))
+                    n += 1
+        if n < 100:
+            raise RuntimeError(f"bara {n} svenska vikter lästes in")
         self.m = m
         return time.time() - t0
 
