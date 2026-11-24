@@ -31,7 +31,7 @@ export function demoEvents(): Ev[] {
     [1.0, 'agent.say', { agent: 'ordforande', to: 'alla', text: 'Vakten flaggade att vilopulsen i natt låg klart över baslinjen. Vi tar det i tur och ordning. Kardiologen börjar med pulsen.', cites: [{ kind: 'series', metric: 'hr', start: win[0], end: win[1] }] }],
     [0.5, 'agent.think', { agent: 'kardiolog' }],
     [1.2, 'agent.tool', { agent: 'kardiolog', tool: 'hamta_serie', args: { metric: 'hr', timmar_bakat: 12 } }],
-    [1.0, 'agent.say', { agent: 'kardiolog', to: 'alla', text: 'Pulsen låg på 68 till 74 mellan 02:14 och 02:31, mot normalt 57 vid den tiden. Jämn kurva, inga plötsliga hopp.', cites: [{ kind: 'series', metric: 'hr', start: win[0], end: win[1] }, 'HR baslinje 28 d'] }],
+    [1.0, 'agent.say', { agent: 'kardiolog', to: 'alla', text: 'Pulsen låg på 68 till 74 mellan 02:14 och 02:31, mot normalt 57 vid den tiden. Jämn kurva, inga plötsliga hopp.', cites: [{ kind: 'series', metric: 'hr', start: win[0], end: win[1] }, 'Puls baslinje 28 d'] }],
     [0.6, 'agent.say', { agent: 'advokat', to: 'kardiolog', text: 'Har du testat att dra åt armbandet? Klockan kan ha suttit löst.' }],
     [0.4, 'agent.tool', { agent: 'kardiolog', tool: 'hamta_serie', args: { metric: 'spo2', timmar_bakat: 12 } }],
     [0.8, 'agent.say', { agent: 'kardiolog', to: 'advokat', text: 'Syremättnaden mättes utan avbrott under samma period, så klockan verkar ha suttit på.', cites: [{ kind: 'series', metric: 'spo2', start: at(2, 0), end: at(3, 0) }] }],

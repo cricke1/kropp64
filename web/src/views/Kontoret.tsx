@@ -214,7 +214,7 @@ function EntryRow({ e }: { e: Entry }) {
       const cs = cites(e.cites)
       return (
         <div class="tr-say">
-          <div class="row"><Who id={e.agent!} /><span class="faint">{to ? `svarade ${to}` : 'svarade i tråden'}</span>{time}</div>
+          <div class="row"><Who id={e.agent!} /><span class="faint">{to ? `till ${to}` : 'svarade i tråden'}</span>{time}</div>
           <p>{struckText(e.text ?? '', e.struck)}</p>
           {cs.length > 0 && <div class="cites">{cs.map((c) => <span class={`chip k-${c.kind}`} title={c.title}><i />{c.label}</span>)}</div>}
           {e.struck?.map((s) => <div class="tr-reason"><b>Strukit av moderator.</b> Anledning: {s.reason}</div>)}

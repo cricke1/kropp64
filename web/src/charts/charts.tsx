@@ -73,7 +73,7 @@ export function Timeline({ points, color, unit, from, to, bands, markers, digits
     const span = to - from
     const opts: uPlot.Options = {
       width, height,
-      padding: [12, 8, 0, 0],
+      padding: [12, 24, 0, 0],
       legend: { show: false },
       cursor: { y: false, points: { size: 6, fill: col, stroke: col }, drag: { x: false, y: false } },
       scales: { x: { time: true, min: from, max: to }, y: { range: (_u, lo, hi) => { const p = Math.max(1, (hi - lo) * 0.12); return [Math.floor(lo - p), Math.ceil(hi + p)] } } },

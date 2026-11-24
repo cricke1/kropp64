@@ -561,7 +561,7 @@ export class Scene {
     rect(c, X, Y, W, H, '#142024')
     const meta = metricMeta(this.screen.metric)
     const col = METRIC_PIX[this.screen.metric] ?? '#c9d1d6'
-    text3(c, meta.short.slice(0, 5), X + 3, Y + 2, col)
+    text3(c, meta.short.slice(0, 5).toUpperCase(), X + 3, Y + 2, col)
     const pts = this.screen.points
     const px0 = X + 3, py0 = Y + 9, pw = W - 6, ph = H - 11
     // rutnät
