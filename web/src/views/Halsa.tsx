@@ -56,7 +56,7 @@ export function BriefPanel() {
     <section class="panel brief">
       <header><h2>Morgonbrief</h2><span class="meta">{b ? b.datum : 'Idrottsläkaren, lokal modell'}</span></header>
       <div class="body">
-        {b ? <p class="lead">{b.text}</p> : <div class="faint">Ingen brief i dag än. Den skrivs varje morgon av idrottsläkaren utifrån nattens siffror.</div>}
+        {b ? <p class="lead">{b.text}</p> : <div class="faint">{__PUBLIK_DEMO__ ? 'Språkmodellen är avstängd i den publika demon. På riktigt skrivs briefen varje morgon av idrottsläkaren utifrån nattens siffror.' : 'Ingen brief i dag än. Den skrivs varje morgon av idrottsläkaren utifrån nattens siffror.'}</div>}
         {b?.fakta && (
           <div class="brief-facts">
             {b.fakta.steg_senaste_dygnet != null && <span class="tag">{Number(b.fakta.steg_senaste_dygnet).toLocaleString('sv-SE')} steg</span>}
@@ -66,7 +66,7 @@ export function BriefPanel() {
         )}
         <div class="row-end">
           {err && <span class="err small">{err}</span>}
-          <button class="btn small" disabled={busy} onClick={make}>{busy ? 'Skriver' : b ? 'Skriv ny' : 'Skriv nu'}</button>
+          {!__PUBLIK_DEMO__ && <button class="btn small" disabled={busy} onClick={make}>{busy ? 'Skriver' : b ? 'Skriv ny' : 'Skriv nu'}</button>}
         </div>
       </div>
     </section>
@@ -159,6 +159,7 @@ const SYNC_TEXT: Record<string, string> = {
 }
 
 export function Sync1177() {
+  if (__PUBLIK_DEMO__) return null
   const s = useSide()
   const [open, setOpen] = useState(false)
   const [startedAt, setStartedAt] = useState(0)

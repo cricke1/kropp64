@@ -44,9 +44,9 @@ export function Kontoret({ query }: { query: URLSearchParams }) {
   const d = useDirector()
   const host = useRef<HTMLDivElement>(null)
   const [err, setErr] = useState<string | null>(null)
-  const consults = useAsync(() => api.consults(), [])
-  const demo = query.get('demo') === '1'
-  const replayId = query.get('replay')
+  const consults = useAsync(() => __PUBLIK_DEMO__ ? Promise.resolve([] as Consult[]) : api.consults(), [])
+  const demo = __PUBLIK_DEMO__ || query.get('demo') === '1'
+  const replayId = __PUBLIK_DEMO__ ? null : query.get('replay')
 
   useLayoutEffect(() => {
     host.current?.appendChild(director.scene.root)
@@ -65,6 +65,12 @@ export function Kontoret({ query }: { query: URLSearchParams }) {
   }, [demo, replayId, query.get('t')])
 
   const s = d.state
+  // Publik demo: manuset börjar om en stund efter bedömningen, så att sidan aldrig står still.
+  useEffect(() => {
+    if (!__PUBLIK_DEMO__ || !s.finished || s.mode !== 'demo') return
+    const t = setTimeout(() => director.restart(), 12000)
+    return () => clearTimeout(t)
+  }, [s.finished, s.mode])
   const trig = triggerText(s.trigger)
   const list = consults.data ?? []
 
@@ -80,7 +86,7 @@ export function Kontoret({ query }: { query: URLSearchParams }) {
           {s.mode === 'demo' && <span><span class="dot demo" /> Demo: <b>{trig.title}</b></span>}
         </div>
         <span style="flex:1" />
-        <div class="k-modes">
+        {!__PUBLIK_DEMO__ && <div class="k-modes">
           <div class="seg" role="group" aria-label="Läge">
             <button aria-pressed={s.mode === 'live'} onClick={() => go('kontoret')}>Live</button>
             <button aria-pressed={s.mode === 'demo'} onClick={() => go(`kontoret?demo=1&t=${Date.now()}`)}>Demo</button>
@@ -89,10 +95,10 @@ export function Kontoret({ query }: { query: URLSearchParams }) {
             <option value="">{list.length ? 'Spela upp konsilium' : 'Inga sparade konsilier'}</option>
             {list.map((c) => <option value={c.id}>{dateTime(c.started)}, {triggerText(c.trigger).title}</option>)}
           </select>
-        </div>
+        </div>}
       </div>
 
-      {s.mode === 'demo' && (
+      {s.mode === 'demo' && !__PUBLIK_DEMO__ && (
         <div class="demo-banner" role="note">
           <strong>Demo - syntetisk data.</strong>
           <span>Ett påhittat exempel som visar hur konsiliet arbetar. Inga av siffrorna är uppmätta.</span>

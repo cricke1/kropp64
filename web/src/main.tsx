@@ -21,13 +21,25 @@ function applyTheme(t: Theme) {
   document.documentElement.dataset.theme = dark ? 'dark' : 'light'
 }
 
-const NAV: [string, string][] = [
-  ['kontoret', 'Kontoret'],
-  ['oversikt', 'Översikt'],
-  ['konsilier', 'Konsilier'],
-  ['fraga', 'Fråga'],
-  ['systemet', 'Systemet'],
-]
+// I den publika demon finns inga sparade konsilier och inget som startar språkmodellen.
+const NAV: [string, string][] = __PUBLIK_DEMO__
+  ? [['kontoret', 'Kontoret'], ['oversikt', 'Översikt'], ['systemet', 'Systemet']]
+  : [
+      ['kontoret', 'Kontoret'],
+      ['oversikt', 'Översikt'],
+      ['konsilier', 'Konsilier'],
+      ['fraga', 'Fråga'],
+      ['systemet', 'Systemet'],
+    ]
+
+function DemoBanner() {
+  return (
+    <div class="demo-banner publik" role="note">
+      <strong>Demo - syntetisk data.</strong>
+      <span>Mätvärdena kommer från ett testskript och konsiliet i kontoret är ett manus. Inga riktiga hälsodata finns på den här servern.</span>
+    </div>
+  )
+}
 
 function Logo() {
   return (
@@ -62,6 +74,7 @@ function ThemeButton() {
 }
 
 function Conn() {
+  if (__PUBLIK_DEMO__) return <span class="conn" title="Publik demo utan live-ström"><span class="dot demo" /><span class="label">Demo</span></span>
   const l = useLive()
   const cls = l.state === 'open' ? 'on' : l.state === 'closed' ? 'off' : ''
   const txt = l.state === 'open' ? 'Ansluten' : l.state === 'closed' ? 'Ingen anslutning' : 'Ansluter'
@@ -80,7 +93,7 @@ function Toasts() {
 
 function App() {
   const r = useRoute()
-  useEffect(() => { live.start() }, [])
+  useEffect(() => { if (!__PUBLIK_DEMO__) live.start() }, [])
   const view = NAV.some(([k]) => k === r.view) ? r.view : 'kontoret'
   return (
     <div class="app">
@@ -93,6 +106,7 @@ function App() {
         <Conn />
         <ThemeButton />
       </header>
+      {__PUBLIK_DEMO__ && <DemoBanner />}
       <main class="page">
         {view === 'kontoret' && <Kontoret query={r.query} />}
         {view === 'oversikt' && <Oversikt />}

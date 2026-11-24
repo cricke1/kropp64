@@ -190,6 +190,13 @@ a.btn { text-decoration: none; }
   color: var(--text); border-radius: var(--radius); padding: 8px 12px; font-size: 13px;
 }
 .demo-banner strong { color: var(--warn); font-weight: 600; }
+/* publik demo: bannern sitter fast under menyn så att den syns i varje bildruta */
+.demo-banner.publik {
+  position: sticky; top: var(--nav-h); z-index: 19; border-radius: 0;
+  border-width: 0 0 1px; padding: 9px 20px;
+}
+.app:has(.demo-banner.publik) .k-transcript { top: calc(var(--nav-h) + 52px); height: calc(100vh - var(--nav-h) - 172px); }
+@media (max-width: 720px) { .demo-banner.publik { padding: 8px 14px; font-size: 12px; gap: 4px 8px; } }
 
 /* citat-chips */
 .chip {
