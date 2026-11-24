@@ -3,6 +3,7 @@ import { api, live, type Ev, type Series, type SleepSession } from '../api'
 import { Hypnogram, normStage, Spark, STAGES, Timeline, type Band, type Marker } from '../charts/charts'
 import { dayMonth, duration, fmtNum, hm, metricMeta, ymd } from '../format'
 import { anomalies, useAsync, useLive } from '../store'
+import { Sensorpanel } from './Sensorpanel'
 import { BriefPanel, DatornPanel, DatorStrip, RecoveryScore, Sync1177 } from './Halsa'
 
 const TILES = ['hr', 'hrv_rmssd', 'spo2', 'resp_rate', 'steps', 'skin_temp']
@@ -43,6 +44,7 @@ export function Oversikt() {
       <div class="tiles">
         {TILES.map((m) => <Tile metric={m} pts={recent.data?.[m]?.points ?? []} band={recent.data?.[m]?.band ?? null} latest={l.latest.get(m)} />)}
       </div>
+      <Sensorpanel />
       <div class="grid two">
         <RecoveryScore />
         <BriefPanel />

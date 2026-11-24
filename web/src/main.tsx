@@ -126,7 +126,7 @@ function App() {
   return (
     <div class="app">
       <header class="topbar">
-        <a class="brand" href="#/kontoret"><Logo /><span>Överklockad</span></a>
+        <a class="brand" href="#/kontoret"><Logo /><span>Kropp64</span></a>
         <nav class="nav" aria-label="Huvudmeny">
           {NAV.map(([k, label]) => <a href={`#/${k}`} aria-current={view === k ? 'page' : undefined}>{label}</a>)}
         </nav>
