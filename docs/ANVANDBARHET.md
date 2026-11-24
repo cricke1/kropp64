@@ -39,7 +39,7 @@ kodar på eftermiddagen, spelar på kvällen, sover för lite och vill börja tr
 | Inför vårdcentralen | PDF:en fanns på servern men inget i appen eller webben länkade dit. | Död ände. | "Öppna besöksunderlaget (PDF)" i mobilens Inställningar (öppnas i telefonens PDF-visare via FileProvider) och på webbens Idag. Åtgärden vid "ta upp med vården" pekar dit. |
 | Inställningar och integritet | Server, Health Connect, sms, stegmål. | Inget om plan, väckning, tysta timmar eller hur många notiser. | "Plan och knuffar": passdagar, passtid, väckning vardag och helg, tysta timmar, knuffar per dag (3/6/10) och av/på per sorts knuff. Sparas på servern. |
 | Mobilen utan nät | "Servern svarar inte" i Headroom-raden. | Dagens svar försvann. | Senaste Idag-svaret sparas och visas med "Ingen kontakt med servern. Visar svaret från ...". Klockan har planen i sin status och sammanfattar passet lokalt. |
-| Tillgänglighet | Flikraden klipptes vid 130 % textstorlek. Fliken hette "Tråden" och "Ny tråd". Termerna saknade förklaring. | | Lika breda flikar som får radbrytas, beslutskortet läses som en mening av TalkBack, passrutorna har "2 av 3 pass den här veckan" som beskrivning, flikar har roll och vald-status. "Vad betyder Headroom och zon?" ett tryck bort på Idag, med alla regler. |
+| Tillgänglighet | Flikraden klipptes vid 130 % textstorlek. Fliken hette "Tråden" och "Ny tråd". Termerna saknade förklaring. | | Flikarnas text växer högst till 115 % (resten av appen följer systemets textstorlek, verifierat vid 130 %), beslutskortet läses som en mening av TalkBack, passrutorna har "2 av 3 pass den här veckan" som beskrivning, flikar har roll och vald-status. "Vad betyder Headroom och zon?" ett tryck bort på Idag, med alla regler. |
 
 ## Före och efter, i siffror
 
