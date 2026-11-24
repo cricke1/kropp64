@@ -36,6 +36,16 @@ def _dagliga(metric: str, agg: str = "median", natt: bool = False) -> list[tuple
     return out
 
 
+def _testvarning() -> str:
+    """Finns testdata (emulator, syntetisk) i databasen och är den tillåten i urvalet står det överst i PDF:en,
+    så att ett underlag från en testserver aldrig kan misstas för riktiga mätningar."""
+    if not db.TILLAT_TESTDATA:
+        return ""
+    k = [r[0] for r in db.conn().execute("SELECT DISTINCT source FROM samples") if db.ar_testkalla(r[0])]
+    return (f'<p style="border:1pt solid #a8700f;padding:2mm 3mm;color:#7a5200"><b>Syntetisk testdata.</b> '
+            f'Källor: {html.escape(", ".join(k))}. Värdena är inte uppmätta på en människa.</p>') if k else ""
+
+
 def _sparkline(serie: list[tuple[str, float | None]], enhet: str, w: int = 520, h: int = 90) -> str:
     vals = [v for _, v in serie if v is not None]
     if len(vals) < 2:
@@ -114,6 +124,7 @@ td, th {{ text-align: left; padding: 1.2mm 2mm; border-bottom: 0.4pt solid #dde1
 footer {{ margin-top: 8mm; font-size: 8pt; color: #5d666e; }}
 </style>
 <h1>Besöksunderlag</h1>
+{_testvarning()}
 <p class="ingress">Sammanställt {datetime.now().strftime('%Y-%m-%d')} från egen mätdata (Pixel Watch) och journal (1177),
 analyserat lokalt. Detta är underlag för samtal, inte en diagnos.</p>
 <h2>Senaste {DAGAR} dagarna</h2>

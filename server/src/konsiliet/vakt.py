@@ -218,8 +218,9 @@ def rule_metric_vs_baseline(metric: str, minutes: int, z_limit: float, label: st
             return None
         # Vid datorn är man vaken. Baslinjen för en timme då man brukar sova säger då inget (spel kl. 02
         # jämfördes med sovpuls). Hög puls vid datorn hanteras av stressknuffen, och akutreglerna gäller alltid.
-        if metric == "hr" and sum(len(db.query_samples(f"dator_{k}", slut - minutes * 60, slut))
-                                  for k in ("kod", "spel", "chatt", "webb", "annat")) >= 5:
+        # Även en halvtimme efter datorn: pulsen efter en spelmatch är inte vilopuls.
+        if metric == "hr" and sum(len(db.query_samples(f"dator_{k}", slut - minutes * 60 - 1800, slut))
+                                  for k in ("kod", "spel", "chatt", "webb", "annat")) >= 3:
             return None
         base = baslinje(metric, datetime.fromtimestamp(slut).hour)
         if base is None:
@@ -334,7 +335,7 @@ def _evaluate(slut: float) -> list[Finding]:
 
 
 HISTORIK_S = 24 * 3600
-TRAD_MELLANRUM_S = 6 * 3600  # högst en tråd från vakten per sex timmar, utom vid akuta larm
+TRAD_MELLANRUM_S = 12 * 3600  # högst en tråd från vakten per tolv timmar (en natt), utom vid akuta larm
 
 
 def trad_tillats(f: Finding, nu: float) -> bool:

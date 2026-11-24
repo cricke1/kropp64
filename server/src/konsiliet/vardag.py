@@ -66,7 +66,7 @@ DAGNAMN = ["mån", "tis", "ons", "tor", "fre", "lör", "sön"]
 ZON_NAMN = ["", "mycket lätt", "lätt, du kan prata i hela meningar", "medel, korta meningar",
             "hårt, några ord i taget", "max"]
 ZON_PROCENT = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-BRADSKA_KLART = {"ingen": "Inget att göra", "bevaka": "Håll koll, ingen vård behövs nu",
+BRADSKA_KLART = {"ingen": "Inget som behöver vården", "bevaka": "Håll koll, ingen vård behövs nu",
                  "ta_upp_med_varden": "Ta upp med vården (inte akut)", "kontakta_vard_nu": "Kontakta vården nu"}
 
 _schema_ok = False
@@ -450,8 +450,13 @@ def _feber(nu: float) -> float | None:
 
 
 def idag(nu: float | None = None, snabb: bool = False) -> dict[str, Any]:
-    """Dagens svar. Beslut: trana, lugnt, vila eller klart. Allt deterministiskt, siffror med enheter."""
+    """Dagens svar. Beslut: trana, lugnt, vila eller klart. Allt deterministiskt, siffror med enheter.
+
+    Dygnet byter vid 04, inte vid midnatt: för den som spelar till två är 00:30 fortfarande i går kväll."""
     nu = nu or time.time()
+    verklig_nu = nu
+    if datetime.fromtimestamp(nu).hour < 4:
+        nu = _midnatt(nu) - 60
     inst = installningar()
     zz = zoner(inst, nu)
     z = {x["zon"]: x for x in zz["zoner"]}
@@ -464,7 +469,7 @@ def idag(nu: float | None = None, snabb: bool = False) -> dict[str, Any]:
     niva = plan_niva(nu, inst)
     oppet = None if snabb else _oppet(nu)
     feber = _feber(nu)
-    idag_pass = [p for p in pass_lista(_midnatt(nu), nu) if _langd_min(p, nu) >= 10]
+    idag_pass = [p for p in pass_lista(_midnatt(nu), verklig_nu) if _langd_min(p, verklig_nu) >= 10]
     hoppat = _state("pass_hoppat") == _dag(nu)
     passdag = datetime.fromtimestamp(nu).weekday() in inst["passdagar"]
 
@@ -759,7 +764,7 @@ def stress(nu: float) -> bool:
     return notis("stress", "Termisk strypning: hög puls vid datorn",
                  f"Klockfrekvens {med:.0f} BPM i 10 min under {vad}, fast du sitter still. Din vilopuls den här tiden "
                  f"är {b[0]:.0f} BPM. Kan vara spänning, koffein eller stress. Andas lugnt i 60 sekunder på klockan.",
-                 nu, {"puls": round(med), "baslinje": round(b[0])})
+                 nu, {"puls": round(med), "baslinje": round(b[0])}, trots_tyst=True)  # man sitter vid datorn: väcker ingen
 
 
 def laggdags(nu: float) -> bool:

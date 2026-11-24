@@ -96,10 +96,10 @@ def test_hog_puls_vid_datorn_ar_ingen_viloavvikelse(miljo):
     assert not [f for f in vakt.evaluate() if f.rule == "baseline_hr"]
 
 
-def test_en_trad_per_sex_timmar(miljo):
+def test_en_trad_per_natt(miljo):
     db, vakt, now = miljo
     f = vakt.Finding("baseline_hr", "avvikelse", "hr", "t", "d")
     g = vakt.Finding("skin_temp_delta", "avvikelse", "skin_temp_delta", "t", "d")
     a = vakt.Finding("hr_rest_acute", "akut", "hr", "t", "d")
     assert vakt.trad_tillats(f, now) and not vakt.trad_tillats(g, now + 600) and vakt.trad_tillats(a, now + 700)
-    assert vakt.trad_tillats(g, now + 700 + 6 * 3600)
+    assert vakt.trad_tillats(g, now + 700 + 12 * 3600)
