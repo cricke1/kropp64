@@ -64,3 +64,72 @@ sådan punkt kommer in, utan att vänta på nästa vaktvarv.
 ## 7. Port
 
 Port 8787 på Mac minin används av ett annat projekt. Appen har nu `http://100.69.247.16:8790` som standard.
+
+## Från webben (web/)
+
+Webben (web/) byggs mot serverns API som det ser ut i server/src/konsiliet/api.py. Här är det som
+saknas eller skulle göra webben bättre. Inget av det blockerar: webben fungerar utan, och tar automatiskt
+till sig fälten när de finns.
+
+### W1. Nedsampling av tidsserier: `GET /api/series/{metric}?hours=168&step=300`
+
+Sju dygn puls från klockan blir hundratusentals punkter och flera MB JSON, för mycket för mobilen.
+Önskan: valfri parameter `step` (sekunder). Servern returnerar då en punkt per hink.
+Helst `[ts, min, max, median]` per hink, annars median. Utan `step`: som i dag.
+
+Webben skickar redan `step` (30, 120 eller 300 beroende på period) och tunnar ut till min/max per
+pixelkolumn i klienten tills servern gör det.
+
+### W2. Latens per steg i `GET /api/system`
+
+Systemet-panelen har en tabell för latens som i dag visar streck. Önskat fält:
+
+```json
+"pipeline": [
+  {"step": "Mottagning (ingest)", "p50_ms": 4, "p95_ms": 11, "n": 812},
+  {"step": "Vakt, regelkoll", "p50_ms": 9, "p95_ms": 30, "n": 140},
+  {"step": "Specialist, per verktygsrunda", "p50_ms": 8200, "p95_ms": 19000, "n": 31},
+  {"step": "Granskning", "p50_ms": 2, "p95_ms": 5, "n": 12},
+  {"step": "Hela konsiliet", "p50_ms": 94000, "p95_ms": 160000, "n": 3}
+]
+```
+
+### W3. Ren genereringshastighet per modell
+
+`tokens_sedan_start.per_model` har `output_tokens` och `seconds`, så webben räknar tokens/s som
+ut-tokens delat med hela anropstiden (inklusive promptbearbetning). Ollama ger `eval_count`/`eval_duration`
+och `prompt_eval_count`/`prompt_eval_duration` per anrop. Önskat per modell:
+`{"gen_tokens_per_s": 21.4, "prompt_tokens_per_s": 380}`.
+
+### W4. Läsbara källor
+
+Citat i `agent.say` är korta referenser: `S:hr:start-slut`, `J:id`, `L:id`, `N:id`.
+`S:` tolkar webben själv. För `J:`, `L:` och `N:` hämtar webben /api/journal och /api/sleep och slår upp id.
+Enklare och robustare vore något av:
+
+- `cites` som objekt: `{"ref": "J:abc", "label": "Journal 2025-03-12", "kind": "journal"}`, eller
+- `GET /api/ref/{ref}` som returnerar posten.
+
+Okända referenser (till exempel baslinjejämförelser) visas i dag som "Baslinje".
+
+### W5. Vilket yttrande en strykning gäller
+
+`review.strike` har `target` (agenten) och `claim`. Påståendet är ofta inte ordagrant med i agentens
+sammanfattning, så webben kan inte alltid stryka rätt mening i pratbubblan och visar då strykningen som
+eget kort ovanför agenten. Önskat: `say_index` eller ett id på det `agent.say` som påståendet hör till,
+eller att påståendena skickas med i `agent.say` som `claims: [{text, kallor}]`.
+
+### W6. `members` i `consult.start`
+
+Servern skickar hela teamet, men ordföranden kallar bara in 2-4 specialister. Kontoret låter alla
+medlemmar gå till bordet. Önskat: bara de som faktiskt deltar (ordförande, valda specialister, advokat,
+granskare), eller ett `agent.move ... to: "bordet"` per deltagare (som redan görs senare i mötet).
+
+### Platser som kontoret förstår i `agent.move`
+
+`bordet`, `skrivbord_<id>` (eller bara `skrivbord`), `arkivet`, `labbet`, `tavlan`, `kaffe`, `dorr`,
+eller ett annat agent-id (gå fram till den agenten). Okänt mål tolkas som bordet.
+
+### W7. Behörighet i WebView
+
+Webben anropar `/api/...` och `/ws` med relativa sökvägar och skickar inga egna headers. Punkt 4 ovan (cookie via `?token=`) löser webbens behov också.
