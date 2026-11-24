@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>se.konsiliet.gitpush</string>
+  <key>WorkingDirectory</key><string>/Users/sture/konsiliet</string>
+  <key>ProgramArguments</key>
+  <array><string>/bin/sh</string><string>-c</string>
+    <string>/usr/bin/git push -q origin main >> /Users/sture/.konsiliet/gitpush.log 2>&amp;1</string></array>
+  <key>EnvironmentVariables</key><dict><key>PATH</key><string>/opt/homebrew/bin:/usr/bin:/bin</string></dict>
+  <key>StartInterval</key><integer>1800</integer>
+</dict>
+</plist>
