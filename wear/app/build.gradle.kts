@@ -68,4 +68,9 @@ dependencies {
     implementation("androidx.wear.compose:compose-material3:1.5.3")
     implementation("androidx.wear.compose:compose-foundation:1.5.3")
     implementation("androidx.compose.ui:ui-tooling-preview")
+
+    // Tile och komplikationer.
+    implementation("androidx.wear.tiles:tiles:1.5.0")
+    implementation("androidx.wear.protolayout:protolayout:1.3.0")
+    implementation("androidx.wear.watchface:watchface-complications-data-source-ktx:1.2.1")
 }

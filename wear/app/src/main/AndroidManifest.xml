@@ -16,6 +16,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".KonsilietWearApp"
@@ -64,6 +65,61 @@
                 <action android:name="com.google.android.gms.wearable.CAPABILITY_CHANGED" />
                 <data android:scheme="wear" android:host="*" android:path="/konsiliet_phone" />
             </intent-filter>
+            <!-- Status från mobilen (återhämtning, konsiliets läge) för tile och komplikationer. -->
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+                <data android:scheme="wear" android:host="*" android:path="/konsiliet/status" />
+            </intent-filter>
+        </service>
+
+        <!-- Tile: återhämtning, puls, konsiliets läge, senast synkad. -->
+        <service
+            android:name=".tile.KonsilietTile"
+            android:exported="true"
+            android:label="@string/tile_label"
+            android:description="@string/tile_description"
+            android:icon="@drawable/ic_stat"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+            <meta-data
+                android:name="androidx.wear.tiles.PREVIEW"
+                android:resource="@drawable/tile_preview" />
+        </service>
+
+        <!-- Komplikationer. Uppdateras när mobilen skickar ny status, inte på timer (period 0). -->
+        <service
+            android:name=".complication.RecoveryComplication"
+            android:exported="true"
+            android:label="@string/comp_recovery"
+            android:icon="@drawable/ic_stat"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
+            </intent-filter>
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="RANGED_VALUE,SHORT_TEXT" />
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="0" />
+        </service>
+        <service
+            android:name=".complication.ConsultComplication"
+            android:exported="true"
+            android:label="@string/comp_consult"
+            android:icon="@drawable/ic_stat"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
+            </intent-filter>
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="SHORT_TEXT,LONG_TEXT" />
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="0" />
         </service>
 
         <!-- Passiva registreringar överlever inte omstart. Registrera om efter boot och uppdatering. -->

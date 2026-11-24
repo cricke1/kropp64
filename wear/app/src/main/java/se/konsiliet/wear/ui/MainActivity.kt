@@ -171,6 +171,7 @@ private fun ago(ms: Long, now: Long): String {
 private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
     val ctx = androidx.compose.ui.platform.LocalContext.current
     val status by WatchState.status.collectAsState()
+    val phone by se.konsiliet.wear.data.PhoneStatus.snapshot.collectAsState()
     val pending by remember { QueueDb.get(ctx).pending().countFlow() }.collectAsState(initial = 0)
     val msg by ExerciseService.message.collectAsState()
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
@@ -218,6 +219,16 @@ private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
                         Text(" slag/min", color = Dim, fontSize = 12.sp, modifier = Modifier.padding(bottom = 8.dp))
                     }
                     Text(ago(status.lastHrAt, now), color = Dim, fontSize = 12.sp, style = Tab)
+                }
+            }
+            item {
+                // Samma rader som tilen, så att den som trycker på tilen känner igen sig.
+                val (cText, cColor) = se.konsiliet.wear.tile.TileLayout.consultLine(phone)
+                val (sText, sColor) = se.konsiliet.wear.tile.TileLayout.syncLine(phone, now)
+                Column(Modifier.fillMaxWidth().morph(this, spec).padding(top = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Headroom " + (phone.score?.toString() ?: "--") + "/100", color = Ink, fontSize = 14.sp, style = Tab)
+                    Text(cText, color = Color(cColor), fontSize = 12.sp, textAlign = TextAlign.Center)
+                    Text(sText, color = Color(sColor), fontSize = 11.sp, style = Tab)
                 }
             }
             if (WatchState.isEmulator()) {

@@ -13,6 +13,9 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.CapabilityInfo
+import com.google.android.gms.wearable.DataEvent
+import com.google.android.gms.wearable.DataEventBuffer
+import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.Node
 import com.google.android.gms.wearable.Wearable
@@ -25,6 +28,7 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeout
 import org.json.JSONArray
 import org.json.JSONObject
+import se.konsiliet.wear.data.PhoneStatus
 import se.konsiliet.wear.data.QueueDb
 import se.konsiliet.wear.data.WatchState
 
@@ -36,6 +40,7 @@ object Protocol {
     const val PATH_BATCH = "/konsiliet/batch"
     const val PATH_FLUSH = "/konsiliet/flush"
     const val PATH_NUDGE = "/konsiliet/nudge"
+    const val PATH_ALERT = "/konsiliet/alert"
     const val BATCH_SIZE = 400
 }
 
@@ -142,47 +147,24 @@ class FlushWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
     }
 }
 
-/** Mobilen ber om data (t.ex. när appen öppnas) eller kommer tillbaka inom räckhåll. */
+/**
+ * Mobilen ber om data, kommer tillbaka inom räckhåll, skickar en påminnelse eller ett akut larm
+ * (MessageClient), eller har ny status för tile och komplikationer (DataClient, `/konsiliet/status`).
+ * Data Layer synkar dataobjekt när anslutningen kommer tillbaka, så en status som ändrades
+ * medan klockan var frånkopplad kommer fram ändå. Bara det senaste läget levereras.
+ */
 class PhoneListenerService : WearableListenerService() {
-    override fun onMessageReceived(event: MessageEvent) {
-        when (event.path) {
-            Protocol.PATH_FLUSH -> Flush.request(applicationContext, urgent = true)
-            Protocol.PATH_NUDGE -> {
-                val o = runCatching { JSONObject(String(event.data)) }.getOrNull() ?: return
-                Nudge.show(applicationContext, o.optString("title"), o.optString("body"))
-            }
-        }
+    override fun onMessageReceived(event: MessageEvent) = Incoming.message(applicationContext, event.path, event.data)
+
+    override fun onDataChanged(events: DataEventBuffer) {
+        events.filter { it.type == DataEvent.TYPE_CHANGED && it.dataItem.uri.path == PhoneStatus.PATH }
+            .mapNotNull { DataMapItem.fromDataItem(it.dataItem).dataMap.getString("status") }
+            .lastOrNull()?.let { Incoming.status(applicationContext, it) }
     }
 
     override fun onCapabilityChanged(info: CapabilityInfo) {
         if (info.name == Protocol.CAP_PHONE && info.nodes.isNotEmpty()) {
             Flush.request(applicationContext, urgent = true)
         }
-    }
-}
-
-/** Stillasittandevaktens påminnelse: notis med tydlig vibration på klockan. */
-object Nudge {
-    private const val CHANNEL = "rorelse"
-
-    fun show(ctx: Context, title: String, body: String) {
-        val nm = ctx.getSystemService(android.app.NotificationManager::class.java)
-        nm.createNotificationChannel(android.app.NotificationChannel(CHANNEL, "Rörelse",
-            android.app.NotificationManager.IMPORTANCE_HIGH).apply {
-            enableVibration(true)
-            vibrationPattern = longArrayOf(0, 250, 150, 250)
-        })
-        if (Build.VERSION.SDK_INT >= 33 &&
-            ctx.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED
-        ) return
-        val n = androidx.core.app.NotificationCompat.Builder(ctx, CHANNEL)
-            .setSmallIcon(se.konsiliet.wear.R.drawable.ic_stat)
-            .setContentTitle(title)
-            .setContentText(body)
-            .setAutoCancel(true)
-            .setVibrate(longArrayOf(0, 250, 150, 250))
-            .setCategory(androidx.core.app.NotificationCompat.CATEGORY_REMINDER)
-            .build()
-        nm.notify(20, n)
     }
 }

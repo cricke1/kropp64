@@ -6,6 +6,9 @@
             <intent-filter>
                 <action android:name="se.konsiliet.debug.EXPORT" />
                 <action android:name="se.konsiliet.debug.ACK" />
+                <action android:name="se.konsiliet.debug.STATUS" />
+                <action android:name="se.konsiliet.debug.MESSAGE" />
+                <action android:name="se.konsiliet.debug.HAPTIC" />
             </intent-filter>
         </receiver>
     </application>
