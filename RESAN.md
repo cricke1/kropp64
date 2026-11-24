@@ -291,3 +291,35 @@ servern såg besökarens riktiga IP i stället för tunnelns 127.0.0.1 och block
 `--no-proxy-headers`. Tunneltrafik känns fortfarande igen säkert, eftersom bara anslutningar från localhost
 släpps in och de kräver token när Cloudflares header finns. Matris efteråt: sajten 200, demo 200, app-API utan
 token 401, med token 200, LAN 403.
+
+## Landningssidan, andra försöket: "ser AI ut"
+
+Ägaren tyckte att första versionen av kropp64.se såg ut som en mall: stor sansrubrik, två knappar, en
+skärmbildsruta, mörkgrått. Det stämde. Allt på sidan kunde ha handlat om vad som helst. Omgjord så att
+formspråket kommer ur projektets egen värld, hårdvarumonitorn och kroppen:
+
+- **En egen bild i stället för en produktbild.** `render/sajt/` renderar ett kretskort i makro i Blender på
+  Lenovon (Cycles, OptiX, 86 s för 2400x1600 i 384 sampel): en guldpläterad ledare formad som ett EKG går in i
+  en processor som är lasergraverad Kropp64, lysdioden D7 sitter bredvid och fläktkontakten heter J4 Andning.
+  Texturerna (lödmask, koppar, silkscreen, gravyr) ritas med PIL ur en gemensam layoutfil så att 3D-delarna
+  hamnar på sina lödytor. Siffrorna på processorn är exempelvärden och står som det i bildtexten.
+- **Värmekameran** är en AOV ("heat") i samma rendering, där varje material skriver ett värmevärde och kortet
+  svalnar med avståndet från processorn. Den läggs genom en ironbow-palett, skalas ner till 320 px bred och
+  tillbaka som en riktig värmekamera. Bildtexten säger att det är falsk färg, inte en mätning.
+- **Typsnitt:** Familjen Grotesk (svensk, från byrån Familjen) och Martian Mono med smal bredd för
+  avläsningar, båda självhostade, 59 kB tillsammans.
+- **Ljust läge är ett datablad** (papper, millimeterrutor, korn), mörkt läge är lödmask. En accentfärg,
+  signalorange. Akutavsnittet är ett rent block utan rutor, korn eller skämt.
+- **Detaljerna:** POST-skärmen skrivs ut en gång per besök, sensortabellen tickar med syntetiska värden,
+  lysdioden på bilden blinkar i 67 BPM, fläkten snurrar ett varv per andetag i demodatan, staplarna i
+  "Uppmätt" ser ut som ett hårdvarutest, och läkarteamet visas som en riktig forumtråd ur demons manus med
+  moderatorns strykning. Allt respekterar prefers-reduced-motion.
+- **Vikt:** site/dist är 1,1 MB, varav kontorsfilmen 576 kB som laddas först när den syns. Första vyn är
+  ungefär 200 kB. Ingen horisontell scroll på 375 px.
+
+Riggvyn (three.js) var inte klar när sidan byggdes. Hjältebilden har en tydlig plats (`#riggvyn-plats`) där
+vyn kan ersätta renderingen. Skärmbilder: `docs/skarmbilder/sajt-*.png`.
+
+Ett misstag på vägen: första provrenderingen var kraftigt överexponerad, eftersom ljusstyrkorna från
+hjältebilden (skrivbordsskala, 0,6 m) återanvändes i makroskala (0,2 m). Exponeringen sänktes 5 steg och en
+reflexskärm som bara når processorlocket (light linking) gjorde gravyren läsbar utan att bränna ut kortet.
