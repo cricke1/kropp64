@@ -22,7 +22,7 @@ Pixel-mått. Insidan i 16 GB-bilden är en illustration, inte en exakt kopia av 
 Headroom 72 och tabellen), ritade av `render/skarmar.py` i appens färger. De är inte uppmätt data.
 
 Siffrorna i 16 GB-bilden: 14,7 GB och 9,1 GB är uppmätta på Mac minin (se RESAN.md).
-Behovet för Qwen3.8-27B (ca 18 GB) kommer från projektets anteckningar, inte från en egen mätning i `bench/`.
+Qwen3.8-27B: 17,7 GB (17 741 872 154 byte, varav vikterna 16,8 GB) enligt modellens manifest i Ollamas register, sparat i `bench/resultat/qwen3.8-27b-manifest.json` (hämtat 2026-11-25). Det är bara filen; kontext och operativsystem kommer ovanpå. Modellen har inte laddats ner eller körts här, eftersom den inte får plats i 16 GB.
 
 ## Rendera om
 

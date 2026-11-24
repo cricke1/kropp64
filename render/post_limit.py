@@ -1,5 +1,5 @@
 """Text och stapeldiagram ovanpa 16 GB-renderingen. Bara uppmatta/angivna siffror:
-Qwen3.5 9B 14,7 GB fore justering, 9,1 GB efter (RESAN.md), Qwen3.8-27B ca 18 GB (far inte plats).
+Qwen3.5 9B 14,7 GB fore justering, 9,1 GB efter (RESAN.md), Qwen3.8-27B 17,7 GB bara filen enligt Ollamas register (far inte plats).
 python3 post_limit.py <render.png> <ankare.json> <ut.png>
 """
 import sys, os, json
@@ -70,7 +70,7 @@ def gx(v):
 rows = [
     ('Qwen3.5 9B, 16k kontext, parallellt', 14.7, '14,7 GB', WARN, 'Ollamas standardläge. Datorn swappade.'),
     ('Qwen3.5 9B, 8k kontext, en i taget', 9.1, '9,1 GB', OK, 'KV-cache q8_0 och flash attention. Nuvarande.'),
-    ('Qwen3.8-27B', 18.0, 'ca 18 GB', DANGER, 'får inte plats'),
+    ('Qwen3.8-27B', 17.74, '17,7 GB', DANGER, 'bara filen, enligt Ollamas register. Får inte plats.'),
 ]
 y = 440
 bh = 22
