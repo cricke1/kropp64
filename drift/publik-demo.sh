@@ -41,7 +41,7 @@ stada() {
 trap stada EXIT INT TERM
 
 cd "$REPO/server"
-PYTHONPATH="$REPO/drift" uv run --quiet uvicorn publik_demo:app --host 127.0.0.1 --port "$PORT" --log-level warning &
+PYTHONPATH="$REPO/drift" uv run --quiet uvicorn publik_demo:app --host 127.0.0.1 --port "$PORT" --log-level warning --no-proxy-headers --no-access-log &
 PIDS+=($!)
 
 for _ in $(seq 1 60); do

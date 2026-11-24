@@ -218,7 +218,7 @@ brytningsindex 1,52, så urtavlan förstorades och förvrängdes som genom en li
 Lösning: glas utan brytning med ett klarlackslager för reflexerna.
 
 **Rendertider på RTX 5050 (OptiX, denoising på GPU, adaptiv sampling, upp till 512 sampel):** hjältebild
-1920x1080 46,5 s, 1080x1350 31,2 s, dataflödet 30,4 s, 16 GB-bilden 47,9 s. Skärmarna i hjältebilden är
+1920x1080 55,1 s, 1080x1350 44,6 s, dataflödet 30,4 s, 16 GB-bilden 47,9 s. Skärmarna i hjältebilden är
 en illustration med exempelvärden, inte uppmätt data.
 
 **Röster i kontoret.** Läkarna i pixelkontoret kan nu höras, av som standard med en ljudknapp. Kravet var
@@ -284,3 +284,10 @@ databas (port 8798, aldrig 8790).
   rutan visas med äldre data än senaste statusen (den händelsen sågs aldrig på emulatorn, så den är inte verifierad). Komplikationerna uppdaterades direkt.
 - *Testskriptet körde inte alls en stund:* `timeout` finns inte på macOS, så mina anrop av bryggan föll tyst
   och jag letade fel i rutan. Lärdom: kontrollera att teststeget faktiskt kördes innan felet söks i appen.
+
+**Tunneln gav 403 på allt.** När kropp64.se väl pekade på Cloudflare svarade app och demo "Ej tillgänglig".
+Orsak: uvicorn litar som standard på X-Forwarded-For från localhost, och cloudflared sätter den headern, så
+servern såg besökarens riktiga IP i stället för tunnelns 127.0.0.1 och blockerade det som "utifrån". Fix:
+`--no-proxy-headers`. Tunneltrafik känns fortfarande igen säkert, eftersom bara anslutningar från localhost
+släpps in och de kräver token när Cloudflares header finns. Matris efteråt: sajten 200, demo 200, app-API utan
+token 401, med token 200, LAN 403.
