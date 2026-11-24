@@ -63,25 +63,67 @@ class Parambe:
             perth.PerthImplicitWatermarker = _Ingen
         from chatterbox.mtl_tts import ChatterboxMultilingualTTS
         from huggingface_hub import hf_hub_download
-        from safetensors import safe_open
 
         t0 = time.time()
         self.enhet = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
-        m = ChatterboxMultilingualTTS.from_pretrained(device=self.enhet)
-        # En tensor i taget direkt till rätt enhet: load_file på hela filen kraschade (access violation) på
-        # Windows när Lenovon hade ont om ledigt minne.
         fil = hf_hub_download("Parambe/Chatterbox-Swedish-Parambe-V1", "parambe_swedish_v1.safetensors")
-        sd = m.t3.state_dict()
-        n = 0
-        with torch.no_grad(), safe_open(fil, framework="pt", device=self.enhet if self.enhet != "mps" else "cpu") as f:
+        if self.enhet == "cuda":
+            m = self._snal_laddning(fil)
+        else:
+            m = ChatterboxMultilingualTTS.from_pretrained(device=self.enhet)
+            self._svenska_vikter(m.t3, fil)
+        self.m = m
+        return time.time() - t0
+
+    @staticmethod
+    def _svenska_vikter(t3, fil: str) -> None:
+        """Parambes svenska T3-vikter ovanpå originalet, en tensor i taget."""
+        import torch
+        from safetensors import safe_open
+
+        sd, n = t3.state_dict(), 0
+        dev = next(t3.parameters()).device
+        with torch.no_grad(), safe_open(fil, framework="pt", device="cuda" if dev.type == "cuda" else "cpu") as f:
             for k in f.keys():
                 if k.startswith("t3.") and k[3:] in sd:
                     sd[k[3:]].copy_(f.get_tensor(k))
                     n += 1
         if n < 100:
             raise RuntimeError(f"bara {n} svenska vikter lästes in")
-        self.m = m
-        return time.time() - t0
+
+    def _snal_laddning(self, parambe: str):
+        """Som ChatterboxMultilingualTTS.from_local, men modellerna byggs direkt på grafikkortet och vikterna
+        läses en tensor i taget. Originalet lägger allt i RAM först, och på Lenovon tog sidfilen slut
+        ("The paging file is too small") när andra jobb körde där samtidigt."""
+        import torch
+        from chatterbox.models.s3gen import S3Gen
+        from chatterbox.models.t3 import T3
+        from chatterbox.models.t3.modules.t3_config import T3Config
+        from chatterbox.models.tokenizers import MTLTokenizer
+        from chatterbox.models.voice_encoder import VoiceEncoder
+        from chatterbox.mtl_tts import ChatterboxMultilingualTTS, Conditionals
+        from huggingface_hub import snapshot_download
+        from safetensors import safe_open
+
+        d = Path(snapshot_download("ResembleAI/chatterbox", allow_patterns=[
+            "ve.pt", "t3_mtl23ls_v2.safetensors", "s3gen.pt", "grapheme_mtl_merged_expanded_v1.json", "conds.pt",
+            "Cangjie5_TC.json"]))
+        dev = torch.device("cuda")
+        with dev:
+            ve = VoiceEncoder()
+            t3 = T3(T3Config.multilingual())
+            s3gen = S3Gen()
+        ve.load_state_dict(torch.load(d / "ve.pt", map_location=dev, weights_only=True, mmap=True))
+        sd = t3.state_dict()
+        with torch.no_grad(), safe_open(str(d / "t3_mtl23ls_v2.safetensors"), framework="pt", device="cuda") as f:
+            for k in f.keys():
+                if k in sd:
+                    sd[k].copy_(f.get_tensor(k))
+        self._svenska_vikter(t3, parambe)
+        s3gen.load_state_dict(torch.load(d / "s3gen.pt", map_location=dev, weights_only=True, mmap=True))
+        conds = Conditionals.load(d / "conds.pt", map_location=dev).to(dev) if (d / "conds.pt").exists() else None
+        return ChatterboxMultilingualTTS(t3.eval(), s3gen.eval(), ve.eval(),
+                                         MTLTokenizer(str(d / "grapheme_mtl_merged_expanded_v1.json")), dev, conds=conds)
 
     def _generera(self, text: str, uttryck: float, cfg: float):
         """Som ChatterboxMultilingualTTS.generate, men med ett tak för antalet taltoken efter textens längd.
