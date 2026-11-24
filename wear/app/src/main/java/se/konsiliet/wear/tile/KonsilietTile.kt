@@ -18,6 +18,10 @@ import androidx.wear.protolayout.LayoutElementBuilders.Text
 import androidx.wear.protolayout.ModifiersBuilders
 import androidx.wear.protolayout.ResourceBuilders
 import androidx.wear.protolayout.TimelineBuilders
+import androidx.wear.protolayout.TypeBuilders
+import androidx.wear.protolayout.expression.DynamicBuilders.DynamicFloat
+import androidx.wear.protolayout.expression.DynamicBuilders.DynamicString
+import androidx.wear.protolayout.expression.PlatformHealthSources
 import androidx.wear.tiles.RequestBuilders
 import androidx.wear.tiles.TileBuilders
 import androidx.wear.tiles.TileService
@@ -45,20 +49,25 @@ private const val AKUT = 0xFFF0645A.toInt()
 /**
  * Ruta "Kropp64": headroom (återhämtningspoängen, ring och siffra), klockfrekvens (puls), supporttrådens läge och när
  * mobilen senast synkade. Läser bara cachen (PhoneStatus, WatchState), så den svarar direkt och
- * kostar inget nätverk. Uppdateras när ny status kommer (Surfaces.update), högst var femte minut
- * för pulsen, när den visas och är äldre än senaste statusen, och annars var femte minut.
+ * kostar inget nätverk. Ritas om när ny status kommer (Surfaces.requestTile, uppmätt 0,05-2 s, högst
+ * en gång per 20 s enligt systemets strypning), och klockfrekvensen uppdateras dynamiskt av rendraren.
  */
 class KonsilietTile : TileService() {
     companion object { @Volatile private var lastRendered = 0L }
 
     override fun onTileRequest(requestParams: RequestBuilders.TileRequest): ListenableFuture<TileBuilders.Tile> {
         lastRendered = System.currentTimeMillis()
+        // Mätpunkt för hur snabbt rutan ritas om efter ny status (se RESAN.md).
+        android.util.Log.i("KonsilietTile", "onTileRequest, status mottagen för ${lastRendered - PhoneStatus.snapshot.value.receivedAt} ms sedan")
         val layout = TileLayout.build(PhoneStatus.snapshot.value, WatchState.status.value, System.currentTimeMillis(),
             packageName)
         return Futures.immediateFuture(
             TileBuilders.Tile.Builder()
                 .setResourcesVersion(RES_VERSION)
-                .setFreshnessIntervalMillis(5 * 60_000L)
+                // Ny status ritar om rutan direkt (Surfaces.requestTile). Färskhetsintervallet är bara ett
+                // skyddsnät: en minut medan en tråd pågår, annars 15 minuter. Klockfrekvensen är dynamisk
+                // och behöver ingen omritning.
+                .setFreshnessIntervalMillis(if (PhoneStatus.snapshot.value.consultRunning) 60_000L else 15 * 60_000L)
                 .setTileTimeline(TimelineBuilders.Timeline.fromLayoutElement(layout))
                 .build()
         )
@@ -70,9 +79,8 @@ class KonsilietTile : TileService() {
      */
     @Deprecated("Ersätts av onRecentInteractionEventsAsync, men finns kvar i tiles 1.5")
     override fun onTileEnterEvent(requestParams: androidx.wear.tiles.EventBuilders.TileEnterEvent) {
-        val newest = maxOf(PhoneStatus.snapshot.value.receivedAt, WatchState.status.value.lastHrAt)
-        if (newest > lastRendered || System.currentTimeMillis() - lastRendered > 5 * 60_000L) {
-            getUpdater(this).requestUpdate(KonsilietTile::class.java)
+        if (PhoneStatus.snapshot.value.receivedAt > lastRendered) {
+            se.konsiliet.wear.link.Surfaces.requestTile(this)
         }
     }
 
@@ -87,6 +95,23 @@ object TileLayout {
         Text.Builder().setText(s).setMaxLines(1)
             .setFontStyle(FontStyle.Builder().setSize(sp(size)).setColor(argb(color)).setWeight(weight).build())
             .build()
+
+    /**
+     * Klockfrekvensen som dynamiskt värde (PlatformHealthSources.heartRateBpm): rendraren uppdaterar
+     * siffran själv från klockans pulssensor, utan att rutan hämtas om. Det statiska värdet (senaste
+     * pulsen klockappen sett) visas om plattformen inte kan ge puls.
+     */
+    private fun heartRate(fallback: String): LayoutElement {
+        val bpm = PlatformHealthSources.heartRateBpm()
+            .format(DynamicFloat.FloatFormatter.Builder().setMaxFractionDigits(0).setGroupingUsed(false).build())
+        val dyn = DynamicString.constant("Klockfrekvens ").concat(bpm).concat(DynamicString.constant(" BPM"))
+        return Text.Builder()
+            .setText(TypeBuilders.StringProp.Builder(fallback).setDynamicValue(dyn).build())
+            .setLayoutConstraintsForDynamicText(TypeBuilders.StringLayoutConstraint.Builder("Klockfrekvens 000 BPM").build())
+            .setMaxLines(1)
+            .setFontStyle(FontStyle.Builder().setSize(sp(14f)).setColor(argb(INK)).build())
+            .build()
+    }
 
     private fun gap(h: Float): LayoutElement = Spacer.Builder().setHeight(dp(h)).build()
 
@@ -135,7 +160,7 @@ object TileLayout {
             .addContent(text(score?.toString() ?: "--", 40f, if (score == null) DIM else INK, LayoutElementBuilders.FONT_WEIGHT_MEDIUM))
             .addContent(text(if (score == null) (p.scoreNote ?: "ingen poäng") else "av 100", 11f, DIM))
             .addContent(gap(6f))
-            .addContent(text(if (hrFresh) "Klockfrekvens %.0f BPM".format(w.lastHr) else "Klockfrekvens --", 14f, INK))
+            .addContent(heartRate(if (hrFresh) "Klockfrekvens %.0f BPM".format(w.lastHr) else "Klockfrekvens --"))
             .addContent(gap(4f))
             .addContent(text(cText, 12f, cColor, LayoutElementBuilders.FONT_WEIGHT_MEDIUM))
             .addContent(gap(2f))

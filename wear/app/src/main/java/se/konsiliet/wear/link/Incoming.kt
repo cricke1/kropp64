@@ -77,20 +77,53 @@ object Incoming {
 
 /** Tile och komplikationer läser cachen. Här ber vi systemet hämta om dem. */
 object Surfaces {
-    private var lastHrRequest = 0L
+    /**
+     * Ber systemet rita om rutan. Binder direkt till systemets uppdateringstjänst
+     * (androidx.wear.tiles.action.BIND_UPDATE_REQUESTER i hemskärmens paket) och skickar begäran
+     * när anslutningen finns. TileService.getUpdater().requestUpdate() gjorde ingenting på
+     * klockemulatorn (Wear OS 6): ingen ny rendering på 20 försök, medan en direkt bindning gav
+     * onTileRequest inom 15 ms (se RESAN.md). Biblioteket används som reserv.
+     * Väntar högst 3 s på anslutningen om den anropas utanför huvudtråden, så att processen inte
+     * hinner frysas innan begäran gått iväg (onDataChanged körs på en bakgrundstråd).
+     */
+    @android.annotation.SuppressLint("RestrictedApi")
+    fun requestTile(ctx: Context) {
+        val app = ctx.applicationContext
+        val home = app.packageManager.resolveActivity(
+            android.content.Intent(android.content.Intent.ACTION_MAIN).addCategory(android.content.Intent.CATEGORY_HOME), 0)
+            ?.activityInfo?.packageName
+        val done = java.util.concurrent.CountDownLatch(1)
+        val conn = object : android.content.ServiceConnection {
+            override fun onServiceConnected(name: ComponentName, b: android.os.IBinder) {
+                try {
+                    androidx.wear.tiles.TileUpdateRequesterService.Stub.asInterface(b)
+                        .requestUpdate(ComponentName(app, KonsilietTile::class.java), androidx.wear.tiles.TileUpdateRequestData())
+                    android.util.Log.i("KonsilietTile", "requestUpdate skickad till $home")
+                } catch (e: Exception) {
+                    android.util.Log.w("KonsilietTile", "requestUpdate misslyckades", e)
+                } finally {
+                    runCatching { app.unbindService(this) }
+                    done.countDown()
+                }
+            }
+            override fun onServiceDisconnected(name: ComponentName) {}
+        }
+        val bound = home != null && runCatching {
+            app.bindService(android.content.Intent("androidx.wear.tiles.action.BIND_UPDATE_REQUESTER").setPackage(home),
+                conn, Context.BIND_AUTO_CREATE)
+        }.getOrDefault(false)
+        if (!bound) {
+            android.util.Log.i("KonsilietTile", "ingen uppdateringstjänst, använder TileService.getUpdater")
+            runCatching { TileService.getUpdater(app).requestUpdate(KonsilietTile::class.java) }
+            return
+        }
+        if (android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) done.await(3, java.util.concurrent.TimeUnit.SECONDS)
+    }
 
     fun update(ctx: Context) {
-        runCatching { TileService.getUpdater(ctx).requestUpdate(KonsilietTile::class.java) }
+        requestTile(ctx)
         for (c in listOf(RecoveryComplication::class.java, ConsultComplication::class.java)) {
             runCatching { ComplicationDataSourceUpdateRequester.create(ctx, ComponentName(ctx, c)).requestUpdateAll() }
         }
-    }
-
-    /** Pulsen ändras ofta. Tilen uppdateras för den högst var femte minut, för batteriets skull. */
-    fun onHeartRate(ctx: Context) {
-        val now = System.currentTimeMillis()
-        if (now - lastHrRequest < 5 * 60_000) return
-        lastHrRequest = now
-        runCatching { TileService.getUpdater(ctx).requestUpdate(KonsilietTile::class.java) }
     }
 }

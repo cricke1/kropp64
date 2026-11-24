@@ -25,6 +25,20 @@ import se.konsiliet.wear.link.Sender
  */
 class DebugBridge : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == "se.konsiliet.debug.STATUS") {
+            // Som WearableListenerService.onDataChanged: på en bakgrundstråd med huvudtråden fri.
+            // Huvudtråden måste vara fri för att requestUpdate ska hinna binda till systemets
+            // uppdateringstjänst (se RESAN.md). goAsync håller processen vid liv under tiden.
+            val pending = goAsync()
+            Thread {
+                try {
+                    se.konsiliet.wear.link.Incoming.status(context, File(context.filesDir, "status.json").readText())
+                    Log.i("KonsilietDebug", "status: ${se.konsiliet.wear.data.PhoneStatus.snapshot.value}")
+                    Thread.sleep(intent.getLongExtra("linger", 2000))
+                } finally { pending.finish() }
+            }.start()
+            return
+        }
         val dao = QueueDb.get(context).pending()
         runBlocking(Dispatchers.IO) {
             when (intent.action) {
@@ -34,10 +48,6 @@ class DebugBridge : BroadcastReceiver() {
                     File(context.filesDir, "batch.range").writeText(
                         if (rows.isEmpty()) "" else "${rows.first().id} ${rows.last().id}")
                     Log.i("KonsilietDebug", "exporterade ${rows.size} rader")
-                }
-                "se.konsiliet.debug.STATUS" -> {
-                    se.konsiliet.wear.link.Incoming.status(context, File(context.filesDir, "status.json").readText())
-                    Log.i("KonsilietDebug", "status: ${se.konsiliet.wear.data.PhoneStatus.snapshot.value}")
                 }
                 "se.konsiliet.debug.MESSAGE" -> {
                     val o = org.json.JSONObject(File(context.filesDir, "message.json").readText())
