@@ -84,6 +84,9 @@ TEAM: dict[str, Lakare] = {l.id: l for l in [
 ]}
 
 SPECIALISTER = ["kardiolog", "somn", "idrott", "stress", "labb"]
+# Krokar som körs på den färdiga, granskade slutbedömningen innan den skickas ut (t.ex. vardag.atgarder,
+# som lägger till 1-3 konkreta handlingar). En krok som kraschar stoppar aldrig tråden.
+KROKAR_VERDICT: list[Any] = []
 NIVAER = fakta.NIVAER
 # Verktyg som visas i kontoret när faktabladets delar läses (de är förhämtade av systemet, forhamtat=True)
 DEL_TILL_VERKTYG = {"F:larm": ("hamta_serie", "metric"), "F:puls": ("hamta_serie", "hr"), "F:natter": ("hamta_somn", None),
@@ -773,6 +776,11 @@ def _kor(m: Mote) -> None:
     verdict["bradska_regel"], verdict["bradska_regel_skal"] = m.regel
     verdict = granska_slutsats(m, verdict, godkanda)
     verdict["belagda_pastaenden"] = godkanda
+    for krok in KROKAR_VERDICT:
+        try:
+            krok(m, verdict)
+        except Exception:
+            log.exception("krok efter slutbedömningen")
     m.say("ordforande", verdict.get("sammanfattning", ""), cites=sorted({k for p in godkanda for k in p["kallor"]})[:8],
           say_id="ordforande-slutsats")
     m.emit("consult.verdict", verdict=verdict)

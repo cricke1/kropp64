@@ -43,6 +43,29 @@ MAX_KO = 3
 BF16 = os.environ.get("ROST_BF16", "0") == "1"
 
 
+def _tensorer(fil: str, enhet: str):
+    """Läser en safetensors-fil tensor för tensor med vanliga filläsningar, utan minnesmappning.
+    På Lenovon kraschade både load_file och safe_open (access violation i den mappade filen) när
+    datorn hade ont om minne. Det här håller bara en tensor åt gången i RAM."""
+    import torch
+
+    typer = {"F32": torch.float32, "F16": torch.float16, "BF16": torch.bfloat16, "I64": torch.int64,
+             "I32": torch.int32, "I16": torch.int16, "I8": torch.int8, "U8": torch.uint8, "BOOL": torch.bool,
+             "F64": torch.float64}
+    with open(fil, "rb") as f:
+        n = int.from_bytes(f.read(8), "little")
+        huvud = json.loads(f.read(n))
+        bas = 8 + n
+        for namn, info in huvud.items():
+            if namn == "__metadata__":
+                continue
+            a, b = info["data_offsets"]
+            f.seek(bas + a)
+            buf = bytearray(f.read(b - a))
+            t = torch.frombuffer(buf, dtype=typer[info["dtype"]]) if buf else torch.empty(0, dtype=typer[info["dtype"]])
+            yield namn, t.reshape(info["shape"]).to(enhet)
+
+
 class Parambe:
     def __init__(self, rostbank: Path):
         self.bank = rostbank
@@ -79,14 +102,13 @@ class Parambe:
     def _svenska_vikter(t3, fil: str) -> None:
         """Parambes svenska T3-vikter ovanpå originalet, en tensor i taget."""
         import torch
-        from safetensors import safe_open
 
         sd, n = t3.state_dict(), 0
         dev = next(t3.parameters()).device
-        with torch.no_grad(), safe_open(fil, framework="pt", device="cuda" if dev.type == "cuda" else "cpu") as f:
-            for k in f.keys():
+        with torch.no_grad():
+            for k, v in _tensorer(fil, str(dev)):
                 if k.startswith("t3.") and k[3:] in sd:
-                    sd[k[3:]].copy_(f.get_tensor(k))
+                    sd[k[3:]].copy_(v)
                     n += 1
         if n < 100:
             raise RuntimeError(f"bara {n} svenska vikter lästes in")
@@ -103,7 +125,6 @@ class Parambe:
         from chatterbox.models.voice_encoder import VoiceEncoder
         from chatterbox.mtl_tts import ChatterboxMultilingualTTS, Conditionals
         from huggingface_hub import snapshot_download
-        from safetensors import safe_open
 
         d = Path(snapshot_download("ResembleAI/chatterbox", allow_patterns=[
             "ve.pt", "t3_mtl23ls_v2.safetensors", "s3gen.pt", "grapheme_mtl_merged_expanded_v1.json", "conds.pt",
@@ -113,14 +134,14 @@ class Parambe:
             ve = VoiceEncoder()
             t3 = T3(T3Config.multilingual())
             s3gen = S3Gen()
-        ve.load_state_dict(torch.load(d / "ve.pt", map_location=dev, weights_only=True, mmap=True))
+        ve.load_state_dict(torch.load(d / "ve.pt", map_location=dev, weights_only=True))
         sd = t3.state_dict()
-        with torch.no_grad(), safe_open(str(d / "t3_mtl23ls_v2.safetensors"), framework="pt", device="cuda") as f:
-            for k in f.keys():
+        with torch.no_grad():
+            for k, v in _tensorer(str(d / "t3_mtl23ls_v2.safetensors"), "cuda"):
                 if k in sd:
-                    sd[k].copy_(f.get_tensor(k))
+                    sd[k].copy_(v)
         self._svenska_vikter(t3, parambe)
-        s3gen.load_state_dict(torch.load(d / "s3gen.pt", map_location=dev, weights_only=True, mmap=True))
+        s3gen.load_state_dict(torch.load(d / "s3gen.pt", map_location=dev, weights_only=True))
         conds = Conditionals.load(d / "conds.pt", map_location=dev).to(dev) if (d / "conds.pt").exists() else None
         return ChatterboxMultilingualTTS(t3.eval(), s3gen.eval(), ve.eval(),
                                          MTLTokenizer(str(d / "grapheme_mtl_merged_expanded_v1.json")), dev, conds=conds)
