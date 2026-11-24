@@ -1,7 +1,8 @@
 # Tävlingsbidrag, utkast
 
-Utkast till formuläret på projekt.sweclockers.com/asus. Fälten och teckengränserna följer formuläret. Antalet tecken
-är räknat på texten inuti kodblocket (Python `len`, radbrytningar inräknade). Klistra in texten utan kodblocket.
+Utkast till formuläret på projekt.sweclockers.com/asus för **Kropp64**. Fälten och teckengränserna följer formuläret.
+Antalet tecken är räknat på texten inuti kodblocket (Python `len`, radbrytningar inräknade). Klistra in texten utan
+kodblocket.
 
 Det som står inom hakparentes med FYLLS I ska ersättas med riktiga uppgifter innan bidraget skickas. Inget i
 utkastet påstår något om vad systemet hittat i min riktiga data, eftersom det inte har gått tillräckligt länge än.
@@ -9,71 +10,82 @@ Räkna om tecknen efter ändringar: `python3 -c "import sys;print(len(open(sys.a
 
 ## Rubrik
 
-85 av 120 tecken.
+102 av 120 tecken.
 
 ```text
-Konsiliet: ett lokalt läkarteam av AI-agenter som vaktar min klockdata på en Mac mini
+Kropp64: sensorpanelen för kroppen, med ett lokalt AI-läkarteam som larmar när jag själv kör för varmt
 ```
 
 ## Beskriv projektet med en mening
 
-136 av 160 tecken.
+153 av 160 tecken.
 
 ```text
-Klockan larmar, ett team av lokala agenter utreder, och en granskare i ren kod stryker varje påstående som inte går att peka på i datan.
+Som AIDA64 och HWiNFO64, fast för kroppen: ett lokalt AI-läkarteam läser klockans sensorer, och en moderator i kod stryker allt som inte går att belägga.
 ```
 
 ## Vad byggde du, och hur?
 
-4763 av 8000 tecken.
+5515 av 8000 tecken.
 
 ```text
-Jag är 18, köpte en Mac mini M4 med 16 GB under OpenClaw-trenden i januari och har byggt egna AI-grejer på den sedan dess. Det betyder också att jag sitter inne väldigt mycket. Jag vill börja träna mer, sova bättre och förstå hur stress och spelkvällar faktiskt syns i kroppen. Klockan samlar redan allt det där, men ingen tittar på det. Så jag byggde ett läkarteam som gör det, och som körs helt på Mac minin.
+Jag är 18, köpte en Mac mini M4 med 16 GB under OpenClaw-trenden i januari och har byggt egna AI-grejer på den sedan dess. Det betyder också att jag sitter inne väldigt mycket. Jag vill börja träna mer, sova bättre och se hur kodpass och spelkvällar faktiskt syns i kroppen. Klockan samlar redan allt det där, men ingen tittar på det. Så jag byggde en sensorpanel för kroppen, med ett läkarteam som läser sensorerna, och allt körs på Mac minin.
 
-Vad det gör
-Pixel Watch skickar puls, steg och träningspass till mobilen, som skickar vidare till Mac minin. HRV, syremättnad, andning, hudtemperatur och sömn kommer via Health Connect. Journalen och provsvaren hämtar jag från 1177 med mitt eget BankID. Mac minin loggar också vilken sorts program jag har i fokus (kod, spel, chatt, webb), så att teamet kan se pulsen under ett kodpass eller en spelkväll. Bara kategorin sparas, aldrig fönstertitlar.
+Puls vid datorn
+Mac minin loggar vilken sorts program jag har i fokus varje minut (kod, spel, chatt, webb) och lägger det bredvid pulsen. Panelen "Uptime vid datorn" visar minuter per kategori och medianpulsen under just de minuterna, och tidslinjen visar datortiden som band under pulskurvan. Bara kategorin sparas, aldrig fönstertitlar.
 
-En vakt går igenom datan hela tiden. Akuta saker (puls över 140 i vila, syremättnad under 88 %, klockans fall-larm) är vanliga regler som larmar mobilen på millisekunder, utan någon språkmodell. Avvikelser mot min egen baslinje (median och MAD per timme på dygnet, 28 dagar, puls bara från vilominuter) kallar in konsiliet.
+Sensorpanelen
+Översikten är byggd som en hårdvarumonitor: en tät tabell med Aktuellt, Min, Max och Medel per sensor, grupperat som hårdvara. Hjärta (Pixel Watch): Klockfrekvens, Idle-klock, Timingmarginal (HRV). Andning: andningsfrekvens, SpO2. Kylning: hudtemperatur, Headroom (återhämtning med öppen formel). Last: steg, Stresstest, Uptime. Skämten står i rubrikerna, riktiga enheter står alltid bredvid siffrorna. Morgonbriefen heter POST-skärmen.
 
-Konsiliet
+Datan
+Pixel Watch skickar puls, steg och träningspass till mobilen, som skickar vidare till Mac minin. HRV, syremättnad, andning, hudtemperatur och sömn kommer via Health Connect. Journalen och provsvaren hämtar jag från 1177 med mitt eget BankID.
+
+En vakt går igenom datan hela tiden. Akuta saker (puls över 140 i vila, syremättnad under 88 %, klockans fall-larm) är vanliga regler som larmar mobilen på millisekunder, utan någon språkmodell. Avvikelser mot min egen baslinje (median och MAD per timme på dygnet, 28 dagar, puls bara från vilominuter) startar en tråd.
+
+Läkarteamet är en supporttråd
 1. Ett faktablad räknas fram i kod: observerat mot baslinje, nätter, prover. Varje del får en referens.
-2. Ordföranden, en allmänläkare, väljer 2-4 specialister: kardiolog, sömnläkare, idrottsläkare, stressmedicin, klinisk kemist.
-3. Specialisterna lämnar bedömningar som strukturerad JSON. Varje påstående måste lista sina källor, och schemat låser källorna till referenser som faktiskt finns i mötet. De kan slå upp mer med verktyg mot databasen.
-4. Granskaren stryker allt som inte håller.
-5. Djävulens advokat letar vardagliga förklaringar (sent träningspass, lös klocka) och specialisterna får bemöta.
-6. Ordföranden skriver slutbedömningen, som granskas igen. Brådskan bestäms av ett regelverk, inte av modellen. Bara en akut vaktregel kan ge "kontakta vården nu".
+2. Trådstartaren, en allmänläkare, kallar in 2-4 specialister: kardiolog, sömnläkare, idrottsläkare, stressläkare, Labbet.
+3. Specialisterna svarar i tråden med strukturerad JSON. Varje påstående måste lista sina källor, och schemat låser källorna till referenser som faktiskt finns i tråden.
+4. Moderatorn stryker allt som inte håller: "Strukit av moderator. Anledning: saknar källa."
+5. Trollet, djävulens advokat, frågar om jag har testat att dra åt armbandet, och specialisterna får bemöta.
+6. Trådstartaren markerar en lösning. Den granskas igen, och brådskan bestäms av ett regelverk, inte av modellen. Bara en akut vaktregel kan ge "kontakta vården nu".
 
-Granskaren är det jag är mest nöjd med. Den är inte en språkmodell, utan vanlig Python. Den kollar att källan finns bland det mötet hämtat, att varje siffra i meningen finns bland källans värden (puls mot puls, procent mot SpO2, med avrundning och minuter till timmar godkänt), att ett tal som kallas baslinje verkligen är baslinjen, och att en slutsats har källa av rätt typ. När en specialist skrev att baslinjen var 73,2 och källan sa 72,5 ströks det. Ingen modell kan prata sig förbi den.
+Moderatorn är det jag är mest nöjd med. Den är inte en språkmodell, utan vanlig Python. Den kollar att källan finns bland det tråden hämtat, att varje siffra finns bland källans värden (puls mot puls, procent mot SpO2, med avrundning och minuter till timmar godkänt), att ett tal som kallas baslinje verkligen är baslinjen, och att en slutsats har källa av rätt typ. När en specialist skrev att baslinjen var 73,2 och källan sa 72,5 ströks det. Ingen modell kan prata sig förbi den.
 
 Kontoret
-Varje steg i mötet sänds som en händelse över WebSocket. I webben blir det ett pixelkontor: läkarna går till arkivet när de söker i journalen, till labbet när de läser provsvar, sätter sig vid bordet och pratar i bubblor med källor under. När granskaren stryker något stryks meningen över i bubblan. Figurerna är ritade i kod (16x24 pixlar ur textmallar) i stället för renderade, så att de kan byta pose utan bildfiler. Det finns också en översikt med tidslinje, sömn, puls vid datorn och en öppen återhämtningsformel, en systempanel med minne och tokens, och ett besöksunderlag som PDF att ta med till vårdcentralen.
+Varje steg i tråden sänds som en händelse över WebSocket. I webben blir det ett pixelkontor: läkarna går till arkivet när de söker i journalen, till labbet när de läser provsvar, sätter sig vid bordet och svarar i bubblor med källor under. När moderatorn stryker något stryks meningen över. Figurerna är ritade i kod, 16x24 pixlar.
 
 Lokalt på 16 GB
-Allt körs i Ollama: qwen3.5:9b för alla agenter, medgemma:4b som valfri kunskapskälla som aldrig får räknas som källa. På Mac minin läser 9B-modellen prompten i 75 tokens/s och skriver i 17. Det formade allt: data runt larmet hämtas innan specialisterna börjar, bedömningar tvingas fram som JSON i stället för att hoppas på rätt verktygsanrop, och kontexten är 8k med KV-cache i q8_0 och en förfrågan åt gången. Då tar modellen 9,1 GB i stället för 14,7 och datorn slutar swappa.
+Allt körs i Ollama: qwen3.5:9b för alla agenter, medgemma:4b som valfri kunskapskälla som aldrig räknas som källa. På Mac minin läser 9B-modellen prompten i 75 tokens/s och skriver i 17. Det formade allt: datan hämtas innan specialisterna börjar, svaren tvingas fram som JSON, kontexten är 8k med KV-cache i q8_0 och en förfrågan åt gången. Då tar modellen 9,1 GB i stället för 14,7.
+
+Mätt
+Mot 15 scenarier med syntetisk data och facit gick godtagbar brådska från 40 % i första versionen till 100 % i nuvarande, och mediantiden för en tråd från 300 till 117 sekunder. Brådskan styrs nu av regelverket, och fixarna gjordes mot samma scenarier, så jag kör också fem holdout-scenarier. [FYLLS I: holdout-resultat]
 
 Klocka och mobil
-Egen Wear OS-app med en kö som bara töms när mobilen kvitterat, och en Android-app med egen kö som överlever omstart och nätavbrott. Testat på emulatorer: med mobilens nät avstängt köades 360 punkter, och alla 1 215 fanns på servern 2 sekunder efter att nätet kom tillbaka, utan dubbletter. Vid akut larm kan mobilen skicka sms till en anhörig om jag inte svarar inom vald tid. Det är avstängt tills man slår på det.
+Egen Wear OS-app med en kö som bara töms när mobilen kvitterat, och en Android-app med egen kö som överlever omstart och nätavbrott. På emulatorer: med mobilens nät avstängt köades 360 punkter, och alla 1 215 fanns på servern 2 sekunder efter att nätet kom tillbaka, utan dubbletter. Vid akut larm kan mobilen skicka sms till en anhörig om jag inte svarar inom vald tid. Det är avstängt tills man slår på det.
 
-Hur
-Koden är skriven av Claude Code-agenter som jag styrt: jag bestämde vad som skulle byggas och hur det skulle bete sig, testade och underkände. Flera agenter jobbade parallellt med webben, apparna, konsiliets kvalitet, en oberoende säkerhetsgranskning och presentationen. Allt som gick fel står i RESAN.md, och tokenåtgången räknas fram ur loggarna med ett skript i repot.
+Hur, och min roll
+Koden är skriven av Claude Code-agenter, flera parallellt. Jag var produktägare och grindvakt: jag sa nej till ett dussintal idéer innan den här fick fortsätta, krävde att den skulle vara agentisk från grunden, styrde om när agenterna fyllde ut med demosiffror, krävde att allt ska gå att köra på riktig data och bytte namn när jag såg att "konsilium" mest betyder kyrkomöte. Ingen hälsodata går till molnet; Claude Code skrev koden mot testdatabaser.
 
 Vad det har hittat
-[FYLLS I: vad systemet hittade i min riktiga data efter X veckor, med datum och vad som stod i bedömningen]
-[FYLLS I: om något ledde till att jag ändrade träning, sömn eller tog med något till vården]
+[FYLLS I: vad systemet hittade i min riktiga data efter X veckor, med datum och vad som stod i lösningen]
 
 Det är inte en medicinteknisk produkt och ställer inga diagnoser. Det ger underlag och frågor, och akuta larm går aldrig via en språkmodell.
+
+Vad priset skulle betyda (plan, inte mätt)
+Med 128 GB: en större modell för specialisterna, specialisterna parallellt i stället för en i taget, och en tråd på sekunder i stället för minuter.
 ```
 
 ## Vad gick fel på vägen?
 
-2374 av 4000 tecken.
+2521 av 4000 tecken.
 
 ```text
-Första försöket var en kuliss. Min Discord-agent fick bygga ett tävlingsbidrag och gjorde på en timme 4 000 rader Python om en "diabetesagent", med snyggt terminaldemo. Allt kördes på påhittad data och demot visade siffror ingen mätt. Jag slängde det och började om med kravet att varje siffra ska vara uppmätt. Lärdom: säger man "gör det imponerande" till en agent optimerar den för att det ska se imponerande ut.
+Första försöket var en kuliss. Min Discord-agent fick bygga ett tävlingsbidrag och gjorde på en timme 4 000 rader Python: en hälsoagent på påhittad data, med snyggt terminaldemo. Allt kördes på påhittad data och demot visade siffror ingen mätt. Jag slängde det och började om med kravet att varje siffra ska vara uppmätt. Lärdom: säger man "gör det imponerande" till en agent optimerar den för att det ska se imponerande ut.
 
-Första riktiga konsiliet tog 278 sekunder och gav ingen bedömning alls. Specialisterna fastnade i att hämta data, kardiologen anropade ett verktyg som inte finns och stressläkaren hämtade samma serie tre gånger. 47 656 prompttokens. Det var promptläsningen som åt tiden, eftersom hela samtalet skickas om vid varje steg. Fix: datan runt larmet hämtas innan mötet och slutbedömningen tvingas fram som JSON.
+Första riktiga tråden tog 278 sekunder och gav ingen bedömning alls. Specialisterna fastnade i att hämta data, kardiologen anropade ett verktyg som inte finns och stressläkaren hämtade samma serie tre gånger. 47 656 prompttokens. Det var promptläsningen som åt tiden, eftersom hela samtalet skickas om vid varje steg. Fix: datan runt larmet hämtas innan mötet och slutbedömningen tvingas fram som JSON.
 
-Andra körningen tog 563 sekunder och granskaren var för sträng: den strök pulsen från larmet (larmet var inte registrerat som källa), klockslag och omräkningar som 450 min = 7,5 h. Fixat och inlagt som tester.
+Andra körningen tog 563 sekunder och moderatorn var för sträng: den strök pulsen från larmet (larmet var inte registrerat som källa), klockslag och omräkningar som 450 min = 7,5 h. Fixat och inlagt som tester.
 
 Ollama svarade 500 mitt i ett möte. Modellen som är 6,6 GB på pappret tog 14,7 GB med 16k kontext och parallella förfrågningar, och datorn swappade. 8k kontext, en förfrågan åt gången, q8_0 och flash attention gav 9,1 GB och 250 sekunder i stället för 563.
 
@@ -87,16 +99,17 @@ En oberoende granskningsagent hittade att vem som helst på mitt hemnät kunde l
 
 Samma granskning visade att vakten räknade bakåt från "nu", fast SpO2 kommer via Health Connect timmar senare. Larmet för låg syremättnad kunde i praktiken aldrig slå till.
 
-Den första utvärderingen gav rätt brådska i 1 av 3 scenarier och missade det akuta fallet. Därför går akuta larm aldrig via modellen.
-[FYLLS I: senaste resultat från eval/RESULTAT.md]
+Den första utvärderingen gav godtagbar brådska i 40 % av 15 scenarier och missade båda de akuta fallen. Därför går akuta larm aldrig via modellen, och brådskan styrs nu av ett regelverk.
+
+Namnet var fel två gånger. Konsiliet betyder mest kyrkomöte, Överklockad kunde vara vilket hårdvaruverktyg som helst. Det blev Kropp64.
 ```
 
 ## Modeller och verktyg
 
-393 av 500 tecken.
+415 av 500 tecken.
 
 ```text
-Lokalt i Ollama: qwen3.5:9b (alla agenter i konsiliet, morgonbrief, tolkning av 1177-sidor), medgemma:4b (valfri medicinsk bakgrundskunskap, räknas aldrig som källa). Bygget: Claude Code med Claude Opus 5.5, flera agenter parallellt. Övrigt: Python, FastAPI, SQLite, NumPy, Playwright (1177 och PDF), Preact, Vite, Kotlin, Wear OS Health Services, Health Connect, Room, WorkManager, Tailscale.
+Lokalt i Ollama: qwen3.5:9b (alla agenter i läkarteamet, POST-skärmen, tolkning av 1177-sidor), medgemma:4b (valfri medicinsk bakgrundskunskap, räknas aldrig som källa). Bygget: Claude Code med Claude Opus 5.5, flera agenter parallellt. Övrigt: Python, FastAPI, SQLite, NumPy, Playwright (1177 och PDF), Preact, Vite, Kotlin, Wear OS Health Services, Health Connect, Room, WorkManager, Tailscale, Cloudflare Tunnel.
 ```
 
 ## Hårdvara
@@ -110,27 +123,32 @@ Mac mini M4, 16 GB unified memory (server och alla lokala modeller). Pixel Watch
 ## Tokens
 
 Kör `python3 tools/tokenredovisning.py` precis innan bidraget skickas och använd raderna under
-"Till tävlingsformuläret". Siffrorna nedan är från 2026-11-24 kl. 18.20 och växer så länge bygget pågår.
+"Till tävlingsformuläret". Siffrorna nedan är från 2026-11-24 kväll och växer så länge bygget pågår.
+
+Claude Code skickar hela samtalet som indata vid varje svar, och det mesta läses ur cachen. Tävlingens egen
+inlämningsprompt räknar det som indata, alltså med cache. Därför står talet med cache i fältet. Talet utan cache
+(bara ny indata och utdata) redovisas bredvid i texten och i repot, så att ingen behöver gissa vilket som avses.
 
 | Fält | Värde 2026-11-24 | Vad det är |
 |---|--:|---|
-| Tokens i molnet | 874 380 | Claude Code under bygget, input + output utan cache. Cache-skrivning 2 123 992 och cache-läsning 162 774 735 redovisas separat i skriptets utdata. Idéfasen och den oberoende granskningen räknas inte här men redovisas också där. |
-| Tokens lokalt | 110 505 | Ollama på Mac minin: sparade konsilier, serverns räknare sedan start och utvärderingskörningarna (prompt + output). |
+| Tokens i molnet | 361 318 084 | Claude Code under bygget, med cache: input 2 612 + cache-skrivning 5 014 128 + cache-läsning 355 000 763 + output 1 300 581. Utan cache (input + output): 1 303 193. Idéfasen och den oberoende granskningen räknas inte här men redovisas i skriptets utdata. |
+| Tokens lokalt | 1 977 788 | Ollama på Mac minin: varje anrop från tabellen llm_calls plus utvärderingskörningarnas resultatfiler, prompt + output. |
 
-Om formuläret frågar efter en enda molnsiffra: använd "utan cache" och skriv i texten att cache redovisas i repot.
-[FYLLS I: aktuella siffror från skriptet]
+Ingen hälsodata går till molnet: mätdata, journal och trådar bearbetas bara av de lokala modellerna. Claude Code
+skrev koden mot testdatabaser med syntetisk data. [FYLLS I: aktuella siffror från skriptet]
 
 ## Bilder
 
 Tio bilder i `docs/bidrag-bilder/`, 1920x1080 PNG, alla under 5 MB och märkta i bilden. Förteckning i
-docs/bidrag-bilder/README.md. Föreslagen ordning:
+docs/bidrag-bilder/README.md. Föreslagen ordning (sensorpanelen och pulsen vid datorn först, det är det SweClockers
+känner igen):
 
-1. 02-granskaren-stryker.png (huvudbild: det som skiljer projektet från andra)
-2. 01-kontoret-i-arbete.png
-3. 03-bedomningen.png
-4. 07-arkitektur.png
-5. 04-oversikt.png
-6. 05-puls-vid-datorn.png
+1. 04-oversikt.png (sensorpanelen)
+2. 05-puls-vid-datorn.png
+3. 02-granskaren-stryker.png (moderatorn stryker ett påstående)
+4. 01-kontoret-i-arbete.png
+5. 03-bedomningen.png
+6. 07-arkitektur.png
 7. 06-systemet.png
 8. 09-klockappen.png
 9. 08-mobilappen.png
@@ -140,13 +158,14 @@ docs/bidrag-bilder/README.md. Föreslagen ordning:
 
 ## Video
 
-[FYLLS I: YouTube-länk]. Underlag: docs/video/konsiliet-demo-1920x1080.mp4 (ett helt demokonsilium, 3 min,
-märkt demo i varje bildruta). Ett förslag är att klippa in 20-30 sekunder från riktig användning före demot.
+[FYLLS I: YouTube-länk]. Underlag: docs/video/kropp64-demo-1920x1080.mp4 (en hel tråd i demoläget, cirka 3 min,
+märkt demo i varje bildruta). Förslag: börja med 10-15 sekunder av sensorpanelen och pulsen vid datorn under ett
+kodpass, sedan tråden i kontoret.
 
 ## Länk
 
-[FYLLS I: länk till publika demon om den ska visas (drift/publik-demo.sh bakom en tunnel), annars repot]
+[FYLLS I: kropp64.se eller länk till publika demon (drift/publik-demo.sh bakom en tunnel)]
 
 ## Källkod
 
-[FYLLS I: länk till GitHub-repot när det är publicerat]
+[FYLLS I: https://github.com/cricke1/kropp64 när repot är publikt]
