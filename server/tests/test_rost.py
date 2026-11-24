@@ -108,3 +108,24 @@ def test_mps_bara_utan_sprakmodell(tmp_path, monkeypatch):
     monkeypatch.setattr(rost, "_sprakmodell_laddad", lambda: False)
     monkeypatch.setattr(rost, "_fritt_minne_procent", lambda: 20)
     assert rost._wav_mps(rost.BANK["somn"], "Hej.") is None
+
+
+def test_forvarmning(klient, monkeypatch):
+    """Vid uppspelning görs resten av konsiliets repliker i förväg, och nya live-repliker går först."""
+    import time as _t
+
+    c, db, anrop = klient
+    from konsiliet import rost
+    importlib.reload(rost)
+    gjorda = []
+    monkeypatch.setattr(rost, "ljud", lambda a, t, **_: gjorda.append(t))
+    ids = [db.add_event("agent.say", {"consult_id": "gammal", "agent": "somn", "text": f"rad {i}"})["id"] for i in range(4)]
+    db.add_event("agent.say", {"consult_id": "annan", "agent": "somn", "text": "fel konsilium"})
+    rost.forvarm(ids[0])
+    _t.sleep(0.2)
+    db.add_event("agent.say", {"consult_id": "live", "agent": "kardiolog", "text": "ny live"})
+    slut = _t.time() + 15
+    while len(gjorda) < 4 and _t.time() < slut:
+        _t.sleep(0.2)
+    assert "fel konsilium" not in gjorda
+    assert set(gjorda) == {"rad 1", "rad 2", "rad 3", "ny live"}
