@@ -5,6 +5,7 @@ import se.konsiliet.app.alerts.Channels
 import se.konsiliet.app.data.Prefs
 import se.konsiliet.app.hc.HcScheduler
 import se.konsiliet.app.link.UploadScheduler
+import se.konsiliet.app.widget.Summary
 
 class KonsilietApp : Application() {
     override fun onCreate() {
@@ -13,6 +14,7 @@ class KonsilietApp : Application() {
         Channels.create(this)
         UploadScheduler.periodic(this)
         HcScheduler.periodic(this)
+        Summary.periodic(this)
         // Det som låg i kön när processen dog laddas upp direkt vid nästa start.
         UploadScheduler.now(this)
     }

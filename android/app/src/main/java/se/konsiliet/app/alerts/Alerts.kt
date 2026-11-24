@@ -156,6 +156,8 @@ object Alerts {
             notify(ctx, Channels.AVVIKELSE, a.id.toInt(), a.title, a.body, consultId)
             return
         }
+        // Klockan får ett eget meddelande med det långa akutmönstret, inte bara den speglade notisen.
+        WatchListenerService.forwardAlert(ctx, a.id, a.title, a.body)
         val cfg = Prefs.config.value
         val smsArmed = cfg.smsEnabled && cfg.contacts.isNotEmpty() && SmsPolicy.triggersSms(a, nowMs / 1000.0)
         var chain: SmsPolicy.Chain? = null

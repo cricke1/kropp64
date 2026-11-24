@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Konsiliet</string>
+    <string name="app_name">Kropp64</string>
+    <string name="widget_label">Kropp64</string>
+    <string name="widget_description">Headroom, steg idag och senaste lösningen i supporttråden</string>
 </resources>

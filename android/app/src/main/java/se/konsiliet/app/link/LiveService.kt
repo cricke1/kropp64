@@ -148,6 +148,8 @@ class LiveService : LifecycleService() {
         // Alerts avgör på id och replay-märkning om händelsen ska ge notis, vibration eller sms
         // (se EventGate). Allt hamnar ändå i listorna via raden ovan.
         Alerts.onEvent(applicationContext, row, replay = o.optBoolean("replay", false))
+        // Widgeten och klockan hämtar om sammanfattningen (fördröjt, så att en historikskur blir en hämtning).
+        se.konsiliet.app.widget.Summary.onEvent(applicationContext, kind)
     }
 
     private suspend fun uploadTicker() {
@@ -192,6 +194,7 @@ class BootReceiver : BroadcastReceiver() {
         UploadScheduler.periodic(context)
         UploadScheduler.now(context)
         HcScheduler.periodic(context)
+        se.konsiliet.app.widget.Summary.periodic(context)
         Alerts.restorePendingSms(context)
     }
 }

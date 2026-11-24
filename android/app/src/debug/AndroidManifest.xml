@@ -5,6 +5,7 @@
         <receiver android:name=".debug.DebugBridge" android:exported="true">
             <intent-filter>
                 <action android:name="se.konsiliet.debug.INJECT" />
+                <action android:name="se.konsiliet.debug.EXPORT_STATUS" />
             </intent-filter>
         </receiver>
     </application>

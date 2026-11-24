@@ -25,6 +25,7 @@ object Protocol {
     const val PATH_BATCH = "/konsiliet/batch"
     const val PATH_FLUSH = "/konsiliet/flush"
     const val PATH_NUDGE = "/konsiliet/nudge"
+    const val PATH_ALERT = "/konsiliet/alert"
 }
 
 /**
@@ -82,12 +83,28 @@ class WatchListenerService : WearableListenerService() {
         /** Stillasittandevaktens påminnelse ska också vibrera på klockan. */
         fun forwardNudge(ctx: Context, title: String, body: String) {
             val bytes = JSONObject().put("title", title).put("body", body).toString().toByteArray()
+            Prefs.putString("lastWatchMessage", JSONObject().put("path", Protocol.PATH_NUDGE)
+                .put("data", JSONObject(String(bytes))).toString())
             kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
                 runCatching {
                     val nodes = Wearable.getCapabilityClient(ctx)
                         .getCapability(Protocol.CAP_WATCH, CapabilityClient.FILTER_REACHABLE).await().nodes
                     for (n in nodes) Wearable.getMessageClient(ctx).sendMessage(n.id, Protocol.PATH_NUDGE, bytes).await()
                 }.onFailure { Log.d(TAG, "kunde inte skicka påminnelse till klockan: ${it.message}") }
+            }
+        }
+
+        /** Akut larm till klockan: eget vibrationsmönster (lång, stark, går igenom Stör ej). */
+        fun forwardAlert(ctx: Context, id: Long, title: String, body: String) {
+            val bytes = JSONObject().put("id", id).put("title", title).put("body", body).toString().toByteArray()
+            Prefs.putString("lastWatchMessage", JSONObject().put("path", Protocol.PATH_ALERT)
+                .put("data", JSONObject(String(bytes))).toString())
+            kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
+                runCatching {
+                    val nodes = Wearable.getCapabilityClient(ctx)
+                        .getCapability(Protocol.CAP_WATCH, CapabilityClient.FILTER_REACHABLE).await().nodes
+                    for (n in nodes) Wearable.getMessageClient(ctx).sendMessage(n.id, Protocol.PATH_ALERT, bytes).await()
+                }.onFailure { Log.d(TAG, "kunde inte skicka larm till klockan: ${it.message}") }
             }
         }
 

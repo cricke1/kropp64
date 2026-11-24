@@ -18,6 +18,7 @@ import se.konsiliet.app.link.WatchListenerService
  */
 class DebugBridge : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == "se.konsiliet.debug.EXPORT_STATUS") { exportStatus(context); return }
         val file = File(context.filesDir, "inject.json")
         val reply = try {
             val o = JSONObject(file.readText())
@@ -30,5 +31,21 @@ class DebugBridge : BroadcastReceiver() {
         }
         File(context.filesDir, "ack.json").writeText(reply.toString())
         Log.i("KonsilietDebug", "inject: $reply")
+    }
+
+    /**
+     * Mobil till klocka utan parkoppling: hämtar sammanfattningen på nytt (samma kod som widgeten och
+     * WorkManager använder, inklusive putDataItem) och skriver exakt den JSON som lades i Data Layer
+     * till files/status.json, plus senaste meddelande till klockan (påminnelse, akut larm) till
+     * files/message.json. Testskriptet flyttar dem till klockemulatorn med adb.
+     */
+    private fun exportStatus(context: Context) {
+        val json = runBlocking(Dispatchers.IO) {
+            se.konsiliet.app.widget.Summary.refresh(context)
+            se.konsiliet.app.data.Prefs.getString("watchStatus")
+        }
+        File(context.filesDir, "status.json").writeText(json ?: "")
+        File(context.filesDir, "message.json").writeText(se.konsiliet.app.data.Prefs.getString("lastWatchMessage") ?: "")
+        Log.i("KonsilietDebug", "status exporterad: $json")
     }
 }

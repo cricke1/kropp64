@@ -64,6 +64,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.4")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    // Hemskärmswidget.
+    implementation("androidx.glance:glance-appwidget:1.1.1")
 
     implementation(platform("androidx.compose:compose-bom:2025.10.01"))
     implementation("androidx.activity:activity-compose:1.11.0")

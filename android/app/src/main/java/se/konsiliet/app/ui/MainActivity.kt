@@ -81,6 +81,7 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch { WatchListenerService.requestFlush(applicationContext) }
         UploadScheduler.now(this)
         HcScheduler.now(this)
+        se.konsiliet.app.widget.Summary.refreshSoon(this, delaySeconds = 0)
     }
 
     @Composable
