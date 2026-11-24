@@ -3,6 +3,7 @@
 Återhämtningspoängen är en öppen formel, inte en svart låda (alla siffror visas i appen):
 
     poäng = 50 + 12 * z_hrv - 10 * z_vilopuls + 8 * (sömntimmar - 7.5)   (klämd till 0-100)
+    z begränsas till ±3 och spridningen har ett golv (HRV 5 ms, puls 2 slag/min).
 
   z_hrv        nattens median-HRV mot 28 dagars nattbaslinje, i robusta standardavvikelser
   z_vilopuls   nattens lägsta 10-minutersmedian mot baslinjen, i robusta standardavvikelser
@@ -31,12 +32,22 @@ STILLA_STEG = 150
 _senast: dict[str, float] = {}
 
 
-def _robust(vals: list[float]) -> tuple[float, float] | None:
-    if len(vals) < 20:
+# Minsta spridning som räknas som en standardavvikelse. Utan golv ger en mycket jämn baslinje
+# enorma z-värden för små skillnader (en natt med 4 slag lägre vilopuls blev z = -6,7).
+GOLV = {"hrv_rmssd": 5.0, "hr": 2.0}
+Z_MAX = 3.0
+
+
+def _robust(vals: list[float], metric: str = "") -> tuple[float, float] | None:
+    if len(vals) < 20 and not (metric == "hr" and len(vals) >= 7):
         return None
     a = np.array(vals)
     med = float(np.median(a))
-    return med, max(float(np.median(np.abs(a - med))) * MAD_TO_SD, 1e-6)
+    return med, max(float(np.median(np.abs(a - med))) * MAD_TO_SD, GOLV.get(metric, 1e-6))
+
+
+def _z(v: float, b: tuple[float, float]) -> float:
+    return float(max(-Z_MAX, min(Z_MAX, (v - b[0]) / b[1])))
 
 
 def _natt(metric: str, natt_slut: datetime) -> list[float]:
@@ -56,15 +67,15 @@ def aterhamtning(dag: datetime | None = None) -> dict[str, Any]:
             hist_hr.append(float(min(np.convolve(hr_d, np.ones(10) / 10, mode="valid"))))
     delar: dict[str, Any] = {}
     poang = 50.0
-    b = _robust(hist_hrv)
+    b = _robust(hist_hrv, "hrv_rmssd")
     if hrv_n and b:
-        z = (float(np.median(hrv_n)) - b[0]) / b[1]
+        z = _z(float(np.median(hrv_n)), b)
         delar["hrv"] = {"natt_ms": round(float(np.median(hrv_n)), 1), "baslinje_ms": round(b[0], 1), "z": round(z, 2)}
         poang += 12 * z
-    b = _robust(hist_hr) if len(hist_hr) >= 7 else None
+    b = _robust(hist_hr, "hr") if len(hist_hr) >= 7 else None
     if len(hr_n) >= 10 and b:
         vila = float(min(np.convolve(hr_n, np.ones(10) / 10, mode="valid")))
-        z = (vila - b[0]) / b[1]
+        z = _z(vila, b)
         delar["vilopuls"] = {"natt": round(vila, 1), "baslinje": round(b[0], 1), "z": round(z, 2)}
         poang -= 10 * z
     row = db.conn().execute("SELECT start, end, stages FROM sleep WHERE end > ? ORDER BY end DESC LIMIT 1",
@@ -77,7 +88,7 @@ def aterhamtning(dag: datetime | None = None) -> dict[str, Any]:
     if not delar:
         return {"poang": None, "delar": {}, "kommentar": "för lite data"}
     return {"poang": int(max(0, min(100, round(poang)))), "delar": delar,
-            "formel": "50 + 12*z_hrv - 10*z_vilopuls + 8*(sömntimmar-7.5)"}
+            "formel": "50 + 12*z_hrv - 10*z_vilopuls + 8*(sömntimmar-7.5), z begränsat till ±3"}
 
 
 def stillasittande() -> None:
