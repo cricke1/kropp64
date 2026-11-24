@@ -1,0 +1,238 @@
+{
+ "akut_takykardi": {
+  "utlosare": {
+   "kind": "anomaly",
+   "rule": "hr_rest_acute",
+   "level": "akut",
+   "metric": "hr",
+   "title": "Mycket hög puls i vila",
+   "detail": "Medianpuls 167 slag/min under 10 minuter utan rörelse.",
+   "window": [
+    1795465860.0,
+    1795466400.0
+   ]
+  },
+  "fran_vakt": true,
+  "nu": 1795466400
+ },
+ "klocka_los": {
+  "utlosare": {
+   "kind": "anomaly",
+   "rule": "baseline_hr",
+   "level": "avvikelse",
+   "metric": "hr",
+   "title": "Vilopulsen avviker från din baslinje",
+   "detail": "Vilopulsen 114.5 mot normalt 74.0 vid den här tiden på dygnet (13.7 SD över).",
+   "window": [
+    1795461060.0,
+    1795462200.0
+   ]
+  },
+  "fran_vakt": true,
+  "nu": 1795462200
+ },
+ "forkylning": {
+  "utlosare": {
+   "kind": "anomaly",
+   "rule": "hrv_trend",
+   "level": "avvikelse",
+   "metric": "hrv_rmssd",
+   "title": "HRV låg tre nätter i rad (upptäckt i efterhand)",
+   "detail": "Nattlig HRV 39, 36, 31 ms mot normalt 56 ms (median av 25 nätter). Gäller 2026-11-24 08:45.",
+   "window": [
+    1795296134.0,
+    1795506305.0
+   ]
+  },
+  "fran_vakt": true,
+  "nu": 1795509000
+ },
+ "spo2_dippar": {
+  "utlosare": {
+   "kind": "anomaly",
+   "rule": "spo2_dips",
+   "level": "avvikelse",
+   "metric": "spo2",
+   "title": "Upprepade syrefall",
+   "detail": "9 fall på minst 4 procentenheter under en timme (referens 97 %).",
+   "window": [
+    1795484460.0,
+    1795487940.0
+   ]
+  },
+  "fran_vakt": true,
+  "nu": 1795488000
+ },
+ "motstridigt": {
+  "utlosare": {
+   "kind": "anomaly",
+   "rule": "hrv_trend",
+   "level": "avvikelse",
+   "metric": "hrv_rmssd",
+   "title": "HRV låg tre nätter i rad (upptäckt i efterhand)",
+   "detail": "Nattlig HRV 41, 38, 33 ms mot normalt 56 ms (median av 25 nätter). Gäller 2026-11-24 07:17.",
+   "window": [
+    1795300656.0,
+    1795501049.0
+   ]
+  },
+  "fran_vakt": true,
+  "nu": 1795507200
+ },
+ "spo2_akut": {
+  "utlosare": {
+   "kind": "anomaly",
+   "rule": "spo2_low",
+   "level": "akut",
+   "metric": "spo2",
+   "title": "Låg syremättnad",
+   "detail": "SpO2 median 86 % under 10 minuter.",
+   "window": [
+    1795525860.0,
+    1795526400.0
+   ]
+  },
+  "fran_vakt": true,
+  "nu": 1795526400
+ },
+ "traning_puls": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Klockan visade puls över 170 för en stund sedan. Är det farligt?",
+   "hours": 6
+  },
+  "fran_vakt": false,
+  "nu": 1795455000
+ },
+ "sensorspikar": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Appen visade att min puls var över 200 i går kväll och i natt. Vad hände?",
+   "hours": 24
+  },
+  "fran_vakt": false,
+  "nu": 1795511700
+ },
+ "sent_spelande": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Hur har jag sovit senaste veckan, och varför känns det så dåligt?",
+   "hours": 168
+  },
+  "fran_vakt": false,
+  "nu": 1795519800
+ },
+ "aktiv_vs_stilla": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Märks det på kroppen när jag rör mig mer? Jämför mina aktiva dagar med de stillasittande.",
+   "hours": 336
+  },
+  "fran_vakt": false,
+  "nu": 1795456800
+ },
+ "allt_normalt": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Hur ser det ut med min hälsa senaste veckan? Något att oroa sig för?",
+   "hours": 168
+  },
+  "fran_vakt": false,
+  "nu": 1795536000
+ },
+ "trott_fraga": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Varför är jag så trött hela tiden?",
+   "hours": 168
+  },
+  "fran_vakt": false,
+  "nu": 1795528800
+ },
+ "lagt_ferritin": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Jag är trött hela tiden fast jag sover ordentligt. Vad kan det bero på?",
+   "hours": 168
+  },
+  "fran_vakt": false,
+  "nu": 1795532400
+ },
+ "stress_projekt": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Är jag stressad? Jag har haft mycket med ett projekt senaste veckan.",
+   "hours": 168
+  },
+  "fran_vakt": false,
+  "nu": 1795525200
+ },
+ "aterkommande_hopp": {
+  "utlosare": {
+   "kind": "anomaly",
+   "rule": "hr_sudden_jump",
+   "level": "akut",
+   "metric": "hr",
+   "title": "Plötsligt pulshopp i vila",
+   "detail": "Pulsen steg från 68 till 146 slag/min på några minuter utan rörelse.",
+   "window": [
+    1795532400.0,
+    1795532700.0
+   ]
+  },
+  "fran_vakt": true,
+  "nu": 1795532700
+ },
+ "h_natt_takykardi": {
+  "utlosare": {
+   "kind": "anomaly",
+   "rule": "hr_rest_acute",
+   "level": "akut",
+   "metric": "hr",
+   "title": "Mycket hög puls i vila",
+   "detail": "Medianpuls 151 slag/min under 10 minuter utan rörelse.",
+   "window": [
+    1795482000.0,
+    1795482600.0
+   ]
+  },
+  "fran_vakt": true,
+  "nu": 1795482600
+ },
+ "h_cykling": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Varför låg min puls på över 150 i nästan en timme i eftermiddags?",
+   "hours": 8
+  },
+  "fran_vakt": false,
+  "nu": 1795539600
+ },
+ "h_anemi": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Jag blir andfådd i trappor och är trött. Vad säger mina värden?",
+   "hours": 168
+  },
+  "fran_vakt": false,
+  "nu": 1795514400
+ },
+ "h_lag_nattpuls": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Min puls är under 50 på natten. Är det farligt?",
+   "hours": 168
+  },
+  "fran_vakt": false,
+  "nu": 1795518000
+ },
+ "h_enstaka_syrefall": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Klockan visade 85 procent syre i natt. Ska jag vara orolig?",
+   "hours": 24
+  },
+  "fran_vakt": false,
+  "nu": 1795509000
+ }
+}
