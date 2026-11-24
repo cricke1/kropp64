@@ -241,14 +241,29 @@ torr radioröst). Inget par över 0,79. Lea, som låg närmast till hands för s
 och Elin 0,77, så de valdes bort.
 
 **Var rösterna görs.** Chatterbox på Mac minins MPS samtidigt som Qwen riskerar swap, så syntesen görs på
-Lenovons RTX 5050 i en liten tjänst (`drift/rost_tjanst.py`). Uppmätt där: laddning 30-37 s, högst 5,3 GB
-grafikminne, och tyvärr långsammare än realtid: RTF 1,6-3,6 när modellen är varm (en replik på 7 s tar 14-25 s).
-En replik tog en gång 179 s för 8,6 s ljud, troligen för att grafikkortet delas med skrivbordet (1,7 GB) och
-gick över till delat minne. Därför genereras nya repliker i bakgrunden så fort de hamnar i loggen (när någon
-lyssnar), webben väntar högst 8 s på att ljudet ska börja och hoppar annars över rösten, och live hoppas rösten
-över när händelserna ligger efter. Demon är förgenererad. Mac minins MPS är reserv bara när Qwen inte är laddad
-och minst 45 % minne är ledigt, som en engångsprocess som avslutas efteråt. Den reserven är inte uppmätt: Qwen
-var laddad under hela arbetet och jag ville inte lasta ur den mitt i en annan körning. Piper är sista reserv.
+Lenovons RTX 5050 i en liten tjänst (`drift/rost_tjanst.py`). Uppmätt där med Lenovon i övrigt ledig: laddning
+25-37 s, högst 5,3 GB grafikminne, och långsammare än realtid: RTF 1,6-3,6 (en replik på 7 s tar 14-25 s).
+Modellen samplar runt 13 taltoken i sekunden på det här kortet, och 25 token blir en sekund tal.
+Problem på vägen:
+- En replik på 7 s tog 119 s. Chatterbox tillåter alltid 1000 taltoken, och ibland hittar modellen inget slut.
+  Tjänsten sätter nu ett tak efter textens längd (25 token per sekund, svenska runt 14 tecken per sekund,
+  dubbel marginal).
+- Tjänsten dog tyst vid start, gång på gång. Med `-X faulthandler` syntes "access violation" när safetensors
+  läste den minnesmappade viktfilen, och sedan "The paging file is too small". Lenovon delas med andra jobb
+  (tre Android-emulatorer, Blender och en Whisper-tjänst som reserverat 18 GB), och sidfilen tog slut.
+  Fix: modellerna byggs direkt på grafikkortet och vikterna läses tensor för tensor med vanliga filläsningar
+  (kontrollerat mot safetensors egen läsare: alla 2 798 tensorer lika). Tjänsten startas av en .bat som
+  försöker igen efter 60 s om den ändå faller.
+- När Lenovon var hårt belastad av de andra jobben blev RTF 15-30 (en replik på 3,6 s tog 91 s).
+Därför genereras rösterna i förväg: nya repliker så fort de hamnar i loggen (när någon lyssnar), och när ett
+gammalt konsilium spelas upp resten av dess repliker i tur och ordning. Webben väntar live så länge inget annat
+händer (upp till 90 s) och hoppar över rösten så fort nästa händelse väntar, och väntar upp till 40 s i
+uppspelning. Demon är förgenererad. Mac minins MPS är reserv bara när Qwen inte är laddad och minst 45 % minne
+är ledigt, som en engångsprocess som avslutas efteråt. Piper är sista reserv, och testad: med Lenovon nere
+svarade `/api/rost/{id}` med Piper-röst efter 4,3 s (3 s väntan på Lenovon) och sedan direkt i 60 s utan att
+fråga Lenovon igen. Kvaliteten kontrollerades genom att en annan modell (Gemini) fick lyssna på demons 13
+repliker mot manuset: alla ord och tal rätt, en replik hade en paus mitt i "hjärtmuskelinflammation" och
+gjordes om. Före bytet till utskrivna bokstäver lästes "H R V" som "å r v".
 
 **Klonade röster är en missbruksrisk.** Första versionen av `/api/rost` tog `?agent=..&text=..`, vilket betyder
 att vem som helst med åtkomst kunde få en klonad röst att säga vad som helst. Nu finns bara

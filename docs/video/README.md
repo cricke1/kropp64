@@ -16,7 +16,17 @@ Filmerna ligger inte i git (för stora). Så spelas de in igen:
    16:9 med viewport 1680x945 och skalfaktor 8/7, 9:16 med viewport 405x720 och skalfaktor 8/3.
    Bilderna sparas med tidsstämplar och sätts ihop med ffmpeg (`-f concat` med varaktighet per bild, `fps=30`).
 
-Ingen ljudspår. Ingen klippning utöver att första sekunden (sidbytet) är bortskuren.
+   Chromium körs headless (inga fönster) med `--mute-audio` och `--autoplay-policy=no-user-gesture-required`, och sidan öppnas med
+   `?ljud=1`. Inget spelas i datorns högtalare.
+3. Ljudspåret: läkarnas röster är förgenererade för demomanuset (`web/public/demo-rost/<nr>.ogg`, se
+   `web/dev/rost-demo.mjs`) och byggs in i demobygget, så den publika demon kör ingen talsyntes. Under
+   inspelningen loggas när varje röst börjar spela i sidan (samma klocka som screencastens tidsstämplar), och
+   filerna läggs in på exakt de tiderna med ffmpeg (`adelay` + `amix`). Varje replik är normaliserad till
+   -19 LUFS (hela filmen mätt till -20,3 LUFS integrerat), toppar under -2 dBTP. AAC 128 kbit/s i mp4, Opus i webm.
+
+Rösterna görs med Parambe (Chatterbox Multilingual med svenska vikter) lokalt i hemnätet, klonade ur en röstbank
+vars referensklipp ursprungligen gjordes med ElevenLabs (syntetiska röster, gratisplan, icke-kommersiellt).
+Se RESAN.md. Ingen klippning utöver att första sekunden (sidbytet) är bortskuren.
 
 ## Riggen (14 s)
 
