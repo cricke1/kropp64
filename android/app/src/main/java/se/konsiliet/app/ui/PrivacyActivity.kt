@@ -29,10 +29,10 @@ class PrivacyActivity : ComponentActivity() {
             KonsilietTheme {
                 val t = LocalTokens.current
                 Column(Modifier.fillMaxSize().background(t.bg).safeDrawingPadding().verticalScroll(rememberScrollState()).padding(20.dp)) {
-                    Text("Hur Konsiliet använder din hälsodata", style = Type.title, color = t.ink)
+                    Text("Hur Kropp64 använder din hälsodata", style = Type.title, color = t.ink)
                     Spacer(Modifier.height(12.dp))
                     Text(
-                        "Konsiliet läser puls, HRV, vilopuls, syremättnad, hudtemperatur, andningsfrekvens, " +
+                        "Kropp64 läser puls, HRV, vilopuls, syremättnad, hudtemperatur, andningsfrekvens, " +
                             "sömn, steg och träningspass från Health Connect och skickar dem till din egen server " +
                             "(den adress du angett under Inställningar). Där jämförs värdena med din egen baslinje " +
                             "och ett lokalt läkarteam av språkmodeller kan ta fram underlag att ta med till vården.\n\n" +

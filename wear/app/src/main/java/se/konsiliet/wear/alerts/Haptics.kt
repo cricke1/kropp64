@@ -64,7 +64,7 @@ object Haptics {
                 description = "Akuta larm från vakten. Lång, stark vibration."
                 enableVibration(false); setBypassDnd(true)
             },
-            NotificationChannel(CH_RORELSE, "Rörelse", NotificationManager.IMPORTANCE_DEFAULT).apply {
+            NotificationChannel(CH_RORELSE, "AFK för länge", NotificationManager.IMPORTANCE_DEFAULT).apply {
                 description = "AFK för länge: påminnelser från stillasittandevakten. Två korta knackningar."
                 enableVibration(true); vibrationPattern = Pattern.RORELSE.timings
             },

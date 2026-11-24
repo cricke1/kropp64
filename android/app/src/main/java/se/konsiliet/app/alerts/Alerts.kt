@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import se.konsiliet.app.R
 import se.konsiliet.app.data.EventRow
@@ -35,6 +36,8 @@ object Channels {
     const val SMS = "sms"
     const val ROROLSE = "rorelse"
     const val BRIEF = "brief"
+    const val KNUFF = "knuff"
+    const val TRANING = "traning"
 
     fun create(ctx: Context) {
         val nm = ctx.getSystemService(NotificationManager::class.java)
@@ -47,17 +50,23 @@ object Channels {
             NotificationChannel(AVVIKELSE, "Avvikelse", NotificationManager.IMPORTANCE_DEFAULT).apply {
                 description = "Värden som avviker från din egen baslinje"
             },
-            NotificationChannel(KONSILIET, "Konsiliet", NotificationManager.IMPORTANCE_DEFAULT).apply {
-                description = "När läkarteamet sammanträder och när bedömningen är klar"
+            NotificationChannel(KONSILIET, "Supporttråden", NotificationManager.IMPORTANCE_DEFAULT).apply {
+                description = "När en tråd startar och när trådstartaren markerar en lösning"
             },
             NotificationChannel(SMS, "Sms till anhöriga", NotificationManager.IMPORTANCE_HIGH).apply {
                 description = "Bekräftelse när ett sms har skickats eller inte kunde skickas"
             },
-            NotificationChannel(ROROLSE, "Rörelse", NotificationManager.IMPORTANCE_DEFAULT).apply {
+            NotificationChannel(ROROLSE, "AFK för länge", NotificationManager.IMPORTANCE_DEFAULT).apply {
                 description = "Påminnelser från stillasittandevakten. Skickas även till klockan."
             },
-            NotificationChannel(BRIEF, "Morgonbrief", NotificationManager.IMPORTANCE_DEFAULT).apply {
-                description = "Morgonens sammanfattning med återhämtning"
+            NotificationChannel(BRIEF, "POST-skärmen", NotificationManager.IMPORTANCE_DEFAULT).apply {
+                description = "Morgonens sammanfattning med headroom (återhämtning)"
+            },
+            NotificationChannel(KNUFF, "Knuffar: läggdags, pass, stress", NotificationManager.IMPORTANCE_DEFAULT).apply {
+                description = "Läggdags, passdag och hög puls vid datorn. Högst det antal per dag du valt, aldrig under tysta timmar."
+            },
+            NotificationChannel(TRANING, "Efter passet", NotificationManager.IMPORTANCE_LOW).apply {
+                description = "Sammanfattning efter ett träningspass och veckans siffror"
             },
             NotificationChannel(LINK, "Anslutning", NotificationManager.IMPORTANCE_MIN).apply {
                 description = "Visar att länken mellan klocka, mobil och server är igång"
@@ -75,6 +84,7 @@ object Channels {
 object Alerts {
     const val ACTION_DISMISS = "se.konsiliet.DISMISS"
     const val ACTION_SMS_DUE = "se.konsiliet.SMS_DUE"
+    const val ACTION_KNUFF = "se.konsiliet.KNUFF"
     const val EXTRA_ALERT = "alert"
     /** Äldre händelser än så här (t.ex. historik vid första anslutningen) ger ingen notis. */
     private const val MAX_AGE_S = 2 * 3600
@@ -96,31 +106,109 @@ object Alerts {
         if (System.currentTimeMillis() / 1000.0 - ev.ts > MAX_AGE_S) return
         val p = runCatching { JSONObject(ev.payload) }.getOrNull() ?: return
         when (ev.kind) {
-            "alert.raise" -> raise(ctx, SmsPolicy.Alert(
-                id = ev.id, ts = ev.ts, level = p.optString("level"), title = p.optString("title"),
-                body = p.optString("body"), rule = p.optString("rule").ifBlank { null },
-                consultId = p.optString("consult_id").ifBlank { null }))
-            "vakt.anomaly" -> if (p.optString("level") == "avvikelse") {
-                notify(ctx, Channels.AVVIKELSE, ev.id.toInt(), p.optString("title"), p.optString("detail"), consultId = null)
+            "alert.raise" -> {
+                // Teamets "ta upp med vården" kommer redan i trådens egen notis. Bara akuta larm får en egen.
+                if (p.optString("consult_id").isNotBlank() && p.optString("level") != "akut") return
+                raise(ctx, SmsPolicy.Alert(
+                    id = ev.id, ts = ev.ts, level = p.optString("level"), title = p.optString("title"),
+                    body = p.optString("body"), rule = p.optString("rule").ifBlank { null },
+                    consultId = p.optString("consult_id").ifBlank { null }))
             }
+            // Avvikelser får ingen egen notis: tråden som startar av dem är notisen (en per tråd, uppdateras på plats).
+            "vakt.anomaly" -> {}
             "consult.start" -> {
+                val cid = p.optString("consult_id")
                 val trig = p.optJSONObject("trigger")
-                val what = trig?.optString("title")?.takeIf { it.isNotEmpty() }
-                    ?: trig?.optString("question")?.takeIf { it.isNotEmpty() } ?: "Manuell fråga"
-                notify(ctx, Channels.KONSILIET, ev.id.toInt(), "Konsiliet sammanträder", what, p.optString("consult_id"))
+                val tyst = trig?.optBoolean("tyst") == true
+                if (trig?.optString("kind") == "anomaly") {
+                    TradNotis.mark(cid, notified = true, tyst = false)
+                    notify(ctx, Channels.KONSILIET, TradNotis.id(cid), "Vakten såg något: " + trig.optString("title"),
+                        trig.optString("detail") + "\nTeamet tittar på det. Snabbsvar om några sekunder.", cid, onlyOnce = true)
+                } else {
+                    // Egen fråga: du vet redan att den startade. Veckans tråd är tyst om den inte hittar något.
+                    TradNotis.mark(cid, notified = false, tyst = tyst)
+                }
             }
-            "nudge.move" -> {
-                notify(ctx, Channels.ROROLSE, ev.id.toInt(), p.optString("title"), p.optString("body"), null)
-                WatchListenerService.forwardNudge(ctx, p.optString("title"), p.optString("body"))
+            "consult.kort" -> {
+                val cid = p.optString("consult_id")
+                if (TradNotis.notified(cid)) {
+                    val rader = p.optJSONArray("rader")
+                    val text = "Snabbsvar: " + p.optString("bradska_text") + "." +
+                        (if (rader != null) (0 until minOf(3, rader.length())).joinToString("") { "\n" + rader.optString(it) } else "")
+                    notify(ctx, Channels.KONSILIET, TradNotis.id(cid), "Teamet tittar på det", text, cid, onlyOnce = true)
+                }
             }
-            "brief.morgon" -> notify(ctx, Channels.BRIEF, ev.id.toInt(),
-                "Morgonbrief" + p.optString("datum").let { if (it.isNotEmpty()) " $it" else "" },
-                p.optString("text"), null)
+            "nudge.move", "nudge.stress", "nudge.sova", "nudge.pass" -> {
+                val typ = p.optString("typ").ifBlank { if (ev.kind == "nudge.move") "afk" else ev.kind.removePrefix("nudge.") }
+                knuff(ctx, ev.id.toInt(), typ, p)
+                WatchListenerService.forwardNudge(ctx, p.optString("title"), p.optString("body"), typ)
+            }
+            "pass.klart" -> notify(ctx, Channels.TRANING, ev.id.toInt(), p.optString("title"), p.optString("body"), null)
+            "vecka.summering" -> {
+                val pass = p.optJSONObject("pass")
+                notify(ctx, Channels.TRANING, ev.id.toInt(),
+                    "Veckan: " + (pass?.let { "${it.optInt("pass")} av ${it.optInt("mal")} pass" } ?: "sammanfattning"),
+                    p.optString("text"), null)
+            }
+            "brief.morgon" -> {
+                val rubrik = p.optString("rubrik").ifBlank { "POST-skärmen" + p.optString("datum").let { if (it.isNotEmpty()) " $it" else "" } }
+                val kort = p.optString("kort")
+                val varfor = p.optString("varfor")
+                notify(ctx, Channels.BRIEF, ev.id.toInt(), rubrik,
+                    if (kort.isNotBlank()) kort + (if (varfor.isNotBlank()) ".\nVarför: $varfor." else "") else p.optString("text"), null)
+            }
             "consult.verdict" -> {
+                val cid = p.optString("consult_id")
                 val v = p.optJSONObject("verdict")
-                notify(ctx, Channels.KONSILIET, ev.id.toInt(), "Bedömningen är klar",
-                    v?.optString("sammanfattning").orEmpty(), p.optString("consult_id"))
+                val b = v?.optString("bradska")
+                val serious = b in setOf("ta_upp_med_varden", "kontakta_vard_nu")
+                if (TradNotis.tyst(cid) && !serious) return
+                val atg = v?.optJSONArray("atgarder")
+                val forsta = if (atg != null && atg.length() > 0) "\nGör så här: " + atg.optString(0) else ""
+                // Brådskande bedömningar skrivs sakligt, utan forumtermer.
+                val titel = when (b) {
+                    "kontakta_vard_nu" -> "Kontakta vården nu"
+                    "ta_upp_med_varden" -> "Ta upp med vården (inte akut)"
+                    else -> "Markerad som lösning"
+                }
+                notify(ctx, Channels.KONSILIET, TradNotis.id(cid), titel, v?.optString("sammanfattning").orEmpty() + forsta, cid,
+                    onlyOnce = !serious && TradNotis.notified(cid))
             }
+        }
+    }
+
+    /** En knuff med svarsknappar (snooze, inte nu, fokusläge, andas). Svaret går till servern. */
+    private fun knuff(ctx: Context, id: Int, typ: String, p: JSONObject) {
+        if (!canNotify(ctx)) return
+        val b = NotificationCompat.Builder(ctx, if (typ == "afk") Channels.ROROLSE else Channels.KNUFF)
+            .setSmallIcon(R.drawable.ic_stat)
+            .setContentTitle(p.optString("title"))
+            .setContentText(p.optString("body"))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(p.optString("body")))
+            .setAutoCancel(true)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setContentIntent(openIntent(ctx, null, id))
+        val acts = p.optJSONArray("actions")
+        if (acts != null) for (k in 0 until minOf(3, acts.length())) {
+            val a = acts.optJSONObject(k) ?: continue
+            val pi = PendingIntent.getBroadcast(ctx, id * 4 + k,
+                Intent(ctx, AlertReceiver::class.java).setAction(ACTION_KNUFF)
+                    .putExtra("notis", id).putExtra("typ", typ).putExtra("svar", a.optString("id")).putExtra("minuter", a.optInt("minuter")),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+            b.addAction(0, a.optString("label"), pi)
+        }
+        if (TradNotis.tystaTimmar()) b.setSilent(true)
+        runCatching { NotificationManagerCompat.from(ctx).notify(id, b.build()) }
+    }
+
+    fun svaraKnuff(ctx: Context, notisId: Int, typ: String, svar: String, minuter: Int) {
+        NotificationManagerCompat.from(ctx).cancel(notisId)
+        if (svar == "andas") WatchListenerService.startBreathing(ctx)
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            runCatching {
+                se.konsiliet.app.net.Api.postJson("/api/knuff/svar", JSONObject().put("typ", typ).put("svar", svar)
+                    .apply { if (minuter > 0) put("minuter", minuter) })
+            }.onFailure { Log.w(TAG, "kunde inte skicka svaret på knuffen: ${it.message}") }
         }
     }
 
@@ -134,9 +222,11 @@ object Alerts {
         return PendingIntent.getActivity(ctx, req, i, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
-    private fun notify(ctx: Context, channel: String, id: Int, title: String, body: String, consultId: String?) {
+    private fun notify(ctx: Context, channel: String, id: Int, title: String, body: String, consultId: String?, onlyOnce: Boolean = false) {
         if (!canNotify(ctx)) return
         val n = NotificationCompat.Builder(ctx, channel)
+            .setOnlyAlertOnce(onlyOnce)
+            .setSilent(TradNotis.tystaTimmar())
             .setSmallIcon(R.drawable.ic_stat)
             .setContentTitle(title)
             .setContentText(body)
@@ -297,6 +387,41 @@ class AlertReceiver : BroadcastReceiver() {
         when (intent.action) {
             Alerts.ACTION_DISMISS -> Alerts.dismiss(context, id)
             Alerts.ACTION_SMS_DUE -> Alerts.sendDueSms(context, id)
+            Alerts.ACTION_KNUFF -> Alerts.svaraKnuff(context, intent.getIntExtra("notis", 0), intent.getStringExtra("typ").orEmpty(),
+                intent.getStringExtra("svar").orEmpty(), intent.getIntExtra("minuter", 0))
         }
+    }
+}
+
+/**
+ * En notis per tråd: start (bara när vakten startade den), snabbsvaret och lösningen uppdaterar samma notis.
+ * Kommer ihåg vilka trådar som är tysta (veckans genomgång) eller egna frågor.
+ */
+object TradNotis {
+    fun id(cid: String): Int = 500_000 + (cid.hashCode() and 0x3fffff)
+
+    private fun map(): JSONObject = Prefs.getString("tradNotis")?.let { runCatching { JSONObject(it) }.getOrNull() } ?: JSONObject()
+
+    @Synchronized fun mark(cid: String, notified: Boolean, tyst: Boolean) {
+        val m = map()
+        m.put(cid, JSONObject().put("n", notified).put("t", tyst).put("at", System.currentTimeMillis()))
+        // högst 30 trådar sparas
+        val keys = m.keys().asSequence().toList().sortedBy { m.optJSONObject(it)?.optLong("at") ?: 0 }
+        keys.dropLast(30).forEach { m.remove(it) }
+        Prefs.putString("tradNotis", m.toString())
+    }
+
+    fun notified(cid: String) = map().optJSONObject(cid)?.optBoolean("n") == true
+    fun tyst(cid: String) = map().optJSONObject(cid)?.optBoolean("t") == true
+
+    /** Tysta timmar som servern har (hämtas av Idag-vyn). Notiser då visas men låter och vibrerar inte. Akuta larm undantas. */
+    fun tystaTimmar(nowMs: Long = System.currentTimeMillis()): Boolean {
+        val s = Prefs.getString("tystaTimmar") ?: "23:00-08:00"
+        return runCatching {
+            val (a, b) = s.split("-").map { x -> x.split(":").let { it[0].toInt() * 60 + it[1].toInt() } }
+            val c = java.util.Calendar.getInstance().apply { timeInMillis = nowMs }
+            val m = c.get(java.util.Calendar.HOUR_OF_DAY) * 60 + c.get(java.util.Calendar.MINUTE)
+            if (a > b) m >= a || m < b else m in a until b
+        }.getOrDefault(false)
     }
 }

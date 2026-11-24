@@ -208,7 +208,7 @@ private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
         ) {
             item {
                 ListHeader(Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec)) {
-                    Text("Puls", color = Dim)
+                    Text("Klockfrekvens", color = Dim)
                 }
             }
             item {
@@ -216,7 +216,7 @@ private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(status.lastHr?.let { "%.0f".format(it) } ?: "--",
                             style = Tab, fontSize = 44.sp, fontWeight = FontWeight.Medium, color = Ink)
-                        Text(" slag/min", color = Dim, fontSize = 12.sp, modifier = Modifier.padding(bottom = 8.dp))
+                        Text(" BPM", color = Dim, fontSize = 12.sp, modifier = Modifier.padding(bottom = 8.dp))
                     }
                     Text(ago(status.lastHrAt, now), color = Dim, fontSize = 12.sp, style = Tab)
                 }
@@ -253,12 +253,12 @@ private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
             if (status.exerciseActive) {
                 item {
                     val min = (now - status.exerciseStartedAt) / 60000
-                    Text("Pass pågår, $min min", color = Accent, fontSize = 13.sp, style = Tab, textAlign = TextAlign.Center,
+                    Text("Stresstest pågår, $min min", color = Accent, fontSize = 13.sp, style = Tab, textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth().morph(this, spec))
                 }
                 item {
                     Button(onClick = { ExerciseService.stop(ctx) }, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec),
-                        colors = ButtonDefaults.filledTonalButtonColors()) { Text("Avsluta pass") }
+                        colors = ButtonDefaults.filledTonalButtonColors()) { Text("Avsluta stresstest") }
                 }
             } else if (choosing) {
                 EXERCISE_CHOICES.forEach { (type, label) ->
@@ -272,7 +272,7 @@ private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
             } else {
                 item {
                     Button(onClick = { choosing = true }, enabled = permsOk, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec)) {
-                        Text("Starta träningspass")
+                        Text("Starta stresstest")
                     }
                 }
             }

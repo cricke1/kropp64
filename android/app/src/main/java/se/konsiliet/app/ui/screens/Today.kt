@@ -107,22 +107,22 @@ fun TodayScreen() {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 24.dp)) {
         // Rubrikrad
         Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 18.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("Idag", style = Type.title, color = t.ink, modifier = Modifier.weight(1f))
+            Text("Sensorer", style = Type.title, color = t.ink, modifier = Modifier.weight(1f))
             StatusDot(if (link.wsConnected) t.ok else t.avvikelse)
             Text("  " + if (link.wsConnected) "Ansluten" else "Frånkopplad", style = Type.small, color = t.ink2)
         }
 
         // Puls
         Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 18.dp)) {
-            Text("Puls", style = Type.label, color = t.ink2)
+            Text("Klockfrekvens", style = Type.label, color = t.ink2)
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(hrVal?.let { Fmt.int(it) } ?: "ej mätt", style = if (hrVal == null) Type.value else Type.display,
                     color = if (hrVal == null) t.ink3 else t.ink)
-                if (hrVal != null) Text("  slag/min", style = Type.small, color = t.ink2, modifier = Modifier.padding(bottom = 10.dp))
+                if (hrVal != null) Text("  BPM", style = Type.small, color = t.ink2, modifier = Modifier.padding(bottom = 10.dp))
             }
             val stale = hrTs != null && now / 1000.0 - hrTs > 15 * 60
             Text(
-                if (hrTs == null) "Ingen puls mottagen ännu"
+                if (hrTs == null) "Ingen klockfrekvens mottagen ännu"
                 else "${Fmt.ago((hrTs * 1000).toLong(), now)} · $hrSrc" + if (stale) " · inte aktuell" else "",
                 style = Type.small, color = if (isTestSource(hrLatest?.source)) t.avvikelse else t.ink3,
             )
@@ -131,7 +131,7 @@ fun TodayScreen() {
         Column(Modifier.padding(horizontal = 20.dp)) {
             // Finns bara en kort stund data (t.ex. första timmen) zoomas axeln in på den, annars hela dygnet.
             val chartFrom = hrSeries.firstOrNull()?.let { maxOf(from24, it.ts - 15 * 60) } ?: from24
-            TraceChart(hrSeries, chartFrom, now / 1000.0, unit = "slag/min")
+            TraceChart(hrSeries, chartFrom, now / 1000.0, unit = "BPM")
             if (hrSeries.isNotEmpty()) {
                 Text((if (chartFrom > from24 + 60) "Sedan ${Fmt.hm(chartFrom)}" else "Senaste dygnet") + ": min ${Fmt.int(hrSeries.minOf { it.value })} · max ${Fmt.int(hrSeries.maxOf { it.value })} · ${Fmt.int(hrSeries.size.toDouble())} punkter",
                     style = Type.small, color = t.ink3, modifier = Modifier.padding(top = 6.dp))
@@ -139,10 +139,10 @@ fun TodayScreen() {
         }
 
         // Återhämtning (beräknas på servern; formeln visas så att siffran går att granska)
-        Section("Återhämtning", trailing = "beräknas på servern") {
+        Section("Headroom", trailing = "beräknas på servern") {
             val p = recovery
             val score = p?.optInt("poang", -1)?.takeIf { p.has("poang") && !p.isNull("poang") && it >= 0 }
-            ReadoutRow("Poäng", score?.toString(), "av 100",
+            ReadoutRow("Headroom", score?.toString(), "av 100",
                 note = when {
                     p == null -> "Servern svarar inte"
                     score == null -> p.optString("kommentar", "för lite data")
@@ -150,16 +150,16 @@ fun TodayScreen() {
                 })
             val delar = p?.optJSONObject("delar")
             delar?.optJSONObject("hrv")?.let {
-                ReadoutRow("HRV i natt", Fmt.dec(it.optDouble("natt_ms")), "ms", note = "baslinje ${Fmt.dec(it.optDouble("baslinje_ms"))} ms · z ${Fmt.dec(it.optDouble("z"), 2)}")
+                ReadoutRow("Timingmarginal (HRV) i natt", Fmt.dec(it.optDouble("natt_ms")), "ms", note = "baslinje ${Fmt.dec(it.optDouble("baslinje_ms"))} ms · z ${Fmt.dec(it.optDouble("z"), 2)}")
             }
             delar?.optJSONObject("vilopuls")?.let {
-                ReadoutRow("Vilopuls i natt", Fmt.dec(it.optDouble("natt")), "slag/min", note = "baslinje ${Fmt.dec(it.optDouble("baslinje"))} · z ${Fmt.dec(it.optDouble("z"), 2)}")
+                ReadoutRow("Idle-klock i natt", Fmt.dec(it.optDouble("natt")), "BPM", note = "baslinje ${Fmt.dec(it.optDouble("baslinje"))} · z ${Fmt.dec(it.optDouble("z"), 2)}")
             }
-            delar?.optJSONObject("somn")?.let { ReadoutRow("Sömn", Fmt.dec(it.optDouble("timmar")), "h") }
+            delar?.optJSONObject("somn")?.let { ReadoutRow("Viloläge", Fmt.dec(it.optDouble("timmar")), "h") }
         }
 
         // Sömn
-        Section("Sömn i natt", trailing = sleep?.let { sourceLabel(it.source) }) {
+        Section("Viloläge i natt", trailing = sleep?.let { sourceLabel(it.source) }) {
             val s = sleep
             if (s == null) {
                 ReadoutRow("Sömnpass", null)
@@ -187,9 +187,9 @@ fun TodayScreen() {
         }
 
         // Övriga mätvärden
-        Section("Mätvärden", trailing = "senaste värde") {
-            ReadoutRow("HRV (RMSSD)", hrv?.let { Fmt.dec(it.value) }, "ms", note = hrv?.let { "${Fmt.ago((it.ts * 1000).toLong(), now)} · ${sourceLabel(it.source)}" })
-            ReadoutRow("Vilopuls", rest?.let { Fmt.int(it.value) }, "slag/min", note = rest?.let { "${Fmt.ago((it.ts * 1000).toLong(), now)} · ${sourceLabel(it.source)}" })
+        Section("Övriga sensorer", trailing = "senaste värde") {
+            ReadoutRow("Timingmarginal (HRV, RMSSD)", hrv?.let { Fmt.dec(it.value) }, "ms", note = hrv?.let { "${Fmt.ago((it.ts * 1000).toLong(), now)} · ${sourceLabel(it.source)}" })
+            ReadoutRow("Idle-klock", rest?.let { Fmt.int(it.value) }, "BPM", note = rest?.let { "${Fmt.ago((it.ts * 1000).toLong(), now)} · ${sourceLabel(it.source)}" })
             ReadoutRow("Syremättnad", spo2?.let { Fmt.dec(it.value) }, "%", note = spo2?.let { "${Fmt.ago((it.ts * 1000).toLong(), now)} · ${sourceLabel(it.source)}" })
             ReadoutRow("Andningsfrekvens", resp?.let { Fmt.dec(it.value) }, "/min", note = resp?.let { "${Fmt.ago((it.ts * 1000).toLong(), now)} · ${sourceLabel(it.source)}" })
             ReadoutRow("Hudtemperatur, avvikelse", skin?.let { (if (it.value >= 0) "+" else "") + Fmt.dec(it.value, 2) }, "°C", note = skin?.let { "${Fmt.ago((it.ts * 1000).toLong(), now)} · ${sourceLabel(it.source)}" })
@@ -212,22 +212,22 @@ fun TodayScreen() {
         // Datorn
         val kat = datorn?.optJSONObject("kategorier")
         if (kat != null) {
-            Section("Vid datorn", trailing = "senaste dygnet") {
+            Section("Uptime vid datorn", trailing = "senaste dygnet") {
                 val names = mapOf("kod" to "Kod", "spel" to "Spel", "chatt" to "Chatt", "webb" to "Webb", "annat" to "Annat")
                 names.forEach { (k, label) ->
                     val o = kat.optJSONObject(k) ?: return@forEach
                     val min = o.optInt("minuter")
                     val med = if (o.isNull("puls_median")) null else o.optDouble("puls_median")
                     ReadoutRow(label, if (min > 0) Fmt.int(min.toDouble()) else null, "min",
-                        note = med?.let { "medianpuls ${Fmt.int(it)} slag/min" })
+                        note = med?.let { "medianklockfrekvens ${Fmt.int(it)} BPM" })
                 }
             }
         }
 
         // Morgonbrief
-        Section("Morgonbrief", trailing = brief?.let { Fmt.day(it.ts) }) {
+        Section("POST-skärmen", trailing = brief?.let { Fmt.day(it.ts) }) {
             val text = brief?.let { runCatching { JSONObject(it.payload).optString("text") }.getOrNull() }
-            Text(text?.takeIf { it.isNotBlank() } ?: "Ingen morgonbrief ännu.", style = Type.body,
+            Text(text?.takeIf { it.isNotBlank() } ?: "Ingen POST-skärm ännu.", style = Type.body,
                 color = if (text.isNullOrBlank()) t.ink3 else t.ink2, modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp))
             Row(Modifier.padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 TextButton(onClick = {
@@ -237,7 +237,7 @@ fun TodayScreen() {
                             .getOrElse { "Gick inte: ${it.message}" }
                         refresh++
                     }
-                }) { Text("Skapa morgonbrief nu") }
+                }) { Text("Kör POST nu") }
                 briefMsg?.let { Text(it, style = Type.small, color = t.ink3) }
             }
         }

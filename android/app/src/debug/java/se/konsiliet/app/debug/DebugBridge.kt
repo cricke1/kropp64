@@ -19,6 +19,13 @@ import se.konsiliet.app.link.WatchListenerService
 class DebugBridge : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == "se.konsiliet.debug.EXPORT_STATUS") { exportStatus(context); return }
+        if (intent.action == "se.konsiliet.debug.SVAR") {
+            // Klockans svar på en knuff, flyttat med adb i stället för MessageClient (files/svar.json).
+            val o = JSONObject(File(context.filesDir, "svar.json").readText())
+            WatchListenerService.svar(context, o)
+            Log.i("KonsilietDebug", "svar från klockan: $o")
+            return
+        }
         val file = File(context.filesDir, "inject.json")
         val reply = try {
             val o = JSONObject(file.readText())

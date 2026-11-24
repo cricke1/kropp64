@@ -26,6 +26,10 @@ object Protocol {
     const val PATH_FLUSH = "/konsiliet/flush"
     const val PATH_NUDGE = "/konsiliet/nudge"
     const val PATH_ALERT = "/konsiliet/alert"
+    /** Mobil till klocka: starta 60 sekunders andning (från stressknuffen). */
+    const val PATH_ANDAS = "/konsiliet/andas"
+    /** Klocka till mobil: svar på en knuff ({typ, svar, minuter}), skickas vidare till servern. */
+    const val PATH_SVAR = "/konsiliet/svar"
 }
 
 /**
@@ -45,6 +49,12 @@ class WatchListenerService : WearableListenerService() {
             JSONObject().put("ok", false).put("error", e.javaClass.simpleName + ": " + e.message)
         }
         return Tasks.forResult(reply.toString().toByteArray())
+    }
+
+    override fun onMessageReceived(event: com.google.android.gms.wearable.MessageEvent) {
+        if (event.path != Protocol.PATH_SVAR) return
+        val o = runCatching { JSONObject(String(event.data)) }.getOrNull() ?: return
+        svar(applicationContext, o)
     }
 
     override fun onCapabilityChanged(info: CapabilityInfo) {
@@ -80,18 +90,30 @@ class WatchListenerService : WearableListenerService() {
             return rows.size
         }
 
-        /** Stillasittandevaktens påminnelse ska också vibrera på klockan. */
-        fun forwardNudge(ctx: Context, title: String, body: String) {
-            val bytes = JSONObject().put("title", title).put("body", body).toString().toByteArray()
-            Prefs.putString("lastWatchMessage", JSONObject().put("path", Protocol.PATH_NUDGE)
-                .put("data", JSONObject(String(bytes))).toString())
+        /** Knuffarna (AFK, stress, läggdags, pass) ska också vibrera på klockan, med svarsknappar där. */
+        fun forwardNudge(ctx: Context, title: String, body: String, typ: String = "afk") {
+            send(ctx, Protocol.PATH_NUDGE, JSONObject().put("title", title).put("body", body).put("typ", typ))
+        }
+
+        /** Stressknuffens "Andas 60 s": klockan öppnar andningen direkt. */
+        fun startBreathing(ctx: Context) = send(ctx, Protocol.PATH_ANDAS, JSONObject().put("sekunder", 60))
+
+        private fun send(ctx: Context, path: String, o: JSONObject) {
+            val bytes = o.toString().toByteArray()
+            // Sparas också för debugbryggan, som flyttar meddelandet till klockemulatorn med adb.
+            Prefs.putString("lastWatchMessage", JSONObject().put("path", path).put("data", o).toString())
             kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
                 runCatching {
                     val nodes = Wearable.getCapabilityClient(ctx)
                         .getCapability(Protocol.CAP_WATCH, CapabilityClient.FILTER_REACHABLE).await().nodes
-                    for (n in nodes) Wearable.getMessageClient(ctx).sendMessage(n.id, Protocol.PATH_NUDGE, bytes).await()
-                }.onFailure { Log.d(TAG, "kunde inte skicka påminnelse till klockan: ${it.message}") }
+                    for (n in nodes) Wearable.getMessageClient(ctx).sendMessage(n.id, path, bytes).await()
+                }.onFailure { Log.d(TAG, "kunde inte skicka $path till klockan: ${it.message}") }
             }
+        }
+
+        /** Svar på en knuff från klockan går till servern som om det tryckts i mobilen. */
+        fun svar(ctx: Context, o: JSONObject) {
+            se.konsiliet.app.alerts.Alerts.svaraKnuff(ctx, o.optInt("notis", 0), o.optString("typ"), o.optString("svar"), o.optInt("minuter", 0))
         }
 
         /** Akut larm till klockan: eget vibrationsmönster (lång, stark, går igenom Stör ej). */

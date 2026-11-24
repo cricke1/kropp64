@@ -29,6 +29,10 @@ import se.konsiliet.app.net.Api
 import se.konsiliet.app.ui.theme.LocalTokens
 import se.konsiliet.app.ui.theme.Type
 
+/** Startar en tråd med en fråga. Snabbsvaret ur datan kommer inom sekunder, teamets svar efter några minuter. */
+suspend fun startaFraga(q: String, hours: Int = 72): String =
+    Api.postJson("/api/consult", JSONObject().put("question", q.trim()).put("hours", hours)).getString("consult_id")
+
 @Composable
 fun AskScreen(onStarted: (String) -> Unit) {
     val t = LocalTokens.current
@@ -38,11 +42,22 @@ fun AskScreen(onStarted: (String) -> Unit) {
     var err by rememberSaveable { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp)) {
-        Text("Fråga konsiliet", style = Type.title, color = t.ink)
+        Text("Starta en tråd", style = Type.title, color = t.ink)
         Spacer(Modifier.height(6.dp))
         Text("Teamet läser din data och journal för den valda perioden. Varje påstående i svaret måste peka på en mätpunkt, " +
             "en journalrad eller en källa. Inga diagnoser, bara underlag.", style = Type.body, color = t.ink2)
         Spacer(Modifier.height(16.dp))
+        Text("Färdiga frågor (startar direkt)", style = Type.label, color = t.ink2)
+        FRAGOR.forEach { f ->
+            Text(f, style = Type.body, color = t.accent, modifier = Modifier.fillMaxWidth().clickable(enabled = !busy) {
+                busy = true; err = null
+                scope.launch {
+                    runCatching { startaFraga(f, hours) }.onSuccess { onStarted(it) }.onFailure { err = "Kunde inte starta: ${it.message}" }
+                    busy = false
+                }
+            }.padding(vertical = 10.dp))
+        }
+        Spacer(Modifier.height(10.dp))
         OutlinedTextField(q, { q = it }, modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp),
             label = { Text("Din fråga") }, textStyle = Type.body)
         Spacer(Modifier.height(14.dp))
@@ -62,7 +77,7 @@ fun AskScreen(onStarted: (String) -> Unit) {
                     .onFailure { err = "Kunde inte starta: ${it.message}" }
                 busy = false
             }
-        }) { Text(if (busy) "Skickar ..." else "Kalla in konsiliet") }
+        }) { Text(if (busy) "Skickar ..." else "Starta tråden") }
         err?.let { Text(it, style = Type.small, color = t.akut, modifier = Modifier.padding(top = 10.dp)) }
     }
 }

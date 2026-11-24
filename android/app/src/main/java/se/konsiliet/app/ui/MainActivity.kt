@@ -43,6 +43,8 @@ import se.konsiliet.app.link.WatchListenerService
 import se.konsiliet.app.data.Prefs
 import se.konsiliet.app.ui.screens.AskScreen
 import se.konsiliet.app.ui.screens.FirstRunScreen
+import se.konsiliet.app.ui.screens.IdagScreen
+import se.konsiliet.app.ui.screens.startaFraga
 import se.konsiliet.app.ui.screens.ConsultDetail
 import se.konsiliet.app.ui.screens.ConsultsScreen
 import se.konsiliet.app.ui.screens.SettingsScreen
@@ -52,12 +54,14 @@ import se.konsiliet.app.ui.theme.KonsilietTheme
 import se.konsiliet.app.ui.theme.LocalTokens
 import se.konsiliet.app.ui.theme.Type
 
-enum class Tab(val label: String) { Idag("Idag"), Tidslinje("Tidslinje"), Konsiliet("Konsiliet"), Fraga("Fråga"), Installningar("Inställningar") }
+// Idag först: svaret på "ska jag träna i dag?" utan att leta. Ny tråd nås från Idag och Trådar.
+enum class Tab(val label: String) { Idag("Idag"), Sensorer("Sensorer"), Tidslinje("Tidslinje"), Konsiliet("Trådar"), Installningar("Inställningar") }
 
 class MainActivity : ComponentActivity() {
     companion object { const val EXTRA_CONSULT = "consult_id" }
 
     private var openConsult by mutableStateOf<String?>(null)
+    private var asking by mutableStateOf(false)
 
     private val askNotif = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
@@ -98,11 +102,21 @@ class MainActivity : ComponentActivity() {
                 } else if (consult != null) {
                     BackHandler { openConsult = null }
                     ConsultDetail(consult, onBack = { openConsult = null })
+                } else if (asking) {
+                    BackHandler { asking = false }
+                    AskScreen(onStarted = { asking = false; openConsult = it })
                 } else when (tab) {
-                    Tab.Idag -> TodayScreen()
+                    Tab.Idag -> IdagScreen(
+                        onAsk = { q ->
+                            if (q.isBlank()) asking = true
+                            else lifecycleScope.launch { runCatching { startaFraga(q) }.onSuccess { openConsult = it } }
+                        },
+                        onOpenConsult = { openConsult = it },
+                        onSettings = { tab = Tab.Installningar },
+                    )
+                    Tab.Sensorer -> TodayScreen()
                     Tab.Tidslinje -> TimelineScreen(onOpenConsult = { openConsult = it })
-                    Tab.Konsiliet -> ConsultsScreen(onOpen = { openConsult = it })
-                    Tab.Fraga -> AskScreen(onStarted = { openConsult = it })
+                    Tab.Konsiliet -> ConsultsScreen(onOpen = { openConsult = it }, onAsk = { asking = true })
                     Tab.Installningar -> SettingsScreen()
                 }
             }
@@ -110,9 +124,9 @@ class MainActivity : ComponentActivity() {
             if (!firstRun) Row(Modifier.fillMaxWidth().background(t.surface).navigationBarsPadding().padding(horizontal = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween) {
                 Tab.entries.forEach { e ->
-                    val sel = e == tab && consult == null
+                    val sel = e == tab && consult == null && !asking
                     Column(
-                        Modifier.width(IntrinsicSize.Max).clickable { tab = e; openConsult = null }.padding(horizontal = 4.dp),
+                        Modifier.width(IntrinsicSize.Max).clickable { tab = e; openConsult = null; asking = false }.padding(horizontal = 4.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Box(Modifier.fillMaxWidth().height(2.dp).background(if (sel) t.accent else t.surface))

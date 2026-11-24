@@ -177,7 +177,7 @@ class LiveService : LifecycleService() {
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
         return NotificationCompat.Builder(this, Channels.LINK)
             .setSmallIcon(R.drawable.ic_stat)
-            .setContentTitle("Konsiliet")
+            .setContentTitle("Kropp64")
             .setContentText(text)
             .setOngoing(true)
             .setOnlyAlertOnce(true)

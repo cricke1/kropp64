@@ -53,13 +53,16 @@ private val BRADSKA = mapOf(
 )
 
 @Composable
-fun ConsultsScreen(onOpen: (String) -> Unit) {
+fun ConsultsScreen(onOpen: (String) -> Unit, onAsk: () -> Unit = {}) {
     val t = LocalTokens.current
-    var office by rememberSaveable { mutableStateOf(true) }
+    // Listan först: den svarar på "vad kom teamet fram till?". Kontoret är ett tryck bort.
+    var office by rememberSaveable { mutableStateOf(false) }
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 12.dp, top = 12.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("Konsiliet", style = Type.title, color = t.ink, modifier = Modifier.weight(1f))
-            listOf(true to "Kontoret", false to "Möten").forEach { (v, l) ->
+            Text("Trådar", style = Type.title, color = t.ink, modifier = Modifier.weight(1f))
+            Text("Ny tråd", style = Type.label, color = t.accent,
+                modifier = Modifier.clickable { onAsk() }.padding(horizontal = 10.dp, vertical = 8.dp))
+            listOf(false to "Lista", true to "Kontoret").forEach { (v, l) ->
                 Text(l, style = Type.label, color = if (office == v) t.ink else t.ink3,
                     modifier = Modifier.clickable { office = v }.padding(horizontal = 10.dp, vertical = 8.dp))
             }
@@ -112,7 +115,7 @@ private fun ConsultList(onOpen: (String) -> Unit) {
     val list by produceState<JSONArray?>(null) { value = runCatching { Api.getArray("/api/consults?limit=50") }.getOrNull() ?: JSONArray() }
     val arr = list
     if (arr == null) { Text("Hämtar ...", style = Type.body, color = t.ink3, modifier = Modifier.padding(20.dp)); return }
-    if (arr.length() == 0) { Text("Inga möten ännu, eller ingen kontakt med servern.", style = Type.body, color = t.ink3, modifier = Modifier.padding(20.dp)); return }
+    if (arr.length() == 0) { Text("Inga trådar ännu, eller ingen kontakt med servern.", style = Type.body, color = t.ink3, modifier = Modifier.padding(20.dp)); return }
     val items = (0 until arr.length()).map { arr.getJSONObject(it) }
     LazyColumn(Modifier.fillMaxSize()) {
         items(items, key = { it.optString("id") }) { c ->
@@ -128,7 +131,7 @@ private fun ConsultList(onOpen: (String) -> Unit) {
                     else if (c.isNull("ended")) Pill("Pågår", t.accent)
                 }
                 Spacer(Modifier.height(4.dp))
-                Text(trig?.optString("title")?.ifEmpty { null } ?: trig?.optString("question")?.ifEmpty { null } ?: "Möte",
+                Text(trig?.optString("title")?.ifEmpty { null } ?: trig?.optString("question")?.ifEmpty { null } ?: "Tråd",
                     style = Type.heading, color = t.ink)
                 v?.optString("sammanfattning")?.takeIf { it.isNotBlank() }?.let {
                     Text(it, style = Type.body.copy(fontSize = Type.small.fontSize, lineHeight = Type.small.lineHeight), color = t.ink2, maxLines = 3)
@@ -156,14 +159,39 @@ fun ConsultDetail(id: String, onBack: () -> Unit) {
             TextButton(onClick = onBack) { Text("Tillbaka") }
         }
         val trig = c?.optJSONObject("trigger")
-        Text(trig?.optString("title")?.ifEmpty { null } ?: trig?.optString("question")?.ifEmpty { null } ?: "Konsilium",
+        Text(trig?.optString("title")?.ifEmpty { null } ?: trig?.optString("question")?.ifEmpty { null } ?: "Tråd",
             style = Type.title, color = t.ink, modifier = Modifier.padding(horizontal = 20.dp))
         c?.let { Text("Startat ${Fmt.day(it.optDouble("started"))} ${Fmt.hm(it.optDouble("started"))}" +
             (if (it.isNull("ended")) " · pågår" else ""), style = Type.small, color = t.ink3, modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) }
 
         val v = c?.optJSONObject("verdict")
+        // Snabbsvaret ur datan kommer inom sekunder (regelverket, ingen språkmodell), medan teamet arbetar.
+        val kort = live.lastOrNull { it.kind == "consult.kort" }?.let { runCatching { JSONObject(it.payload) }.getOrNull() }
+        if (v == null && kort != null) {
+            Section("Snabbsvar ur datan", trailing = "teamet svarar om ca ${maxOf(1, kort.optInt("eta_s") / 60)} min") {
+                Text(kort.optString("bradska_text"), style = Type.heading, color = t.ink,
+                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp))
+                kort.optJSONArray("skal")?.let { a -> if (a.length() > 0) Text("Regelverket: " + (0 until a.length()).joinToString("; ") { a.optString(it) },
+                    style = Type.small, color = t.ink3, modifier = Modifier.padding(horizontal = 20.dp)) }
+                kort.optJSONArray("rader")?.let { a ->
+                    for (k in 0 until a.length()) Text("· " + a.optString(k), style = Type.body, color = t.ink2,
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 2.dp))
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+        } else if (v == null && c != null && c.isNull("ended")) {
+            Text("Teamet arbetar. Snabbsvaret kommer om några sekunder.", style = Type.body, color = t.ink3, modifier = Modifier.padding(20.dp))
+        }
+        v?.optJSONArray("atgarder")?.let { a -> if (a.length() > 0) {
+            Section("Gör så här") {
+                for (k in 0 until a.length()) Row(Modifier.padding(horizontal = 20.dp, vertical = 6.dp)) {
+                    Text("${k + 1}.", style = Type.heading, color = t.accent, modifier = Modifier.width(24.dp))
+                    Text(a.optString(k), style = Type.body, color = t.ink)
+                }
+            }
+        } }
         if (v != null) {
-            Section("Bedömning", trailing = BRADSKA[v.optString("bradska")]) {
+            Section("Markerad som lösning", trailing = BRADSKA[v.optString("bradska")]) {
                 Text(v.optString("sammanfattning"), style = Type.body, color = t.ink, modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp))
                 v.optJSONArray("rad")?.let { a -> if (a.length() > 0) {
                     Text("Råd", style = Type.label, color = t.ink2, modifier = Modifier.padding(horizontal = 20.dp))
@@ -191,7 +219,7 @@ fun ConsultDetail(id: String, onBack: () -> Unit) {
 
         // Samtalet: från servern om mötet är klart, annars live från /ws
         val transcript = c?.optJSONArray("transcript")
-        Section("Samtalet") {
+        Section("Inläggen") {
             val says = if (transcript != null && transcript.length() > 0)
                 (0 until transcript.length()).map { transcript.getJSONObject(it) }.filter { it.optString("kind") in setOf("agent.say", "review.strike") }
             else live.filter { it.kind == "agent.say" || it.kind == "review.strike" }
@@ -200,7 +228,7 @@ fun ConsultDetail(id: String, onBack: () -> Unit) {
             says.forEach { s ->
                 Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp)) {
                     if (s.optString("kind") == "review.strike") {
-                        Text("Faktagranskaren strök", style = Type.label, color = t.avvikelse)
+                        Text("Strukit av moderator", style = Type.label, color = t.avvikelse)
                         Text(s.optString("claim") + " (" + s.optString("reason") + ")", style = Type.body, color = t.ink2)
                     } else {
                         Text((AGENT_NAMES[s.optString("agent")] ?: s.optString("agent")) + " till " +

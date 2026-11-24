@@ -66,9 +66,9 @@ fun FirstRunScreen() {
     }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).imePadding().padding(horizontal = 20.dp, vertical = 28.dp)) {
-        Text("Konsiliet", style = Type.title, color = t.ink)
+        Text("Kropp64", style = Type.title, color = t.ink)
         Spacer(Modifier.height(10.dp))
-        Text("Appen skickar data från klockan och Health Connect till din egen Konsiliet-server. " +
+        Text("Appen skickar data från klockan och Health Connect till din egen Kropp64-server. " +
             "Ange serverns adress för att börja. Inget skickas någon annanstans.", style = Type.body, color = t.ink2)
         Spacer(Modifier.height(20.dp))
         OutlinedTextField(url, { url = it; ok = null; status = null }, label = { Text("Serveradress") },

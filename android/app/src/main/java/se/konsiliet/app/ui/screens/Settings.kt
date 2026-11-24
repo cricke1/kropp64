@@ -192,7 +192,7 @@ fun SettingsScreen() {
             if (!unrestricted) TextButton(modifier = Modifier.padding(horizontal = 8.dp), onClick = {
                 ctx.startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + ctx.packageName)))
                 tick++
-            }) { Text("Stäng av batterioptimering för Konsiliet") }
+            }) { Text("Stäng av batterioptimering för Kropp64") }
             ReadoutRow("Avvisade av servern", Fmt.int(rejected.toDouble()), "punkter", note = "Sparas lokalt för felsökning, skickas inte igen")
         }
     }

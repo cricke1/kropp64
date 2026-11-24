@@ -84,6 +84,10 @@
                 <data android:scheme="wear" android:host="*" android:pathPrefix="/konsiliet" />
             </intent-filter>
             <intent-filter>
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+                <data android:scheme="wear" android:host="*" android:path="/konsiliet/svar" />
+            </intent-filter>
+            <intent-filter>
                 <action android:name="com.google.android.gms.wearable.CAPABILITY_CHANGED" />
                 <data android:scheme="wear" android:host="*" android:path="/konsiliet_watch" />
             </intent-filter>

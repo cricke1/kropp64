@@ -55,7 +55,7 @@ object SmsPolicy {
     fun message(chain: Chain, delayMin: Int): String {
         val parts = chain.items.joinToString(" ") { "${it.title}. ${it.body}".trim() }
         val extra = if (chain.items.size > 1) " (${chain.items.size} larm)" else ""
-        return "Konsiliet (automatiskt larm$extra): $parts Larmet bekräftades inte i mobilen inom $delayMin min. " +
+        return "Kropp64 (automatiskt larm$extra): $parts Larmet bekräftades inte i mobilen inom $delayMin min. " +
             "Ring och hör hur det är."
     }
 }

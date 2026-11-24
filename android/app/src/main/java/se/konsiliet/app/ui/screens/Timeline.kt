@@ -38,9 +38,9 @@ import se.konsiliet.app.ui.theme.Tokens
 import se.konsiliet.app.ui.theme.Type
 
 val AGENT_NAMES = mapOf(
-    "ordforande" to "Allmänläkare, ordförande", "kardiolog" to "Kardiolog", "somn" to "Sömnläkare",
+    "ordforande" to "Trådstartaren", "kardiolog" to "Kardiologen", "somn" to "Sömnläkaren",
     "idrott" to "Idrottsläkare", "stress" to "Stressmedicin", "labb" to "Klinisk kemist",
-    "advokat" to "Djävulens advokat", "granskare" to "Faktagranskare", "alla" to "alla",
+    "advokat" to "Trollet", "granskare" to "Moderatorn", "alla" to "alla",
 )
 
 private val MAIN_KINDS = setOf("alert.raise", "vakt.anomaly", "consult.start", "consult.verdict", "nudge.move",
@@ -69,13 +69,13 @@ fun describe(e: EventRow, t: Tokens): Described {
             if (p.optString("level") == "akut") t.akut else t.avvikelse, null)
         "consult.start" -> {
             val tr = p.optJSONObject("trigger")
-            Described("Konsiliet sammanträder", tr?.optString("title")?.ifEmpty { null } ?: tr?.optString("question"), t.accent, cid)
+            Described("Ny tråd startad", tr?.optString("title")?.ifEmpty { null } ?: tr?.optString("question"), t.accent, cid)
         }
-        "consult.verdict" -> Described("Bedömning", p.optJSONObject("verdict")?.optString("sammanfattning"), t.accent, cid)
+        "consult.verdict" -> Described("Markerad som lösning", p.optJSONObject("verdict")?.optString("sammanfattning"), t.accent, cid)
         "nudge.move" -> Described(p.optString("title"), p.optString("body"), null, null)
-        "brief.morgon" -> Described("Morgonbrief " + p.optString("datum"), p.optString("text"), null, null)
+        "brief.morgon" -> Described("POST-skärmen " + p.optString("datum"), p.optString("text"), null, null)
         "sync.1177" -> Described("1177: " + p.optString("status"), p.optString("detail").ifEmpty { null }, null, null)
-        "review.strike" -> Described("Granskaren strök ett påstående", p.optString("claim") + " (" + p.optString("reason") + ")", t.ink3, cid)
+        "review.strike" -> Described("Moderatorn strök ett påstående", p.optString("claim") + " (" + p.optString("reason") + ")", t.ink3, cid)
         "agent.say" -> Described((AGENT_NAMES[p.optString("agent")] ?: p.optString("agent")) + " till " +
             (AGENT_NAMES[p.optString("to")] ?: p.optString("to")), p.optString("text"), null, cid)
         "agent.tool" -> Described((AGENT_NAMES[p.optString("agent")] ?: p.optString("agent")) + " slår upp " + p.optString("tool"), null, t.ink3, cid)
@@ -101,7 +101,7 @@ fun TimelineScreen(onOpenConsult: (String) -> Unit) {
         }
         Box(Modifier.fillMaxWidth().height(1.dp).background(t.rule))
         if (shown.isEmpty()) {
-            Text("Inga händelser ännu. Händelser från vakten, konsiliet och larm hamnar här.",
+            Text("Inga händelser ännu. Händelser från vakten, supporttråden och larm hamnar här.",
                 style = Type.body, color = t.ink3, modifier = Modifier.padding(20.dp))
         }
         LazyColumn(Modifier.fillMaxSize()) {

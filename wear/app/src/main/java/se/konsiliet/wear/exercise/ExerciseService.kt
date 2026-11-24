@@ -194,11 +194,11 @@ class ExerciseService : LifecycleService() {
 
     private fun goForeground() {
         val nm = getSystemService(NotificationManager::class.java)
-        nm.createNotificationChannel(NotificationChannel(CHANNEL, "Träningspass", NotificationManager.IMPORTANCE_LOW))
+        nm.createNotificationChannel(NotificationChannel(CHANNEL, "Stresstest (träningspass)", NotificationManager.IMPORTANCE_LOW))
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
         val n: Notification = NotificationCompat.Builder(this, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat)
-            .setContentTitle("Träningspass pågår")
+            .setContentTitle("Stresstest pågår")
             .setContentText("Puls registreras och skickas till mobilen")
             .setOngoing(true)
             .setContentIntent(open)
