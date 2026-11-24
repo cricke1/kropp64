@@ -344,3 +344,13 @@ notisen 23:11:58. AlarmManager loggade `alarm_cancelled` samma sekund, den spara
 fristen (kontroll 23:14:21) fanns inget nytt sms i skickat-mappen och ingen sms-notis. Under testet visade
 det sig att en annan session samtidigt använde samma mobilemulator mot en egen testserver (port 8801) och
 bytte serveradress i appen. Emulatorerna delas, så tester på dem ska samordnas.
+
+**Egen andra mobilemulator, och "Jag mår bra" igen på det omdöpta bygget.** För att inte krocka med
+användbarhetstestet skapades en andra telefon-AVD på Lenovon (Pixel_8_Kropp64_B, samma systemavbild, 1,5 GB
+RAM i stället för 2 GB eftersom bara 2,7 av 16 GB var lediga med två emulatorer igång). Första starten dog
+utan felmeddelande efter några minuter, och nästa start vägrade med "Another emulator instance is running"
+på grund av kvarlämnade låsfiler i AVD-mappen. Låsfilerna togs bort och den startade. Serveradressen
+skrevs in i förstastartsvyn, sms slogs på och testkontakten lades till via Inställningar (knappen kräver
+minst sex siffror i numret, och `adb input text` tappade tecken på den långsamma emulatorn, så texten fick
+skrivas i bitar). Akutlarm 23:46:11, sms-alarm satt till 23:48:11, "Jag mår bra" tryckt i notisen 23:46:33,
+`alarm_cancelled` samma sekund, ingen kedja kvar, och efter fristen (kontroll 23:48:44) var skickat-mappen tom.

@@ -19,11 +19,13 @@ Varje bild har samma märkning i en remsa i nederkanten (gjord med `tools/etiket
 | [kontoret-mobil.png](kontoret-mobil.png) | Demo - syntetisk data | Demoläget i webben: ett manus, inga uppmätta värden och ingen språkmodell. |
 | [kontoret-uppspelning.png](kontoret-uppspelning.png) | Syntetisk testdata, riktiga lokala modeller | Konsilierna kördes av qwen3.5:9b på Mac minin mot en testdatabas med syntetisk puls. |
 | [mobil-akut-larm-test.png](mobil-akut-larm-test.png) | Testlarm på emulator | Larmet är infogat för hand i testdatabasen för att prova larmkedjan. Ingen riktig mätning. |
+| [mobil-forsta-start-kropp64.png](mobil-forsta-start-kropp64.png) | Emulator, första start | Förstastartsvyn med namnet Kropp64. Ingen serveradress är inbyggd i appen. Inga mätvärden visas. |
 | [mobil-forsta-start.png](mobil-forsta-start.png) | Emulator, första start | Ingen serveradress är inbyggd i appen. Inga mätvärden visas. |
 | [mobil-fraga.png](mobil-fraga.png) | Syntetisk testdata från emulator | Klock- och mobilemulator mot en testserver, Health Services testläge. Inte en människa. |
 | [mobil-idag-morkt.png](mobil-idag-morkt.png) | Syntetisk testdata från emulator | Klock- och mobilemulator mot en testserver, Health Services testläge. Inte en människa. |
 | [mobil-idag-testdata.png](mobil-idag-testdata.png) | Syntetisk testdata från emulator | Klock- och mobilemulator mot en testserver, Health Services testläge. Inte en människa. |
 | [mobil-idag-utan-nat.png](mobil-idag-utan-nat.png) | Syntetisk testdata från emulator | Klock- och mobilemulator mot en testserver, Health Services testläge. Inte en människa. |
+| [mobil-installningar-kropp64.png](mobil-installningar-kropp64.png) | Emulator mot testserver | Inställningar med sms påslaget för testet. Serveradressen är suddad, testkontakten är emulatorns eget nummer. |
 | [mobil-installningar.png](mobil-installningar.png) | Emulator mot testserver | Serveradressen är suddad. |
 | [mobil-jag-mar-bra-test.png](mobil-jag-mar-bra-test.png) | Testlarm på emulator | Akutlarm med knappen "Jag mår bra". Larmet publicerades för hand på en separat testserver. Knappen trycktes och sms-alarmet avbröts, inget sms skickades. |
 | [mobil-konsiliet-kontoret.png](mobil-konsiliet-kontoret.png) | Syntetisk testdata från emulator | Klock- och mobilemulator mot en testserver, Health Services testläge. Inte en människa. |
