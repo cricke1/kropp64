@@ -220,3 +220,67 @@ Lösning: glas utan brytning med ett klarlackslager för reflexerna.
 **Rendertider på RTX 5050 (OptiX, denoising på GPU, adaptiv sampling, upp till 512 sampel):** hjältebild
 1920x1080 46,5 s, 1080x1350 31,2 s, dataflödet 30,4 s, 16 GB-bilden 47,9 s. Skärmarna i hjältebilden är
 en illustration med exempelvärden, inte uppmätt data.
+
+**Röster i kontoret.** Läkarna i pixelkontoret kan nu höras, av som standard med en ljudknapp. Kravet var
+lokalt och svenskt, utan att svälta språkmodellen (Qwen 3.5 9B tar runt 9 av 16 GB).
+Första försöket var Piper (VITS på CPU) med de tre svenska rösterna i rhasspy/piper-voices (nst, lisa, alma,
+63 MB styck) plus macOS Alva. Uppmätt på Mac minin: ren syntes RTF 0,03 (en sekund tal på 0,03 s), med
+kodning och ljudnivå 0,05-0,10, Alva via `say` 0,3. Minne 90 MB per laddad röst, toppen i serverprocessen
+340 MB med en röst i taget. Fonemdumpen visade att espeak (som Piper bygger på) läser "muskel" med sj-ljud och
+"EKG" som ett ord, så normaliseringen fick rättelser. Men det finns bara en svensk mansröst i Piper, och tre
+läkare på samma röst med flyttad tonhöjd lät som samma person också för en lyssnare utifrån.
+Bytt till samma röster som ägaren använder i andra projekt: Parambe (Chatterbox Multilingual med svenska vikter)
+som klonar röster ur en röstbank med 34 referensklipp, uppmätt 97 % rätt ord på svenska. Referensklippen i
+röstbanken gjordes ursprungligen med ElevenLabs (syntetiska röster, gratisplan, icke-kommersiellt). Själva
+syntesen sker lokalt, men rösterna är alltså inte "egna" och ska göras om innan något används kommersiellt.
+Rösterna valdes ur bankens roller och mättes med Chatterbox röstavtryck (cosinuslikhet mellan klippen): Jan
+(Trådstartaren), Melanie, Petra, Martin, Louise, Christopher, Kille-UGC2 (Trollet, kaxig) och Adam (Moderatorn,
+torr radioröst). Inget par över 0,79. Lea, som låg närmast till hands för stressläkaren, låg på 0,82 mot Melanie
+och Elin 0,77, så de valdes bort.
+
+**Var rösterna görs.** Chatterbox på Mac minins MPS samtidigt som Qwen riskerar swap, så syntesen görs på
+Lenovons RTX 5050 i en liten tjänst (`drift/rost_tjanst.py`). Uppmätt där: laddning 30-37 s, högst 5,3 GB
+grafikminne, och tyvärr långsammare än realtid: RTF 1,6-3,6 när modellen är varm (en replik på 7 s tar 14-25 s).
+En replik tog en gång 179 s för 8,6 s ljud, troligen för att grafikkortet delas med skrivbordet (1,7 GB) och
+gick över till delat minne. Därför genereras nya repliker i bakgrunden så fort de hamnar i loggen (när någon
+lyssnar), webben väntar högst 8 s på att ljudet ska börja och hoppar annars över rösten, och live hoppas rösten
+över när händelserna ligger efter. Demon är förgenererad. Mac minins MPS är reserv bara när Qwen inte är laddad
+och minst 45 % minne är ledigt, som en engångsprocess som avslutas efteråt. Den reserven är inte uppmätt: Qwen
+var laddad under hela arbetet och jag ville inte lasta ur den mitt i en annan körning. Piper är sista reserv.
+
+**Klonade röster är en missbruksrisk.** Första versionen av `/api/rost` tog `?agent=..&text=..`, vilket betyder
+att vem som helst med åtkomst kunde få en klonad röst att säga vad som helst. Nu finns bara
+`GET /api/rost/{event_id}`: servern slår upp en agent.say-händelse i händelseloggen och läser upp dess text med
+den agentens röst, med samma behörighet som resten av API:t och högst 40 anrop i minuten per klient. Den publika
+demon kör aldrig talsyntes: demomanusets 13 repliker är förgenererade till `web/public/demo-rost/<nr>.ogg`
+(Opus) och demon har ingen `/api/rost`. Rösttjänsten på Lenovon lyssnar bara på Tailscale-adressen, svarar
+bara Mac minins adress, kräver en delad hemlighet (fil utanför repot på båda datorerna), tar högst 600 tecken per
+anrop och 3 jobb i kö. Tester i `server/tests/test_rost.py` visar att fri text avvisas och att det alltid är
+loggens text som läses upp.
+
+**Ett misstag i testningen.** Uppspelningen testades först med en Playwright-Chromium utan `--mute-audio`, och
+den spelade rösterna i Mac minins högtalare. Ägaren hörde dem. All testning och inspelning görs nu ljudlöst:
+`--mute-audio`, och ljudspåret i demofilmen mixas från filerna, inte från datorns ljudutgång.
+
+**Ruta, komplikationer och widget: tre saker som inte fungerade som dokumentationen antyder.** Mobilen lägger
+headroom och trådens läge som ett dataobjekt i Data Layer, klockan visar det i en ruta (tile) och två
+komplikationer, och mobilen har en hemskärmswidget. Testat på emulatorerna mot en separat testserver med egen
+databas (port 8798, aldrig 8790).
+- *Data Layer på mobilemulatorn:* `putDataItem` gav `API_UNAVAILABLE` (Wear OS-appen saknas, samma orsak som
+  att emulatorerna inte går att parkoppla), och en gång svarade anropet inte alls. Det hände i en
+  BroadcastReceiver, så ett hängande anrop hade gett ANR. Fix: tidsgräns på 10 sekunder. Statusen flyttas i
+  testet med `statusbrygga.ps1` (mobilen skriver exakt den JSON som lades i Data Layer, klockan lämnar den till
+  samma kod som `onDataChanged`). Bluetooth-hoppet testas på riktig Pixel Watch.
+- *Egen vibration med USAGE_NOTIFICATION släpps inte igenom av Wear OS.* `dumpsys vibrator_manager` visade
+  `ignored_app_ops` för varje påminnelse och kvittens, medan akutmönstret (USAGE_ALARM) spelades i 4,3 s.
+  Fix: rörelse- och kvittensmönstret ligger på notiskanalerna (nya kanal-id, eftersom kanaler inte kan ändras)
+  och spelas av systemet. Verifierat i samma dump: 90-160-90 ms för AFK-påminnelsen och 280-140-70 ms för
+  "Tråden löst", spelade av Wear-systemet. Dessutom: medan klockan laddar spelas inga notisvibrationer alls.
+  Det såg först ut som att även kanalmönstren var trasiga, tills batteriet kopplades ur (`dumpsys battery unplug`).
+- *`requestUpdate` för rutan gav ingen ny rendering* på klockemulatorn, varken direkt eller efter flera minuter.
+  Rutan visade gammal status, och "Synkad nyss" stod kvar fast det var 20 minuter sedan. Fix: klockslag i
+  stället för "nyss" (en ruta kan visas långt efter att den ritades), färskhetsintervall 5 minuter (då hämtar
+  systemet en ny när rutan visas, verifierat: "Tråd pågår" kom fram efter intervallet), och en ny begäran när
+  rutan visas med äldre data än senaste statusen (den händelsen sågs aldrig på emulatorn, så den är inte verifierad). Komplikationerna uppdaterades direkt.
+- *Testskriptet körde inte alls en stund:* `timeout` finns inte på macOS, så mina anrop av bryggan föll tyst
+  och jag letade fel i rutan. Lärdom: kontrollera att teststeget faktiskt kördes innan felet söks i appen.

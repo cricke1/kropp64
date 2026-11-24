@@ -62,6 +62,57 @@ Första start:
 | WebSocket dör tyst | OkHttp pingar var 25:e sekund. Återanslutning 1, 2, 4 ... 60 s, direkt vid nätbyte. Servern skickar de 300 senaste händelserna vid anslutning, så larm som kom under avbrottet missas inte (id-kontroll hindrar dubbelnotiser). |
 | Health Connect-token går ut | De senaste 30 dagarna läses om och en ny token hämtas. |
 
+## Ruta, komplikationer, widget och vibrationer (Kropp64)
+
+Appnamnet i launchern är Kropp64 (applicationId är fortfarande `se.konsiliet`).
+
+**Mobilen bygger en sammanfattning** (`android/.../widget/Summary.kt`): headroom (återhämtningspoängen från
+`GET /api/aterhamtning`) med delarna, supporttrådens läge (pågående tråd och senaste lösningen ur
+`GET /api/consults?limit=5`) och dagens steg mot målet (lokalt, samma regel som Idag-vyn). Den hämtas om
+- några sekunder efter `consult.start`, `consult.verdict` och `brief.morgon` på live-länken (flera händelser i rad, t.ex.
+  historiken vid anslutning, blir en hämtning),
+- när appen öppnas,
+- var 30:e minut med WorkManager (ingen nätverksvillkor: stegen räknas om även utan nät, serverdelen behålls
+  och märks som gammal).
+
+**Hemskärmswidget** (Glance, `KonsilietWidget`): Headroom 0-100 med Timing (HRV), Idle-klock (vilopuls) och
+Viloläge (sömn), steg mot målet med stapel, och "Tråd pågår" eller "Markerad som lösning: ..." med
+sammanfattningen. "Ta upp med vården" och "Kontakta vården nu" skrivs sakligt i bärnsten respektive rött.
+Steg från emulatorn märks "testdata". `updatePeriodMillis` är 0, widgeten ritar bara det sparade och gör
+inga egna nätverksanrop. Tryck öppnar appen.
+
+**Mobil till klocka** (`WatchSync`): sammanfattningen läggs som dataobjekt `/konsiliet/status` med
+`DataClient.putDataItem` (urgent). Data Layer synkar dataobjekt när klockan kommer inom räckhåll igen, så en
+ändring under ett avbrott kommer fram efteråt och bara senaste läget skickas. Klockan cachar det
+(`PhoneStatus`), läser det också direkt ur Data Layer när processen startar, och ignorerar underlag som är
+äldre än det den har. Akuta larm och rörelsepåminnelser går som meddelanden (`/konsiliet/alert`,
+`/konsiliet/nudge`).
+
+**Ruta på klockan** (tile "Kropp64"): ring och siffra för headroom, Klockfrekvens i BPM (färsk puls, högst
+30 minuter gammal), trådens läge och "Synkad HH:MM" (bärnsten om mer än två timmar gammalt). Tryck öppnar
+klockappen. Läser bara cachen.
+
+**Komplikationer**: "Headroom" (RANGED_VALUE 0-100, SHORT_TEXT som reserv, mätarikon i stället för titel)
+och "Supporttråden" (SHORT_TEXT "Pågår", "Bevaka", "Ta upp", "Vård nu", samt LONG_TEXT). Uppdateras när
+statusen ändras, inte på timer.
+
+**Vibrationer på klockan** (`alerts/Haptics.kt`):
+
+| Händelse | Mönster (ms) | Hur |
+|---|---|---|
+| Akut larm (`alert.raise` nivå akut) | 3 x 500 på, 150 av, paus 600, igen; full styrka, ca 4 s | Vibrator, USAGE_ALARM, går igenom Stör ej |
+| AFK för länge (`nudge.move`) | 90 på, 160 av, 90 på | mönster på notiskanalen |
+| Tråden löst (ny lösning, högst 30 min gammal) | 280 på, 140 av, 70 på | mönster på notiskanalen |
+
+Wear OS spelar inte notisvibrationer medan klockan laddar.
+
+**Testa på emulatorerna** (ingen parkoppling, se RESAN.md): `android/tools/statusbrygga.ps1` låter mobilen
+hämta sammanfattningen och lägga den i Data Layer som vanligt, och flyttar exakt samma JSON till klockan med
+adb, där den går in i samma kod som `onDataChanged`. `-Meddelande` flyttar också senaste meddelandet
+(påminnelse eller akut larm). Rutan läggs till med
+`am broadcast -a com.google.android.wearable.app.DEBUG_SURFACE --es operation add-tile --ecn component se.konsiliet/se.konsiliet.wear.tile.KonsilietTile`
+och komplikationer med `--es operation set-complication ... --ei slot N --ei type 5` (RANGED_VALUE) eller 3 (SHORT_TEXT).
+
 ## Regler för sms till anhöriga
 
 Reglerna ligger i `android/app/src/main/java/se/konsiliet/app/alerts/SmsPolicy.kt` och testas i `SmsPolicyTest`.

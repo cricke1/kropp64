@@ -6,8 +6,10 @@ Varje bild har samma märkning i en remsa i nederkanten (gjord med `tools/etiket
 | Bild | Märkning | Vad det är |
 |---|---|---|
 | [fraga.png](fraga.png) | Syntetisk testdata | Testserver med egen databas, mätpunkterna kommer från web/dev/ingest.mjs (källa dev-syntetisk). |
+| [klocka-komplikationer.png](klocka-komplikationer.png) | Syntetisk testdata från emulator | Urtavlan Everyday med Kropp64:s komplikationer: Headroom som båge (vänster) och Supporttråden överst. Klock- och mobilemulator mot en separat testserver med egen databas. Headroom från syntetiska nätter (dev-syntetisk), trådarna infogade för hand, puls och steg från Health Services testläge. Inte en människa. |
 | [klocka-pass-pagar.png](klocka-pass-pagar.png) | Syntetisk testdata från emulator | Klock- och mobilemulator mot en testserver, Health Services testläge. Inte en människa. |
 | [klocka-puls-syntetisk.png](klocka-puls-syntetisk.png) | Syntetisk testdata från emulator | Klock- och mobilemulator mot en testserver, Health Services testläge. Inte en människa. |
+| [klocka-ruta-headroom.png](klocka-ruta-headroom.png) | Syntetisk testdata från emulator | Rutan (tile) Kropp64: headroom, klockfrekvens, trådens läge, senast synkad. Klock- och mobilemulator mot en separat testserver med egen databas. Headroom från syntetiska nätter (dev-syntetisk), trådarna infogade för hand, puls och steg från Health Services testläge. Inte en människa. |
 | [klocka-val-av-pass.png](klocka-val-av-pass.png) | Syntetisk testdata från emulator | Klock- och mobilemulator mot en testserver, Health Services testläge. Inte en människa. |
 | [konsilier.png](konsilier.png) | Syntetisk testdata, riktiga lokala modeller | Tidiga körningar mot testdatabas. Bedömningen överst är den misslyckade körningen som beskrivs i RESAN.md. |
 | [kontoret-demo-bedomning.png](kontoret-demo-bedomning.png) | Demo - syntetisk data | Demoläget i webben: ett manus, inga uppmätta värden och ingen språkmodell. |
@@ -27,6 +29,7 @@ Varje bild har samma märkning i en remsa i nederkanten (gjord med `tools/etiket
 | [mobil-sms-exakt-alarm-test.png](mobil-sms-exakt-alarm-test.png) | Testlarm på emulator | Larmet är infogat för hand i testdatabasen för att prova larmkedjan. Ingen riktig mätning. |
 | [mobil-sms-skickat-test.png](mobil-sms-skickat-test.png) | Testlarm på emulator | Larmet är infogat för hand i testdatabasen för att prova larmkedjan. Ingen riktig mätning. |
 | [mobil-tidslinje-morkt.png](mobil-tidslinje-morkt.png) | Testlarm på emulator | Larmet är infogat för hand i testdatabasen för att prova larmkedjan. Ingen riktig mätning. |
+| [mobil-widget.png](mobil-widget.png) | Syntetisk testdata från emulator | Hemskärmswidgeten: headroom med delar, steg, senaste lösningen. Klock- och mobilemulator mot en separat testserver med egen databas. Headroom från syntetiska nätter (dev-syntetisk), trådarna infogade för hand, puls och steg från Health Services testläge. Inte en människa. |
 | [oversikt-ljust.png](oversikt-ljust.png) | Syntetisk testdata | Testserver med egen databas, mätpunkterna kommer från web/dev/ingest.mjs (källa dev-syntetisk). |
 | [oversikt-mobil.png](oversikt-mobil.png) | Syntetisk testdata | Testserver med egen databas, mätpunkterna kommer från web/dev/ingest.mjs (källa dev-syntetisk). |
 | [oversikt.png](oversikt.png) | Syntetisk testdata | Testserver med egen databas, mätpunkterna kommer från web/dev/ingest.mjs (källa dev-syntetisk). |
