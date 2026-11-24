@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bara besöksunderlaget (PDF) i cachen delas, och bara till appen som öppnar det. -->
+<paths>
+    <cache-path name="pdf" path="pdf/" />
+</paths>

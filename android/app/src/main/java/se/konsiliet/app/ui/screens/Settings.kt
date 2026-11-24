@@ -93,6 +93,9 @@ fun SettingsScreen() {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
         Text("Inställningar", style = Type.title, color = t.ink, modifier = Modifier.padding(start = 20.dp, top = 12.dp))
 
+        PlanSettings()
+        BesoksunderlagKnapp()
+
         Section("Server") {
             Column(Modifier.padding(horizontal = 20.dp, vertical = 10.dp)) {
                 OutlinedTextField(url, { url = it }, label = { Text("Adress") }, singleLine = true, modifier = Modifier.fillMaxWidth(),

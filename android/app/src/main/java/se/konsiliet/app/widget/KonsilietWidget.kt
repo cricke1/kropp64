@@ -120,6 +120,11 @@ private fun Content(s: JSONObject?, now: Long) {
                 Parts(s?.optJSONObject("delar"))
             }
         }
+        // Dagens svar på en rad: det man vill veta när man tittar på hemskärmen.
+        s?.optJSONObject("idag")?.optString("rubrik")?.takeIf { it.isNotBlank() }?.let { r ->
+            val plan = s.optJSONObject("idag")?.optString("plan").orEmpty()
+            Text(if (wide && plan.isNotBlank()) "$r: $plan" else r, style = style(12, W.ink, FontWeight.Medium), maxLines = 2)
+        }
         Spacer(GlanceModifier.height(6.dp))
         Steps(s)
         if (tall) {

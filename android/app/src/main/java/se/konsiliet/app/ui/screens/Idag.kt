@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -93,7 +94,11 @@ fun IdagScreen(onAsk: (String) -> Unit, onOpenConsult: (String) -> Unit, onSetti
             delay(10 * 60_000)
         }
     }
-    val notiser by produceState<JSONObject?>(null, refresh) { value = runCatching { Api.getObject("/api/notiser?dagar=1") }.getOrNull() }
+    val notiser by produceState<JSONObject?>(null, refresh) {
+        value = runCatching { Api.getObject("/api/notiser?dagar=1") }.getOrNull()?.also { n ->
+            n.optString("tysta").takeIf { it.contains("-") }?.let { Prefs.putString("tystaTimmar", it) }
+        }
+    }
     val senastePass by produceState<JSONObject?>(null, refresh) {
         value = runCatching { Api.getArray("/api/pass?dagar=7") }.getOrNull()?.let { a -> if (a.length() > 0) a.getJSONObject(a.length() - 1) else null }
     }
@@ -118,10 +123,10 @@ fun IdagScreen(onAsk: (String) -> Unit, onOpenConsult: (String) -> Unit, onSetti
         val planText = plan?.optString("text").orEmpty()
         val varfor = i.optString("varfor")
         // Beslutskortet: rubrik, plan, varför. En skärmläsare läser det som en mening.
-        Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 14.dp).background(t.surface)
+        Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 14.dp).height(IntrinsicSize.Min).background(t.surface)
             .semantics(mergeDescendants = true) { contentDescription = "$rubrik. $planText. $varfor" }
             .heightIn(min = 120.dp)) {
-            Box(Modifier.width(6.dp).fillMaxHeight().heightIn(min = 120.dp).background(farg))
+            Box(Modifier.width(6.dp).fillMaxHeight().background(farg))
             Column(Modifier.padding(16.dp)) {
                 Text(rubrik, style = Type.title.copy(fontSize = Type.title.fontSize * 1.25f), color = t.ink)
                 if (planText.isNotBlank()) Text(planText, style = Type.value, color = t.ink, modifier = Modifier.padding(top = 6.dp))
@@ -143,6 +148,20 @@ fun IdagScreen(onAsk: (String) -> Unit, onOpenConsult: (String) -> Unit, onSetti
             val at = cached?.second ?: 0L
             Text("Ingen kontakt med servern. Visar svaret från " + Fmt.ago(at, now) + ".", style = Type.small, color = t.avvikelse,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp))
+        }
+        // Första dagarna: tom data är inget fel, men det ska stå vad som behövs.
+        if (i.isNull("headroom") && i.optJSONObject("somn")?.optJSONObject("natt") == null) {
+            Section("Kom igång") {
+                Column(Modifier.padding(horizontal = 20.dp, vertical = 10.dp)) {
+                    listOf(
+                        "Ge Health Connect behörighet (Inställningar), så läses de senaste 30 dagarna in som baslinje.",
+                        "Öppna Kropp64 på klockan och tillåt puls i bakgrunden.",
+                        "Stäng av batterioptimering för Kropp64 (Inställningar).",
+                        "Sov en natt med klockan. Då kommer Headroom och dagens råd bygger på din sömn.",
+                    ).forEachIndexed { k, s2 -> Text("${k + 1}. $s2", style = Type.body, color = t.ink2, modifier = Modifier.padding(vertical = 3.dp)) }
+                    TextButton(onClick = onSettings) { Text("Öppna Inställningar") }
+                }
+            }
         }
         // Termerna är skämt, men betydelsen och enheten ska vara ett tryck bort.
         Text(if (ordlista) "Dölj förklaringarna" else "Vad betyder Headroom och zon?", style = Type.label, color = t.accent,
@@ -209,7 +228,8 @@ fun IdagScreen(onAsk: (String) -> Unit, onOpenConsult: (String) -> Unit, onSetti
         // POST-skärmen: idrottsläkarens text under beslutet
         val b = brief?.let { runCatching { JSONObject(it.payload) }.getOrNull() }
         b?.optString("text")?.takeIf { it.isNotBlank() && b.optString("datum") == i.optString("datum") }?.let { text ->
-            Section("POST-skärmen", trailing = if (b.optString("skrivet_av") == "idrottsläkaren") "idrottsläkaren" else "regelverket") {
+            Section("POST-skärmen", trailing = (if (b.optString("skrivet_av") == "idrottsläkaren") "idrottsläkaren" else "regelverket") +
+                ", kl. " + Fmt.hm(brief!!.ts)) {
                 Text(text, style = Type.body, color = t.ink2, modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp))
             }
         }

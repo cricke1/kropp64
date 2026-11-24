@@ -52,7 +52,7 @@ object Summary {
     private val mutex = Mutex()
 
     /** Händelser som ändrar det widgeten och klockan visar. */
-    val KINDS = setOf("consult.start", "consult.verdict", "brief.morgon")
+    val KINDS = setOf("consult.start", "consult.verdict", "brief.morgon", "pass.klart", "alert.raise")
 
     fun load(): JSONObject? {
         _state.value?.let { return it }
@@ -95,6 +95,19 @@ object Summary {
                 out.put("delar", a.optJSONObject("delar") ?: JSONObject())
             }
             .onFailure { ok = false; Log.d(TAG, "återhämtning: ${it.message}") }
+        // Dagens svar (träna, lugnt, vila) och planens pulszon, så att klockan kan visa och följa den.
+        runCatching { Api.getObject("/api/idag") }
+            .onSuccess { i ->
+                val plan = i.optJSONObject("plan") ?: JSONObject()
+                out.put("idag", JSONObject().put("beslut", i.optString("beslut")).put("rubrik", i.optString("rubrik"))
+                    .put("plan", plan.optString("text")).put("typ", plan.optString("typ")).put("minuter", plan.optInt("minuter"))
+                    .put("zon", plan.opt("zon") ?: JSONObject.NULL).put("puls_lo", plan.opt("puls_lo") ?: JSONObject.NULL)
+                    .put("puls_hi", plan.opt("puls_hi") ?: JSONObject.NULL).put("varfor", i.optString("varfor").take(140))
+                    .put("maxpuls", i.optJSONObject("zoner")?.optInt("maxpuls") ?: 0)
+                    .put("pass", i.optJSONObject("veckan")?.optInt("pass") ?: 0).put("mal", i.optJSONObject("veckan")?.optInt("mal") ?: 3))
+                se.konsiliet.app.ui.screens.IdagCache.save(i)
+            }
+            .onFailure { Log.d(TAG, "idag: ${it.message}") }
         runCatching { Api.getArray("/api/consults?limit=5") }
             .onSuccess { out.put("konsilium", consultState(it, now / 1000.0)) }
             .onFailure { ok = false; Log.d(TAG, "konsilier: ${it.message}") }

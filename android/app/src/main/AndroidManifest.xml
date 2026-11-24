@@ -109,6 +109,14 @@
 
         <receiver android:name=".alerts.AlertReceiver" android:exported="false" />
 
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.filer"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/filer" />
+        </provider>
+
         <!-- Hemskärmswidget (Glance). Uppdateras av Summary vid händelser och var 30:e minut. -->
         <receiver
             android:name=".widget.KonsilietWidgetReceiver"

@@ -33,6 +33,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
@@ -126,13 +131,21 @@ class MainActivity : ComponentActivity() {
                 Tab.entries.forEach { e ->
                     val sel = e == tab && consult == null && !asking
                     Column(
-                        Modifier.width(IntrinsicSize.Max).clickable { tab = e; openConsult = null; asking = false }.padding(horizontal = 4.dp),
+                        Modifier.width(IntrinsicSize.Max).clickable { tab = e; openConsult = null; asking = false }.padding(horizontal = 2.dp)
+                            .semantics { selected = sel; role = Role.Tab },
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Box(Modifier.fillMaxWidth().height(2.dp).background(if (sel) t.accent else t.surface))
-                        Text(e.label, style = Type.label.copy(fontWeight = if (sel) FontWeight(600) else FontWeight(500)),
-                            color = if (sel) t.ink else t.ink3, maxLines = 1,
-                            modifier = Modifier.padding(top = 12.dp, bottom = 14.dp))
+                        // Flikarnas text växer högst till 115 %: vid 130 % klipptes "Inställningar" i kanten.
+                        // Resten av appen följer systemets textstorlek fullt ut.
+                        val d = androidx.compose.ui.platform.LocalDensity.current
+                        androidx.compose.runtime.CompositionLocalProvider(
+                            androidx.compose.ui.platform.LocalDensity provides androidx.compose.ui.unit.Density(d.density, minOf(d.fontScale, 1.15f)),
+                        ) {
+                            Text(e.label, style = Type.label.copy(fontWeight = if (sel) FontWeight(600) else FontWeight(500)),
+                                color = if (sel) t.ink else t.ink3, maxLines = 1, textAlign = TextAlign.Center, softWrap = false,
+                                modifier = Modifier.padding(top = 12.dp, bottom = 14.dp))
+                        }
                     }
                 }
             }
