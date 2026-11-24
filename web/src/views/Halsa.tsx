@@ -97,15 +97,15 @@ export function DatornPanel() {
         <p class="faint small first">Minuter med varje typ av program i förgrunden, och medianpulsen (BPM) under just de minuterna. Bara kategorin sparas, aldrig fönstertitlar.</p>
         {q.error ? <div class="empty">Kunde inte hämta ({q.error}).</div> : !total ? <div class="empty">{q.loading ? 'Hämtar.' : 'Ingen datortid registrerad.'}</div> : (
           <table class="data datorn">
-            <thead><tr><th>Kategori</th><th class="r">Tid</th><th style="width:30%" /><th class="r">Klockfrekvens, median</th><th style="width:26%" /></tr></thead>
+            <thead><tr><th>Kategori</th><th class="r">Tid</th><th style="width:30%" /><th class="r nowrap">Median BPM</th><th style="width:26%" /></tr></thead>
             <tbody>
               {KATS.map(([key, label, col]) => {
                 const x = k![key]
                 if (!x) return null
                 return (
                   <tr>
-                    <td><i class="sw" style={{ background: col }} />{label}</td>
-                    <td class="r num">{duration(x.minuter * 60)}</td>
+                    <td class="nowrap"><i class="sw" style={{ background: col }} />{label}</td>
+                    <td class="r num nowrap">{duration(x.minuter * 60)}</td>
                     <td><div class="hbar"><i style={{ width: `${(x.minuter / maxMin) * 100}%`, background: col }} /></div></td>
                     <td class="r num">{x.puls_median != null ? <b>{fmtNum(x.puls_median, 0)}</b> : <span class="faint">-</span>}</td>
                     <td>{x.puls_median != null && <div class="pscale"><i style={{ left: `${((x.puls_median - lo) / (hi - lo)) * 100}%` }} /></div>}</td>

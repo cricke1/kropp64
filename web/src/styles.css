@@ -235,3 +235,4 @@ input:focus, textarea:focus, select:focus { border-color: var(--text-2); }
 @media (prefers-reduced-motion: reduce) {
   .strike-anim { animation: none; }
 }
+.nowrap { white-space: nowrap; }

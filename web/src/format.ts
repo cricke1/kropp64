@@ -46,7 +46,7 @@ export function duration(sec: number) {
   if (sec <= 0) return '0 min'
   if (sec < 60) return `${fmtNum(sec, sec < 10 ? 1 : 0)} s`
   const m = Math.floor(sec / 60), s = Math.round(sec % 60)
-  if (m < 60) return s ? `${m} min ${s} s` : `${m} min`
+  if (m < 60) return s && m < 10 ? `${m} min ${s} s` : `${Math.round(sec / 60)} min`
   return m % 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${Math.floor(m / 60)} h`
 }
 export function fmtNum(v: number | null | undefined, digits = 0) {
