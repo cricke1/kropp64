@@ -144,12 +144,10 @@ class LiveService : LifecycleService() {
         }
         if (o.isNull("id")) return
         val row = EventRow(o.getLong("id"), o.optDouble("ts"), kind, payload.toString())
-        val inserted = KonsilietDb.get(applicationContext).events().insert(listOf(row)).firstOrNull() ?: -1L
-        // Historiken som servern skickar om vid varje anslutning är märkt replay=true. Den visas bara i
-        // listorna: aldrig notis, vibration på klockan eller sms-kedja. Id-kontrollen och 30-minutersgränsen
-        // i Alerts är extra skydd om märkningen skulle saknas.
-        if (o.optBoolean("replay", false)) return
-        if (inserted != -1L) Alerts.onEvent(applicationContext, row)
+        KonsilietDb.get(applicationContext).events().insert(listOf(row))
+        // Alerts avgör på id och replay-märkning om händelsen ska ge notis, vibration eller sms
+        // (se EventGate). Allt hamnar ändå i listorna via raden ovan.
+        Alerts.onEvent(applicationContext, row, replay = o.optBoolean("replay", false))
     }
 
     private suspend fun uploadTicker() {

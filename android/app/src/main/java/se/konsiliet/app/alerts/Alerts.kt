@@ -81,10 +81,18 @@ object Alerts {
 
     private val hm = SimpleDateFormat("HH:mm", Locale("sv", "SE"))
 
-    fun onEvent(ctx: Context, ev: EventRow) {
-        val last = Prefs.getLong("lastNotifiedEvent", -1)
-        if (ev.id <= last) return
-        Prefs.putLong("lastNotifiedEvent", ev.id)
+    /** Hanterade id:n, persistenta. Se [EventGate]. */
+    private fun handledIds(): List<Long> =
+        Prefs.getString("handledEvents")?.split(',')?.mapNotNull { it.toLongOrNull() } ?: emptyList()
+
+    fun onEvent(ctx: Context, ev: EventRow, replay: Boolean) {
+        val act = synchronized(this) {
+            val handled = handledIds()
+            val ok = EventGate.shouldAct(ev.kind, replay, ev.id, ev.ts, System.currentTimeMillis() / 1000.0, handled)
+            if (ok) Prefs.putString("handledEvents", EventGate.remember(handled, ev.id).joinToString(","))
+            ok
+        }
+        if (!act) return
         if (System.currentTimeMillis() / 1000.0 - ev.ts > MAX_AGE_S) return
         val p = runCatching { JSONObject(ev.payload) }.getOrNull() ?: return
         when (ev.kind) {
@@ -153,7 +161,7 @@ object Alerts {
         var chain: SmsPolicy.Chain? = null
         if (smsArmed) synchronized(this) {
             val before = loadChain()
-            chain = SmsPolicy.add(before, a, nowMs, cfg.smsDelayMin * 60_000L)
+            chain = SmsPolicy.add(before, a, cfg.smsDelayMin * 60_000L)
             saveChain(chain)
             // Alarmet sätts bara när kedjan skapas. Ett senare larm flyttar aldrig fristen.
             if (before == null) scheduleSms(ctx, chain!!.firstId, chain!!.due)
@@ -163,8 +171,13 @@ object Alerts {
             Intent(ctx, AlertReceiver::class.java).setAction(ACTION_DISMISS).putExtra(EXTRA_ALERT, a.id),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val c = chain
-        val text = if (c != null) "${a.body}\n\nTryck \"Jag mår bra\" före ${hm.format(Date(c.due))}, annars skickas sms till " +
-            cfg.contacts.joinToString { it.name } + "." else a.body
+        val text = when {
+            c == null -> a.body
+            c.due <= nowMs -> "${a.body}\n\nLarmet kom fram sent och fristen har redan gått ut. Sms skickas till " +
+                cfg.contacts.joinToString { it.name } + "."
+            else -> "${a.body}\n\nTryck \"Jag mår bra\" före ${hm.format(Date(c.due))}, annars skickas sms till " +
+                cfg.contacts.joinToString { it.name } + "."
+        }
         val n = NotificationCompat.Builder(ctx, Channels.AKUT)
             .setSmallIcon(R.drawable.ic_stat)
             .setContentTitle(a.title)

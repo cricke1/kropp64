@@ -68,8 +68,11 @@ Reglerna ligger i `android/app/src/main/java/se/konsiliet/app/alerts/SmsPolicy.k
 - Bara vaktens regler kan starta sms: `alert.raise` med nivå `akut` och fältet `rule`. Konsiliets bedömningar
   (har `consult_id`) ger notis men aldrig sms. En språkmodell ska aldrig kunna skicka sms.
 - Larm "upptäckt i efterhand" och larm äldre än 30 minuter ger aldrig sms.
-- Händelser som servern skickar om vid WebSocket-anslutning (`replay: true`) visas bara i listorna: ingen notis,
-  ingen vibration på klockan, ingen sms-kedja.
+- Varje händelse hanteras högst en gång: appen sparar id:n för de senaste 500 hanterade händelserna, live som omskickade.
+- Händelser som servern skickar om vid WebSocket-anslutning (`replay: true`) visas bara i listorna, med ett undantag:
+  `alert.raise` yngre än 5 minuter (räknat på händelsens egen tid) som appen inte redan hanterat behandlas som live.
+  Då ger ett kort avbrott i anslutningen inte ett missat larm.
+- Fristen räknas från larmets egen tid, inte från när mobilen tog emot det.
 - Fristen sätts av det första olösta akutlarmet och flyttas aldrig fram. Senare akutlarm läggs till i samma sms.
 - "Jag mår bra" på något av larmen i kedjan stoppar hela kedjan.
 

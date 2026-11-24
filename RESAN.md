@@ -172,3 +172,12 @@ skickar om vid återanslutning (märkta `replay`) ger varken notis eller sms. Te
 vaktlarm A, en minut senare vaktlarm B, konsiliets larm C och ett larm i efterhand D. Kedjan fick A och B, fristen
 stod kvar på A plus två minuter, C och D gav bara notis, och ett sms om två larm gick 32 millisekunder efter
 fristen. Efter omstart av servern skickades historiken om, och inget nytt sms-alarm eller ny notis skapades.
+
+**Omskickad historik: varken missade eller dubbla larm.** Att helt bortse från omskickade händelser gav ett nytt hål:
+ett akutlarm som kom under några sekunders avbrott i anslutningen kom bara fram som historik och gav ingen notis alls.
+Fix: appen sparar id:n för hanterade händelser (de senaste 500) och deduplicerar allt på id. Omskickade `alert.raise`
+yngre än 5 minuter som inte redan hanterats behandlas som live, med sms-fristen räknad från larmets egen tid.
+Fem nya enhetstester (totalt 13). Testat mot separat instans: mobilens nät av, akutlarm E publicerat, nät på efter
+40 sekunder. Larmet kom fram som historik, gav notis, och fristen blev larmets tid plus två minuter (inte mottagningstid
+plus två). Sms:et gick 20 millisekunder efter fristen. Servern startades sedan om medan larmet fortfarande var under
+5 minuter gammalt: historiken skickades om men gav ingen ny notis och ingen ny sms-kedja.

@@ -40,10 +40,14 @@ object SmsPolicy {
             !a.title.contains("i efterhand") &&
             !tooOld(a, nowS)
 
-    /** Ny kedja om ingen väntar, annars samma kedja med samma frist och larmet tillagt. */
-    fun add(chain: Chain?, a: Alert, nowMs: Long, delayMs: Long): Chain {
+    /**
+     * Ny kedja om ingen väntar, annars samma kedja med samma frist och larmet tillagt.
+     * Fristen räknas från larmets egen tid (ts), inte från när mobilen tog emot det, så att ett
+     * larm som kom fram först efter ett avbrott inte får längre frist.
+     */
+    fun add(chain: Chain?, a: Alert, delayMs: Long): Chain {
         val item = Item(a.id, a.title, a.body)
-        if (chain == null) return Chain(a.id, nowMs + delayMs, listOf(item))
+        if (chain == null) return Chain(a.id, (a.ts * 1000).toLong() + delayMs, listOf(item))
         if (chain.contains(a.id)) return chain
         return chain.copy(items = chain.items + item)
     }
@@ -54,4 +58,28 @@ object SmsPolicy {
         return "Konsiliet (automatiskt larm$extra): $parts Larmet bekräftades inte i mobilen inom $delayMin min. " +
             "Ring och hör hur det är."
     }
+}
+
+/**
+ * Avgör om appen ska agera (notis, vibration, sms-kedja) på en händelse från /ws.
+ *
+ *  - Varje händelse har ett unikt id från servern. Id:n som redan hanterats sparas (de senaste [KEEP])
+ *    och hanteras aldrig igen, oavsett om de kommer live eller som omskickad historik.
+ *  - Live-händelser hanteras.
+ *  - Omskickad historik (replay=true) hanteras bara om det är alert.raise som är yngre än 5 minuter
+ *    räknat på händelsens egen tid. Det täcker ett kort avbrott i anslutningen utan att gamla larm
+ *    väcker kedjan igen. Allt annat i historiken visas bara i listorna.
+ */
+object EventGate {
+    const val REPLAY_MAX_AGE_S = 5 * 60.0
+    const val KEEP = 500
+
+    fun shouldAct(kind: String, replay: Boolean, id: Long, ts: Double, nowS: Double, handled: Collection<Long>): Boolean {
+        if (id in handled) return false
+        if (!replay) return true
+        return kind == "alert.raise" && nowS - ts <= REPLAY_MAX_AGE_S
+    }
+
+    fun remember(handled: List<Long>, id: Long): List<Long> =
+        if (id in handled) handled else (handled + id).takeLast(KEEP)
 }
