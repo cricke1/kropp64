@@ -20,8 +20,8 @@ from mathutils import Matrix, Vector
 T0 = time.time()
 ARGS = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
 OUT = ARGS[0] if ARGS else os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ut')
-W = int(ARGS[1]) if len(ARGS) > 1 else 1600
-H = int(ARGS[2]) if len(ARGS) > 2 else 1000
+W = int(ARGS[1]) if len(ARGS) > 1 else 2400
+H = int(ARGS[2]) if len(ARGS) > 2 else 1200
 SAMPLES = int(ARGS[3]) if len(ARGS) > 3 else 384
 os.makedirs(OUT, exist_ok=True)
 TIDER = {}
@@ -867,7 +867,7 @@ golvob.location = (0, 0, -0.072)
 golv.materials.append(mat('golv', srgb('#101315'), rough=0.6, spec=0.2))
 
 cam_d = bpy.data.cameras.new('kamera')
-cam_d.lens = 42
+cam_d.lens = 30  # vid bild: webben beskär den (object-fit: cover) till scenens format
 cam_d.sensor_width = 36
 cam = link(bpy.data.objects.new('kamera', cam_d))
 cam.location = (0.78, -1.62, 0.66)

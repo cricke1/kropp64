@@ -9,7 +9,7 @@ RF=C:/Users/crick/Desktop/_lenovo/konsiliet3d/rigg
 B='C:\Users\crick\Desktop\_lenovo\patches3d\blender-4.5.3-windows-x64\blender.exe'
 D="$(cd "$(dirname "$0")" && pwd)"
 WEB="$D/../../web/public/rigg"
-W=${1:-1600}; HH=${2:-1000}; S=${3:-384}
+W=${1:-2400}; HH=${2:-1200}; S=${3:-384}
 
 ssh "$H" "if not exist $R\\ut mkdir $R\\ut" >/dev/null
 scp -q "$D/rigg.py" "$H:$RF/rigg.py"

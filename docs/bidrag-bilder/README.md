@@ -1,6 +1,6 @@
 # Bilder till tävlingsbidraget
 
-Tio bilder, 1920x1080 PNG, alla under 5 MB. Ingen bild visar riktig hälsodata. Märkningen syns i varje bild.
+Tolv bilder, 1920x1080 PNG, alla under 5 MB. Ingen bild visar riktig hälsodata. Märkningen syns i varje bild.
 
 | Bild | Visar | Data |
 |---|---|---|
@@ -14,8 +14,12 @@ Tio bilder, 1920x1080 PNG, alla under 5 MB. Ingen bild visar riktig hälsodata. 
 | 08-mobilappen.png | Mobilappen: Idag, tidslinje, fråga, testlarm | Emulator, syntetisk testdata (märkt under varje skärm) |
 | 09-klockappen.png | Klockappen: välja pass, pass pågår, puls. Runda skärmar; på de två första är översta raden mörklagd eftersom innehållet hade scrollat in under klockslaget | Emulator, syntetisk testdata (märkt under varje skärm) |
 | 10-kontoret-pa-mobilen.png | Kontoret i mobilformat genom ett helt möte | Demo: manus, syntetiskt (banner i varje ruta) |
+| 11-riggen-demo.png | Riggen: kroppen som PC-chassi i 3D. Pulsen stiger i vila, kylflänsarna börjar gå mot varmt | Demo: manus, syntetiskt (banner överst och märkning i riggen) |
+| 12-riggen-trad-demo.png | Riggen när en tråd startar om pulsen: kontur runt processorn, kameran har glidit dit | Demo: manus, syntetiskt (banner överst och märkning i riggen) |
 
 01-06 är tagna med Playwright mot den publika demon (`drift/publik-demo.sh`), viewport 1680x945 med skalfaktor 8/7.
+11-12 är tagna från demobygget med riggens inspelningsläge (`#/riggen?capture=1`, tiden stegas exakt), samma
+viewport. 11 är demomanusets sekund 11, 12 sekund 17,5.
 08-09 är sammansatta av märkta skärmbilder från docs/skarmbilder. 10 är bildrutor ur docs/video (9:16).
 
 Saknas fortfarande: en bild från ett riktigt konsilium på riktig data. Den läggs till när systemet har gått

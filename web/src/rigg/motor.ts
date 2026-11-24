@@ -17,6 +17,8 @@ export interface MotorOpt {
   /** Inspelning: ingen egen bildloop, tiden stegas med stega(). */
   capture?: boolean
   onKlar?: () => void
+  /** Bildtakten räcker inte ens på lägsta kvalitet. */
+  onForLangsam?: () => void
 }
 
 const FARG = {
@@ -131,6 +133,14 @@ export class Motor {
     this.renderer.shadowMap.autoUpdate = false
     this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, this.dprTak))
     host.appendChild(this.canvas)
+    // Mjukvaru-WebGL (SwiftShader, llvmpipe): börja direkt på lägsta kvalitet
+    try {
+      const gl = this.renderer.getContext()
+      const ext = gl.getExtension('WEBGL_debug_renderer_info')
+      const namn = ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : ''
+      ARBETE.__riggGpu = namn
+      if (/swiftshader|llvmpipe|software/i.test(namn)) { this.kvalitet = 0; this.dprTak = 0.75; this.renderer.shadowMap.enabled = false }
+    } catch { /* okänd GPU */ }
 
     this.scene.background = new THREE.Color('#0e1113')
     const pmrem = new THREE.PMREMGenerator(this.renderer)
@@ -264,7 +274,7 @@ export class Motor {
     if (n.startsWith('hjarta_glod')) { mat.emissive.set(FARG.hjarta); this.glod.push(mat); return mat }
     if (n.startsWith('led_list')) { this.ledList.push(mat); return mat }
     if (n.startsWith('led_strom')) { mat.emissive.set(FARG.hjarta); this.ledStrom.push(mat); return mat }
-    if (objekt === NOD.kylflans) this.varmeShader(mat, 1)
+    if (objekt === NOD.kylflans) { if (n.startsWith('flans')) mat.roughness = 0.26; this.varmeShader(mat, 1) }
     else if (objekt === NOD.chassi && n.startsWith('alu_borstad')) this.varmeShader(mat, 0.35)
     if (mat.aoMap) mat.aoMapIntensity = 0.9
     if (n.startsWith('alu_borstad')) { mat.color.multiplyScalar(0.68); mat.roughness = 0.33; mat.envMapIntensity = 0.62 }
@@ -357,7 +367,7 @@ export class Motor {
     const out: Record<string, THREE.Vector3> = {}
     if (b.hjarta) out.hjarta = v(b.hjarta.max.x - 0.01, b.hjarta.max.y - 0.02, b.hjarta.max.z)
     if (b.flaktH) { const c = b.flaktH.getCenter(new THREE.Vector3()); out.flaktar = v(c.x - 0.02, c.y + 0.03, b.flaktH.max.z) }
-    if (b.kylflans) { const c = b.kylflans.getCenter(new THREE.Vector3()); out.kylflans = v(b.kylflans.min.x + 0.012, c.y - 0.06, c.z + 0.03) }
+    if (b.kylflans) { const c = b.kylflans.getCenter(new THREE.Vector3()); out.kylflans = v(b.kylflans.min.x + 0.05, c.y - 0.05, b.kylflans.max.z - 0.03) }
     if (b.psu) { const c = b.psu.getCenter(new THREE.Vector3()); out.psu = v(c.x + 0.04, c.y, b.psu.max.z) }
     return out
   }
@@ -405,24 +415,36 @@ export class Motor {
     while (this.bilder.length && this.bilder[0] < nu - 1000) this.bilder.shift()
     this.fps = this.bilder.length
     ARBETE.__rigg.fps = this.fps
-    // anpassa kvaliteten om det går trögt de första sekunderna
-    // ett värde per sekund från sekund 4 (efter shaderkompilering); sänk ett steg om medianen av tre ligger under 50
-    if (this.klocka > 4 && this.klocka < 16 && Math.floor(this.klocka) !== this.senastProv) {
-      this.senastProv = Math.floor(this.klocka)
+    // Anpassa kvaliteten efter väggklockan (inte riggens klocka, som står nästan still när det går trögt):
+    // ett värde per sekund från sekund 3, sänk ett steg när bildtakten ligger under 48 fps.
+    if (!this.startTid) this.startTid = nu
+    const sek = (nu - this.startTid) / 1000
+    if (sek > 3 && sek < 40 && Math.floor(sek) !== this.senastProv) {
+      this.senastProv = Math.floor(sek)
       this.prov.push(this.fps)
+      ;(ARBETE.__riggHist ||= []).push([Math.floor(sek), this.fps, this.kvalitet, this.renderer.getPixelRatio()])
     }
-    const med = this.prov.length >= 3 ? [...this.prov.slice(-3)].sort((a, b) => a - b)[1] : 99
-    if (med < 50 && this.kvalitet > 0 && !LAST_KVALITET) {
+    // medianen av de fyra senaste sekunderna (det högre av de två mittvärdena), så att ett enstaka hack inte räknas
+    const med = this.prov.length >= 4 ? [...this.prov.slice(-4)].sort((a, b) => a - b)[2] : 99
+    if (med < 48 && this.kvalitet > 0 && !LAST_KVALITET) this.sank()
+    else if (med < 12 && this.kvalitet === 0 && !LAST_KVALITET) {
+      // Även lägsta kvalitet är för tungt (till exempel mjukvaru-WebGL): visa stillbilden och värdena som text.
       this.prov = []
-      this.kvalitet--
-      if (this.kvalitet === 2) this.dprTak = Math.min(this.dprTak, 1.25)
-      if (this.kvalitet === 1) this.dprTak = 1
-      if (this.kvalitet === 0) { this.renderer.shadowMap.enabled = false; this.nyckel.castShadow = false; this.dprTak = 0.85 }
-      this.storlek()
-      ARBETE.__rigg.kvalitet = this.kvalitet
-      ARBETE.__rigg.dpr = this.renderer.getPixelRatio()
+      this.opt.onForLangsam?.()
     }
+    ARBETE.__rigg.kvalitet = this.kvalitet
+    ARBETE.__rigg.dpr = this.renderer.getPixelRatio()
   }
+
+  private sank() {
+    this.prov = []
+    this.kvalitet--
+    if (this.kvalitet === 2) this.dprTak = Math.min(this.dprTak, 1.25)
+    if (this.kvalitet === 1) this.dprTak = 1
+    if (this.kvalitet === 0) { this.renderer.shadowMap.enabled = false; this.nyckel.castShadow = false; this.dprTak = 0.75 }
+    this.storlek()
+  }
+  private startTid = 0
   private senastProv = -1
   private bildNr = 0
   private prov: number[] = []

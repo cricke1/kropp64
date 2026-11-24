@@ -354,3 +354,46 @@ skrevs in i förstastartsvyn, sms slogs på och testkontakten lades till via Ins
 minst sex siffror i numret, och `adb input text` tappade tecken på den långsamma emulatorn, så texten fick
 skrivas i bitar). Akutlarm 23:46:11, sms-alarm satt till 23:48:11, "Jag mår bra" tryckt i notisen 23:46:33,
 `alarm_cancelled` samma sekund, ingen kedja kvar, och efter fristen (kontroll 23:48:44) var skickat-mappen tom.
+
+## Riggvyn: kroppen som PC-chassi i 3D (2026-11-24)
+
+Överkroppen byggd som ett chassi i borstad aluminium med härdat glas: processorn med tornkylare är hjärtat och
+slår i pulsen, två fläktar är lungorna (vänster lunga 120 mm, höger 140 mm, eftersom vänster lunga är mindre),
+revbenen är kylflänsar med värmerör, mellangärdet ett välvt PSU-skydd och nätaggregatet i buken visar headroom.
+Modellen skrivs som ett bpy-skript (`render/rigg/rigg.py`) och byggs på Lenovon med `render/rigg/kor.sh`.
+Webben: `web/src/rigg/` (three.js 0.187.0, låst), överst på Översikt och som egen vy Riggen.
+
+**Mätt.**
+- Bygget på Lenovon (Blender 4.5.3, RTX 5050): geometri 2 s, AO-bakning 27 s (chassit, 2048 px) och 6 s
+  (kylflänsarna, 1024 px), glb-export med Draco 27 s, reservbilden 2400x1200 i 384 samples 88 s. Totalt 188 s
+  när laptopen hade ont om minne; första provbygget tog 35 s.
+- Storlek: `kropp64-rigg.glb` 652 kB (Draco, AO som WebP), reservbilden 43 kB. Three.js och motorn ligger i en
+  egen bit (690 kB, 173 kB gzip) som laddas först när riggen syns. Huvudbundeln är oförändrad, cirka 206 kB.
+- Bildtakt på Mac minin (M4, Chromium headless med Metal): 61 fps (skärmens tak) på Riggen och Översikt i
+  1440x900, pixeltäthet 1,75 (duk 2446x1186). Närbilden under en tråd, utan tak: 64 fps. Mobilformat
+  412x915 med pixeltäthet 2,625 och CPU strypt 4 gånger: 61 fps (men med Macens GPU).
+- Android-emulatorn på Lenovon (konsiliet_phone, Chrome 133) kör WebGL i mjukvara (SwiftShader): 1-11 fps även
+  på lägsta kvalitet. Riggen märker det och visar då reservbilden och mätvärdena som text. En egen emulator med
+  GPU gick inte att få igång: Lenovon hade 0,2-0,9 GB ledigt av 16 GB med två emulatorer, talsyntesen och
+  Blender igång, och första försöket dog på minnesbrist, det andra kraschade efter start. Någon siffra för en
+  mellanklassmobil med riktig GPU finns alltså inte än.
+
+**Problem på vägen.**
+- Första versionen gav 15-18 fps i närbild. Tre orsaker, mätta en i taget: kylaren är 30 fenor rakt bakom
+  varandra i en enda mesh, så varje pixel skuggades upp till 30 gånger (djupförpass för kylaren, revbenen och
+  fläktbladen: 17 till 43 fps); glaset var ett PBR-material över hela bilden (MeshBasic med miljökarta och
+  additiv blandning: halverade kostnaden); OutlinePass ritar scenen tre gånger plus skuggkartan varje gång.
+  Den ersattes med en egen kontur: bara den markerade komponenten ritas som mask i halv upplösning och en
+  helskärmsruta lägger linjen utanför maskens kant. Skuggkartan ritas en gång per bild, 1024 px i stället för 2048.
+- Three 0.187 har tagit bort PCFSoftShadowMap (PCF används) och buntar Draco-avkodaren själv; den egna kopian i
+  public/ togs bort.
+- Meshar med flera material blir en grupp med barn (`kylflans_1`, `kylflans_2`) i glTF, så den termiska
+  färgkartan fastnade först inte på revbenen. Nu används närmaste namngivna förälder.
+- Den automatiska kvalitetssänkningen gick först på riggens egen klocka, som nästan står still när det går
+  trögt. Nu räknas väggklockan, och ett enstaka hack (shaderkompilering) räknas inte.
+- Delade emulatorer: en annan session hade Pixel_8_Kropp64_B igång när jag försökte starta den, och adb-servern
+  startades om flera gånger under mätningen. Emulatorer ska samordnas.
+
+**Bilder och film.** `docs/bidrag-bilder/11-riggen-demo.png`, `12-riggen-trad-demo.png` och
+`docs/video/riggen-demo-1920x1080.mp4` (14 s, inte i git). Inspelningsläget (`?capture=1`) stegar tiden exakt,
+så filmen blir jämn oavsett dator.

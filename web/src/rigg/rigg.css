@@ -10,7 +10,7 @@
 .rigg-full .rigg-scen { height: clamp(440px, calc(100vh - 220px), 820px); }
 .rigg-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
 .rigg-poster {
-  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%;
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%;
   transition: opacity 0.6s ease;
 }
 .rigg.klar .rigg-poster { opacity: 0; pointer-events: none; }
@@ -75,7 +75,10 @@
 .rigg-kompakt .enhet { font-size: 12px; color: #c9cdd0; }
 .rigg-lager.smal .rigg-chips { max-width: calc(100% - 24px); top: 42px; }
 .rigg-lager.smal .rigg-demo { left: 12px; right: auto; }
-.rigg-info { position: absolute; left: 12px; right: 12px; top: 44px; font-size: 12.5px; color: #9ba4a9; }
+.rigg-info {
+  position: absolute; left: 12px; top: 44px; max-width: min(360px, calc(100% - 24px)); font-size: 12.5px; color: #9ba4a9;
+  background: #14181b; border: 1px solid #262d32; border-radius: 4px; padding: 6px 10px;
+}
 
 .rigg-inbaddad .rigg-scen { cursor: grab; }
 .rigg-full .rigg-scen { cursor: grab; }

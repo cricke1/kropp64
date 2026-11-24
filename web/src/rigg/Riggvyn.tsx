@@ -46,7 +46,8 @@ export function Riggvyn({ lage = 'inbaddad', demo = false }: { lage?: 'full' | '
       setStatus('laddar')
       import('./motor').then(async ({ Motor }) => {
         if (dod) return
-        motor = new Motor(el, { kalla, lage, capture, onKlar: () => !dod && setStatus('klar') })
+        motor = new Motor(el, { kalla, lage, capture, onKlar: () => !dod && setStatus('klar'),
+          onForLangsam: () => { if (dod) return; motor?.dispose(); motor = null; setStatus('fel') } })
         await motor.ladda(url('rigg/kropp64-rigg.glb'))
       }).catch((err) => { console.error('Riggvyn', err); motor?.dispose(); motor = null; if (!dod) setStatus('fel') })
     }, { rootMargin: '200px' })
@@ -81,7 +82,7 @@ function Reserv({ kalla }: { kalla: Kalla }) {
           <div class="cell"><span class="namn">{x.namn}</span><span class="varde" style={{ color: x.farg }}><b>{x.varde}</b>{x.enhet && <span class="enhet">{x.enhet.startsWith('/') ? x.enhet : ' ' + x.enhet}</span>}</span></div>
         ))}
       </div>
-      <div class="rigg-info">3D kräver WebGL. Här visas en stillbild av riggen och mätvärdena som text.</div>
+      <div class="rigg-info">3D-vyn går inte att visa här (WebGL saknas eller ritar för långsamt). Här visas en stillbild av riggen och mätvärdena som text.</div>
     </div>
   )
 }
