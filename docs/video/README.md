@@ -13,7 +13,7 @@ Filmerna ligger inte i git (för stora). Så spelas de in igen:
 
 1. `drift/publik-demo.sh` (startar demon på 127.0.0.1:8795).
 2. Spela in med Chromiums screencast via Playwright (skarpare pixelgrafik än Playwrights inbyggda video):
-   16:9 med viewport 1440x810 och skalfaktor 4/3, 9:16 med viewport 405x720 och skalfaktor 8/3.
+   16:9 med viewport 1680x945 och skalfaktor 8/7, 9:16 med viewport 405x720 och skalfaktor 8/3.
    Bilderna sparas med tidsstämplar och sätts ihop med ffmpeg (`-f concat` med varaktighet per bild, `fps=30`).
 
 Ingen ljudspår. Ingen klippning utöver att första sekunden (sidbytet) är bortskuren.

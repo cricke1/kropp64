@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'preact/hooks'
 import { api } from '../api'
-import { fmtNum, hm } from '../format'
+import { duration, fmtNum, hm } from '../format'
 import { side, useAsync, useSide } from '../store'
 
 function zText(z: number, digits = 2) {
@@ -105,7 +105,7 @@ export function DatornPanel() {
                 return (
                   <tr>
                     <td><i class="sw" style={{ background: col }} />{label}</td>
-                    <td class="r num">{x.minuter >= 60 ? `${Math.floor(x.minuter / 60)} h ${x.minuter % 60} min` : `${x.minuter} min`}</td>
+                    <td class="r num">{duration(x.minuter * 60)}</td>
                     <td><div class="hbar"><i style={{ width: `${(x.minuter / maxMin) * 100}%`, background: col }} /></div></td>
                     <td class="r num">{x.puls_median != null ? <b>{fmtNum(x.puls_median, 0)}</b> : <span class="faint">-</span>}</td>
                     <td>{x.puls_median != null && <div class="pscale"><i style={{ left: `${((x.puls_median - lo) / (hi - lo)) * 100}%` }} /></div>}</td>

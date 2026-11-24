@@ -65,6 +65,7 @@
   .k-modes { width: 100%; }
   .k-modes select { flex: 1; max-width: none; }
   .k-legend li span.faint { display: none; }
+  .replaybar .seg, .k-legend { display: none; } /* får inte plats ovanför mobilmenyn; namnen står i samtalet */
 }
 
 /* ------------------------------------------------------------ Översikt */
