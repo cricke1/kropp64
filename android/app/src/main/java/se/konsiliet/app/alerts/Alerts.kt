@@ -88,7 +88,10 @@ object Alerts {
         if (System.currentTimeMillis() / 1000.0 - ev.ts > MAX_AGE_S) return
         val p = runCatching { JSONObject(ev.payload) }.getOrNull() ?: return
         when (ev.kind) {
-            "alert.raise" -> raise(ctx, ev.id, p.optString("level"), p.optString("title"), p.optString("body"))
+            "alert.raise" -> raise(ctx, SmsPolicy.Alert(
+                id = ev.id, ts = ev.ts, level = p.optString("level"), title = p.optString("title"),
+                body = p.optString("body"), rule = p.optString("rule").ifBlank { null },
+                consultId = p.optString("consult_id").ifBlank { null }))
             "vakt.anomaly" -> if (p.optString("level") == "avvikelse") {
                 notify(ctx, Channels.AVVIKELSE, ev.id.toInt(), p.optString("title"), p.optString("detail"), consultId = null)
             }
@@ -136,46 +139,56 @@ object Alerts {
         runCatching { NotificationManagerCompat.from(ctx).notify(id, n) }
     }
 
-    fun raise(ctx: Context, id: Long, level: String, title: String, body: String) {
-        if (level != "akut") {
-            notify(ctx, Channels.AVVIKELSE, id.toInt(), title, body, null)
+    fun raise(ctx: Context, a: SmsPolicy.Alert) {
+        val nowMs = System.currentTimeMillis()
+        // Historik som skickas om vid återanslutning: gamla larm ger varken notis eller sms.
+        if (SmsPolicy.tooOld(a, nowMs / 1000.0)) return
+        val consultId = a.consultId?.takeIf { it.isNotBlank() }
+        if (a.level != "akut") {
+            notify(ctx, Channels.AVVIKELSE, a.id.toInt(), a.title, a.body, consultId)
             return
         }
         val cfg = Prefs.config.value
-        val smsArmed = cfg.smsEnabled && cfg.contacts.isNotEmpty()
-        val due = System.currentTimeMillis() + cfg.smsDelayMin * 60_000L
-        if (smsArmed) {
-            Prefs.putString("pendingSms", JSONObject().put("id", id).put("title", title).put("body", body)
-                .put("due", due).toString())
-            scheduleSms(ctx, id, due)
+        val smsArmed = cfg.smsEnabled && cfg.contacts.isNotEmpty() && SmsPolicy.triggersSms(a, nowMs / 1000.0)
+        var chain: SmsPolicy.Chain? = null
+        if (smsArmed) synchronized(this) {
+            val before = loadChain()
+            chain = SmsPolicy.add(before, a, nowMs, cfg.smsDelayMin * 60_000L)
+            saveChain(chain)
+            // Alarmet sätts bara när kedjan skapas. Ett senare larm flyttar aldrig fristen.
+            if (before == null) scheduleSms(ctx, chain!!.firstId, chain!!.due)
         }
         if (!canNotify(ctx)) return
-        val dismiss = PendingIntent.getBroadcast(ctx, id.toInt(),
-            Intent(ctx, AlertReceiver::class.java).setAction(ACTION_DISMISS).putExtra(EXTRA_ALERT, id),
+        val dismiss = PendingIntent.getBroadcast(ctx, a.id.toInt(),
+            Intent(ctx, AlertReceiver::class.java).setAction(ACTION_DISMISS).putExtra(EXTRA_ALERT, a.id),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-        val text = if (smsArmed) "$body\n\nTryck \"Jag mår bra\" före ${hm.format(Date(due))}, annars skickas sms till " +
-            cfg.contacts.joinToString { it.name } + "." else body
+        val c = chain
+        val text = if (c != null) "${a.body}\n\nTryck \"Jag mår bra\" före ${hm.format(Date(c.due))}, annars skickas sms till " +
+            cfg.contacts.joinToString { it.name } + "." else a.body
         val n = NotificationCompat.Builder(ctx, Channels.AKUT)
             .setSmallIcon(R.drawable.ic_stat)
-            .setContentTitle(title)
-            .setContentText(body)
+            .setContentTitle(a.title)
+            .setContentText(a.body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(text))
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
-            .setOngoing(smsArmed)
-            .setAutoCancel(!smsArmed)
-            .setContentIntent(openIntent(ctx, null, id.toInt()))
-            .addAction(0, if (smsArmed) "Jag mår bra, skicka inget sms" else "Jag mår bra", dismiss)
+            .setOngoing(c != null)
+            .setAutoCancel(c == null)
+            .setContentIntent(openIntent(ctx, consultId, a.id.toInt()))
+            .addAction(0, if (c != null) "Jag mår bra, skicka inget sms" else "Jag mår bra", dismiss)
             .build()
-        runCatching { NotificationManagerCompat.from(ctx).notify(id.toInt(), n) }
+        runCatching { NotificationManagerCompat.from(ctx).notify(a.id.toInt(), n) }
     }
 
-    private fun scheduleSms(ctx: Context, id: Long, due: Long) {
+    private fun smsIntent(ctx: Context, firstId: Long, flags: Int): PendingIntent? =
+        PendingIntent.getBroadcast(ctx, firstId.toInt(),
+            Intent(ctx, AlertReceiver::class.java).setAction(ACTION_SMS_DUE).putExtra(EXTRA_ALERT, firstId),
+            PendingIntent.FLAG_IMMUTABLE or flags)
+
+    private fun scheduleSms(ctx: Context, firstId: Long, due: Long) {
         val am = ctx.getSystemService(AlarmManager::class.java)
-        val pi = PendingIntent.getBroadcast(ctx, id.toInt(),
-            Intent(ctx, AlertReceiver::class.java).setAction(ACTION_SMS_DUE).putExtra(EXTRA_ALERT, id),
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-        // Exakt alarm även i Doze om användaren tillåtit det, annars det närmaste systemet ger.
+        val pi = smsIntent(ctx, firstId, PendingIntent.FLAG_UPDATE_CURRENT)!!
+        // Exakt alarm även i Doze (USE_EXACT_ALARM), annars det närmaste systemet ger.
         if (Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms()) {
             am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, due, pi)
         } else {
@@ -183,55 +196,78 @@ object Alerts {
         }
     }
 
-    fun pendingSms(): JSONObject? = Prefs.getString("pendingSms")?.let { runCatching { JSONObject(it) }.getOrNull() }
+    // Kedjan sparas i SharedPreferences så att den överlever processdöd och omstart.
+    fun loadChain(): SmsPolicy.Chain? = Prefs.getString("smsChain")?.let { raw ->
+        runCatching {
+            val o = JSONObject(raw)
+            val arr = o.getJSONArray("items")
+            SmsPolicy.Chain(o.getLong("firstId"), o.getLong("due"), (0 until arr.length()).map {
+                val i = arr.getJSONObject(it)
+                SmsPolicy.Item(i.getLong("id"), i.optString("title"), i.optString("body"))
+            })
+        }.getOrNull()
+    }
 
+    private fun saveChain(c: SmsPolicy.Chain?) {
+        if (c == null) { Prefs.putString("smsChain", null); return }
+        val arr = org.json.JSONArray()
+        c.items.forEach { arr.put(JSONObject().put("id", it.id).put("title", it.title).put("body", it.body)) }
+        Prefs.putString("smsChain", JSONObject().put("firstId", c.firstId).put("due", c.due).put("items", arr).toString())
+    }
+
+    /** "Jag mår bra" på något av larmen i kedjan stoppar hela kedjan. */
     fun dismiss(ctx: Context, id: Long) {
-        val p = pendingSms()
-        if (p != null && p.optLong("id") == id) Prefs.putString("pendingSms", null)
-        val pi = PendingIntent.getBroadcast(ctx, id.toInt(),
-            Intent(ctx, AlertReceiver::class.java).setAction(ACTION_SMS_DUE).putExtra(EXTRA_ALERT, id),
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_NO_CREATE)
-        if (pi != null) ctx.getSystemService(AlarmManager::class.java).cancel(pi)
+        synchronized(this) {
+            val c = loadChain()
+            if (c != null && c.contains(id)) {
+                saveChain(null)
+                smsIntent(ctx, c.firstId, PendingIntent.FLAG_NO_CREATE)?.let { ctx.getSystemService(AlarmManager::class.java).cancel(it) }
+                c.items.forEach { NotificationManagerCompat.from(ctx).cancel(it.id.toInt()) }
+            }
+        }
         NotificationManagerCompat.from(ctx).cancel(id.toInt())
     }
 
-    /** Alarm försvinner vid omstart. Ett larm som väntade på sms schemaläggs om (eller skickas direkt). */
+    /** Alarm försvinner vid omstart. En väntande kedja schemaläggs om med sin ursprungliga frist. */
     fun restorePendingSms(ctx: Context) {
-        val p = pendingSms() ?: return
-        scheduleSms(ctx, p.optLong("id"), maxOf(p.optLong("due"), System.currentTimeMillis() + 5_000))
+        val c = loadChain() ?: return
+        scheduleSms(ctx, c.firstId, maxOf(c.due, System.currentTimeMillis() + 5_000))
     }
 
-    fun sendDueSms(ctx: Context, id: Long) {
-        val p = pendingSms() ?: return
-        if (p.optLong("id") != id) return
-        Prefs.putString("pendingSms", null)
+    fun sendDueSms(ctx: Context, firstId: Long) {
+        val c = synchronized(this) {
+            val c = loadChain() ?: return
+            if (c.firstId != firstId) return
+            saveChain(null)
+            c
+        }
         val cfg = Prefs.config.value
         if (!cfg.smsEnabled || cfg.contacts.isEmpty()) return
         val granted = ContextCompat.checkSelfPermission(ctx, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED
-        val msg = "Konsiliet (automatiskt larm): ${p.optString("title")}. ${p.optString("body")} " +
-            "Larmet bekräftades inte i mobilen inom ${cfg.smsDelayMin} min. Ring och hör hur det är."
+        val msg = SmsPolicy.message(c, cfg.smsDelayMin)
         val sent = mutableListOf<String>()
         val failed = mutableListOf<String>()
         if (granted) {
             val sms = ctx.getSystemService(SmsManager::class.java)
-            for (c in cfg.contacts) {
+            for (k in cfg.contacts) {
                 try {
-                    sms.sendMultipartTextMessage(c.number, null, sms.divideMessage(msg), null, null)
-                    sent += c.name
+                    sms.sendMultipartTextMessage(k.number, null, sms.divideMessage(msg), null, null)
+                    sent += k.name
                 } catch (e: Exception) {
-                    Log.e(TAG, "sms till ${c.name} misslyckades", e); failed += c.name
+                    Log.e(TAG, "sms till ${k.name} misslyckades", e); failed += k.name
                 }
             }
         } else failed += cfg.contacts.map { it.name }
-        NotificationManagerCompat.from(ctx).cancel(id.toInt())
+        c.items.forEach { NotificationManagerCompat.from(ctx).cancel(it.id.toInt()) }
+        Log.i(TAG, "sms-kedja ${c.firstId} med ${c.items.size} larm: skickat till ${sent.size}, misslyckat ${failed.size}")
         val text = buildString {
-            if (sent.isNotEmpty()) append("Sms skickat till ${sent.joinToString()}. ")
+            if (sent.isNotEmpty()) append("Sms skickat till ${sent.joinToString()} om ${c.items.size} larm. ")
             if (failed.isNotEmpty()) append("Kunde inte skicka till ${failed.joinToString()}" +
                 (if (!granted) " (sms-behörighet saknas)." else "."))
         }
         if (canNotify(ctx)) {
             runCatching {
-                NotificationManagerCompat.from(ctx).notify((id + 1_000_000).toInt(),
+                NotificationManagerCompat.from(ctx).notify((firstId + 1_000_000).toInt(),
                     NotificationCompat.Builder(ctx, Channels.SMS).setSmallIcon(R.drawable.ic_stat)
                         .setContentTitle("Sms till anhöriga").setContentText(text)
                         .setStyle(NotificationCompat.BigTextStyle().bigText(text)).build())

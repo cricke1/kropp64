@@ -61,6 +61,18 @@ Första start:
 | WebSocket dör tyst | OkHttp pingar var 25:e sekund. Återanslutning 1, 2, 4 ... 60 s, direkt vid nätbyte. Servern skickar de 300 senaste händelserna vid anslutning, så larm som kom under avbrottet missas inte (id-kontroll hindrar dubbelnotiser). |
 | Health Connect-token går ut | De senaste 30 dagarna läses om och en ny token hämtas. |
 
+## Regler för sms till anhöriga
+
+Reglerna ligger i `android/app/src/main/java/se/konsiliet/app/alerts/SmsPolicy.kt` och testas i `SmsPolicyTest`.
+
+- Bara vaktens regler kan starta sms: `alert.raise` med nivå `akut` och fältet `rule`. Konsiliets bedömningar
+  (har `consult_id`) ger notis men aldrig sms. En språkmodell ska aldrig kunna skicka sms.
+- Larm "upptäckt i efterhand" och larm äldre än 30 minuter ger aldrig sms.
+- Händelser som servern skickar om vid WebSocket-anslutning (`replay: true`) visas bara i listorna: ingen notis,
+  ingen vibration på klockan, ingen sms-kedja.
+- Fristen sätts av det första olösta akutlarmet och flyttas aldrig fram. Senare akutlarm läggs till i samma sms.
+- "Jag mår bra" på något av larmen i kedjan stoppar hela kedjan.
+
 ## Testa med emulatorer
 
 Se avsnittet om emulatorer i [RESAN.md](../RESAN.md) för vad som fungerade och inte. Syntetisk data från

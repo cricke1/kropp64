@@ -145,8 +145,10 @@ class LiveService : LifecycleService() {
         if (o.isNull("id")) return
         val row = EventRow(o.getLong("id"), o.optDouble("ts"), kind, payload.toString())
         val inserted = KonsilietDb.get(applicationContext).events().insert(listOf(row)).firstOrNull() ?: -1L
-        // Notiser bara för nya händelser. Historiken som servern skickar vid varje anslutning
-        // ger inga dubbelnotiser tack vare id-kontrollen i Alerts.
+        // Historiken som servern skickar om vid varje anslutning är märkt replay=true. Den visas bara i
+        // listorna: aldrig notis, vibration på klockan eller sms-kedja. Id-kontrollen och 30-minutersgränsen
+        // i Alerts är extra skydd om märkningen skulle saknas.
+        if (o.optBoolean("replay", false)) return
         if (inserted != -1L) Alerts.onEvent(applicationContext, row)
     }
 

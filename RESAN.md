@@ -161,3 +161,14 @@ två likadana prover samma dag slås inte längre ihop. Tre tester med en fiktiv
 
 **Gamla larm kunde väcka sms-kedjan igen.** När mobilen återansluter skickar servern de senaste 300
 händelserna, inklusive gamla akutlarm. Omskickade händelser märks nu `replay: true`.
+
+**Granskningen hittade ett hål i sms-kedjan.** Mobilen hade bara en plats för ett väntande sms. Ett andra
+akutlarm, till exempel konsiliets bedömning några minuter efter vaktens larm, skrev över det första och flyttade
+fristen framåt, så sms:et kunde skjutas upp gång på gång. Dessutom kunde konsiliets larm, alltså en språkmodells
+slutsats, starta sms-kedjan. Fix: reglerna bröts ut till en egen klass med enhetstester (8 st). Fristen sätts av
+första olösta akutlarmet och flyttas aldrig, senare larm läggs till i samma sms, bara larm med en vaktregel kan
+starta sms, larm "upptäckt i efterhand" och larm äldre än 30 minuter ger aldrig sms, och händelser som servern
+skickar om vid återanslutning (märkta `replay`) ger varken notis eller sms. Testat mot en separat testinstans:
+vaktlarm A, en minut senare vaktlarm B, konsiliets larm C och ett larm i efterhand D. Kedjan fick A och B, fristen
+stod kvar på A plus två minuter, C och D gav bara notis, och ett sms om två larm gick 32 millisekunder efter
+fristen. Efter omstart av servern skickades historiken om, och inget nytt sms-alarm eller ny notis skapades.
