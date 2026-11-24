@@ -75,3 +75,44 @@ Svaret klipptes vid tokentaket mitt i verktygsanropets XML. Samtidigt visade log
 15,3 GiB av 16: modellen som på pappret är 6,6 GB tog 14,7 GB med 16k kontext och Ollamas standardläge
 med flera parallella förfrågningar. Datorn swappade. Fix: 8k kontext, en förfrågan åt gången, KV-cache i
 q8_0 och flash attention. Modellen tar nu 9,1 GB och ett helt konsilium tar 250 sekunder i stället för 563.
+
+**Klocka och mobil: port 8787 var redan upptagen.** En annan av mina nodeservrar (cricketrack) lyssnade på
+8787, även på Tailscale-adressen. Uvicorn startade inte och testanrop fick "Cannot GET /api/health" från fel
+server. Fix: Konsiliet flyttade till 8790. Emulatortesterna körs mot en egen serverinstans på 8797 med en
+separat databas, så att syntetisk puls aldrig hamnar i min riktiga baslinje.
+
+**Android-SDK:n installerades inte, utan felmeddelande.** Installationsskriptet i Windows PowerShell 5.1
+körde sdkmanager med `*>>` till en logg och `$ErrorActionPreference = "Stop"`. PowerShell 5.1 gör varje rad
+på stderr från ett externt program till ett fel, så skriptet dog vid licensfrågan och loggen sa bara
+"extracted". Fix: samma steg i en .bat-fil med vanliga omdirigeringar.
+
+**macOS-filer i Windowsbygget.** tar på Macen packade med `._`-filer (AppleDouble) för varje fil, och
+Android-resurser som `._strings.xml` är ogiltiga. Fix: `COPYFILE_DISABLE=1 tar --no-mac-metadata`.
+
+**Health Services 1.1.0 kompilerade inte.** 42 fel av typen "Cannot access class ListenableFuture".
+Biblioteket exponerar Guavas ListenableFuture i sitt API men drar inte med det. Fix: lägga till
+`com.google.guava:guava:33.3.1-android` i klockappen.
+
+**Klock- och mobilemulatorn gick inte att parkoppla.** Wearable Data Layer kräver att mobilen har Wear OS-
+eller Pixel Watch-appen, som bara finns i Play Butik och kräver inloggning med ett Google-konto. Det gör inte
+min byggagent. Lösning för testet: en brygga som bara finns i debug-bygget. Klockan exporterar nästa batch
+exakt som den annars skickas över Bluetooth, adb flyttar den till mobilen, mobilen sparar den med samma kod
+som tar emot riktiga batchar och skriver en kvittens, och först då raderar klockan raderna. Allt utom själva
+Bluetooth-hoppet är alltså testat. Data från emulatorn märks `watch-emulator` hela vägen och visas som
+"testdata från emulator" i appen. Det riktiga Bluetooth-hoppet testas på min Pixel Watch.
+
+**Kedjan testad på emulatorer (syntetisk data från Health Services testläge):** klockan registrerade 13
+passiva datatyper (puls, steg, kalorier, våningar, sträcka, höjdmeter, aktivitetsläge, falldetektering m.fl.,
+men varken HRV eller SpO2: de finns inte passivt i Health Services, bara via Health Connect). 855 punkter gick
+klocka till mobil till server. Sedan stängde jag av mobilens nät: 360 nya punkter låg kvar i mobilens kö, servern
+stod still på 855. Nätet på igen: alla 1 215 fanns på servern 2 sekunder senare, utan dubbletter. Sedan stängde
+jag av servern, skickade 180 punkter till och startade om mobilen: efter omstart och server uppe igen kom de
+fram efter 40 sekunder. Träningspass med ExerciseClient startade och avslutades och puls kom varje sekund.
+
+**Sms-larmet kom 70 sekunder för sent.** Med testlarm och 2 minuters frist gick sms:et först efter drygt
+3 minuter. Android 14+ ger inte exakta alarm utan att användaren godkänt det, och då får alarmet ett fönster
+på 1,5 minut. Fix: `USE_EXACT_ALARM`, eftersom fristen är en säkerhetsfunktion.
+
+**WHPX.** Windows-funktionen "HypervisorPlatform" stod som avstängd på Lenovon, men emulatorn rapporterade
+"WHPX is installed and usable" (Hyper-V och virtualiseringsbaserad säkerhet var redan igång) och båda
+emulatorerna startade med hårdvaruacceleration. Ingen omstart behövdes.
