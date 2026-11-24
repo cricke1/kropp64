@@ -433,3 +433,50 @@ typsnitt 46 kB, stillbild 42 kB). 61 fps i 1440x900 och i 375x812 på Mac minin,
 är processorn och bildtakten i ett fönster utan skärm, inte grafiken. Ett synligt Chrome-fönster på
 skrivbordet valde Intel-grafiken (Optimus) och fick `visibilityState: hidden` eftersom skärmen var avstängd,
 så där ritades ingenting och någon skrivbordssiffra finns inte.
+
+## 2026-11-24/25: en vecka som användare
+
+**Varför.** Allt fungerade tekniskt, men skulle jag öppna appen varje dag? En agent fick spela en påhittad
+18-åring under en simulerad vecka (kodpass, sena spelkvällar, en dålig natt, en sjuk natt, tre pass, en fråga
+till teamet) på syntetisk data, på en separat testserver (port 8801, egen databas) och de delade emulatorerna.
+Hela genomgången, före och efter, står i [docs/ANVANDBARHET.md](docs/ANVANDBARHET.md).
+
+**Det första som hände vid installationen.** Health Connect läser 30 dagar bakåt, vakten gick igenom historiken
+och startade direkt en tråd om att vilopulsen var *lägre* än vanligt en söndag en månad tidigare (personen sov
+länge en timme då han brukar spela). Tre notiser om något som inte gick att göra något åt. Vakten startar nu
+ingen tråd för historik äldre än ett dygn och larmar inte för lägre puls än baslinjen. Samma test hittade att
+pulsen vid datorn kl. 02 jämfördes med sovpulsen för den timmen, och att den sjuka natten gav tre trådar.
+
+**Morgonfrågan hade inget svar.** "Ska jag träna i dag?" fanns inte som rad någonstans. POST-skärmen låg två svep
+ned, skrevs 07:30 även när personen sov (4 av 7 morgnar i testveckan) och beslutet stod sist i fyra meningar från
+språkmodellen, som tog 44,7 s att skriva. Headroom räknades på 00-06, vilket för den som spelar till två är vaken
+tid vid datorn. Nu finns `vardag.py`: beslutet (träna, ta det lugnt, vila) med plan och varför räknas i koden på
+14-20 ms och står först i appen, webben, notisen, widgeten och klockans ruta. Idrottsläkaren förklarar bara, inom
+gränser som koden sätter för minuter och puls. POST-skärmen skrivs när natten är slut.
+
+**Knuffarna var brus.** 33 AFK-knuffar på veckan, utan knappar, även mitt i en match. Varje avvikelse gav tre notiser.
+Efter: budget per dag, tysta timmar, snooze, "mitt i ett pass", AFK väntar på en paus i spelet, en notis per tråd
+som uppdateras på plats. Simulerad vecka: 59 notiser blev 34, och bland de 34 finns nya som efterfrågades
+(läggdags, efter passet, veckan).
+
+**Frågan "varför är jag så trött?"** gav fyra minuter tom skärm. Snabbsvaret ur regelverket kommer nu på en
+sekund, lösningen efter tre minuter och slutar med 1-3 åtgärder. Teamets lösning missade dock sömnskulden, som
+inte finns i faktabladet; det är noterat för den som äger konsiliets kvalitet.
+
+**Problem på vägen.**
+- *En annan session committade mitt halvfärdiga arbete.* Commit e767610 ("Kropp64-termer i mobilen och klockan")
+  tog med mina nya mobilfiler (Idag.kt, notiserna, snabbsvaret) eftersom den lade till hela katalogen. Ingen skada,
+  men commit-meddelandet beskriver inte de ändringarna. Mina egna commits lägger nu bara till namngivna filer, och
+  i delade filer bara mina hunkar (`git apply --cached` på ett filtrerat diff).
+- *Två Vite-servrar på samma port.* Min dev-server och en annan sessions lyssnade båda på 5181 (en på IPv6, en på
+  IPv4), så första skärmbilden visade den andra sessionens databas. Upptäcktes på att bannern sa `dev-syntetisk`.
+- *Emulatorerna delas.* Jag tömde mobilappens data för att testa första starten, och därmed den andra sessionens
+  serveradress; den återställdes. En egen emulator dog direkt av minnesbrist (Lenovon hade 0,3-0,8 GB ledigt med
+  tre emulatorer, talsyntes, Blender och Gradle). Gradle fick köras med `-Xmx1500m --no-daemon`. Senare blev båda
+  delade emulatorerna offline och svarade inte, och adb-servern dog när ssh-sessionen stängdes. De startades om
+  med samma AVD, port och flaggor via schemalagda uppgifter (så att de inte hör till ssh-sessionen), och en
+  anteckning lades i `_lenovo/EMULATOR-ANVANDS.txt`.
+- *`input text` på emulatorn* tappar första tecknen om fältet inte hunnit få fokus, och klarar inte å, ä, ö.
+- *Wear OS fäller ut en notis vid första trycket.* "Ett tryck från passpåminnelsen" blev två: fäll ut, Starta pass.
+- *Bakgrundsstart av en skärm på klockan* stoppas av systemet, så "Andas 60 s" från mobilen blir en notis på
+  klockan som öppnar andningen.

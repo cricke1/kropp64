@@ -44,3 +44,10 @@ Varje bild har samma märkning i en remsa i nederkanten (gjord med `tools/etiket
 
 `konsilium-detalj.png` är borttagen. Den visade den första misslyckade körningen med nivån "Kontakta vården nu"
 trots att inget påstående godkänts av granskaren, och såg ut som ett resultat. Den körningen beskrivs i RESAN.md.
+
+## Användbarhetstestet (anv-*)
+
+Bilderna med prefixet `anv-` är från användbarhetstestet i [docs/ANVANDBARHET.md](../ANVANDBARHET.md): en
+påhittad 18-åring under en simulerad vecka, syntetisk testdata (källa `syntetisk-vecka`) på en separat
+testserver, mobil- och klockemulatorer på Lenovon och webben i Chromium headless. `anv-fore-*` visar läget före
+ändringarna. Varje bild är märkt i en remsa i nederkanten. Inget är uppmätt på en människa.
