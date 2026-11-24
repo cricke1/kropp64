@@ -202,3 +202,21 @@ står högst upp. Klockans skärmbilder är tagna om och maskerade till cirkeln 
 hemma i ett publikt repo. Nu finns ingen inbyggd adress: första gången visas en egen vy där adressen måste anges
 och testas (med möjlighet att spara ändå om servern inte svarar just då). Utan adress görs inga anrop alls och
 klockdata ligger kvar i kön tills adressen är satt.
+
+**3D-renderingarna: Blender fanns inte längre på Lenovon.** Mappen med Blender 4.5.3 som tidigare projekt
+använt var borttagen. Den officiella zip-filen laddades ner igen från blender.org (400 100 678 byte, SHA256
+kontrollerad mot blender.org:s summa). Med den nya installationen kompilerades OptiX-kärnorna om: första
+bilden i en testrendering tog 160 sekunder, nästa 2,4.
+
+**Första hjältebilden var nästan vit.** Skrivbordet hade bara 3 % reflektans men blev ljusgrått, eftersom
+lamporna var dimensionerade för ett rum och inte för en 13 cm stor dator. Exponeringen sänktes 3,2 steg och
+aluminiumet fick sina ljusa ytor från två stora reflexskärmar som bara syns i speglingar och bara lyser på
+Mac minin (light linking i Cycles), så att skärmarna på klocka och mobil inte bländades ut.
+
+**Klockglaset blev ett förstoringsglas.** Den välvda glaskupan var modellerad som en massiv kropp med
+brytningsindex 1,52, så urtavlan förstorades och förvrängdes som genom en lins. På riktigt är glaset tunt.
+Lösning: glas utan brytning med ett klarlackslager för reflexerna.
+
+**Rendertider på RTX 5050 (OptiX, denoising på GPU, adaptiv sampling, upp till 512 sampel):** hjältebild
+1920x1080 46,5 s, 1080x1350 31,2 s, dataflödet 30,4 s, 16 GB-bilden 47,9 s. Skärmarna i hjältebilden är
+en illustration med exempelvärden, inte uppmätt data.
