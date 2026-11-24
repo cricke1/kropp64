@@ -148,6 +148,23 @@ def chat(model: str, messages: list[dict[str, Any]], tools: list[dict[str, Any]]
                  prompt_tokens=p, output_tokens=o, seconds=dt, tokens_per_s=o / eval_s if eval_s else 0.0)
 
 
+MAX_MINNE_GIB = 11.0  # qwen3.5:9b tar 8,3 GiB nyladdad men växte till 15,4 GiB under en lång körning (swap)
+
+
+def lasta_ur_om_for_stor(grans_gib: float = MAX_MINNE_GIB) -> list[str]:
+    """Laddar ur modeller som vuxit över gränsen. Nästa anrop laddar om dem rena (några sekunder)
+    i stället för att datorn swappar i minuter. Anropas efter varje konsilium."""
+    ur = []
+    for m in loaded_models():
+        if m.get("size_vram", 0) / 2**30 > grans_gib:
+            try:
+                _client.post("/api/generate", json={"model": m["name"], "keep_alive": 0}, timeout=60)
+                ur.append(m["name"])
+            except Exception:
+                pass
+    return ur
+
+
 def loaded_models() -> list[dict[str, Any]]:
     try:
         return _client.get("/api/ps", timeout=5).json().get("models", [])

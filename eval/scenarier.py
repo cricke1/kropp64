@@ -587,3 +587,94 @@ HOLDOUT: list[Scenario] = [
         "upprepade fall. Rätt: troligen mätfel eller sovställning; ingen åtgärd, bevaka om det upprepas.")),
 ]
 SCENARIO.update({s.id: s for s in HOLDOUT})
+
+
+# ------------------------------------------------------------------ HOLDOUT 2
+# Skrivna innan holdout 1 hade körts, för att kunna mäta igen om något behöver rättas efter holdout 1.
+
+def h2_morgonlopning(s: Sim) -> dict[str, Any]:
+    s.standard()
+    s.standardprover()
+    s.traning(0, 7 * 60 + 50, 35, "löpning", 0.95, takt=168)
+    return _fraga("Varför låg min puls på nästan 180 i morse?", 12)
+
+
+def h2_snarkning(s: Sim) -> dict[str, Any]:
+    s.standard()
+    s.standardprover()
+    for dag in range(6, -1, -1):
+        a, b = s.ts(dag, -20), s.ts(dag, 430)
+        t = a + 2400
+        while t < b - 600:
+            k = s.idx(t)
+            s.spo2_add[k:k + 2] -= s.rng.uniform(5, 8)
+            t += int(s.rng.uniform(5, 9) * 60)
+    return _fraga("Min sambo säger att jag snarkar och slutar andas ibland. Syns något i datan?", 168)
+
+
+def h2_feber(s: Sim) -> dict[str, Any]:
+    s.standard(till_dag=2)
+    s.standard(fran_dag=1, till_dag=0, steg_mal=1500, lagg=-120, upp=560)
+    s.standardprover()
+    for dag, hr, temp, resp, hrv in ((1, 10, 0.9, 2.5, 0.6), (0, 13, 1.2, 3.0, 0.5)):
+        sl = s.span(s.ts(dag, -180), s.ts(dag, 600))
+        s.hr_add[sl] += hr
+        s.temp_add[sl] += temp
+        s.resp_add[sl] += resp
+        s.hrv_fak[sl] *= hrv
+    return _fraga("Jag känner mig hängig sedan i går. Vad säger klockan?", 72)
+
+
+def h2_tsh(s: Sim) -> dict[str, Any]:
+    s.standard()
+    s.standardprover(dagar_sedan=300)
+    d = s.datum(15)
+    for analyt, v, enh, lo, hi, fl in (("TSH", 0.05, "mIE/L", 0.4, 4.0, "L"), ("T4, fritt", 31, "pmol/L", 12, 22, "H"),
+                                       ("Hb", 146, "g/L", 134, 170, None)):
+        lb = {"date": d, "analyt": analyt, "varde": v, "enhet": enh, "lag": lo, "hog": hi}
+        if fl:
+            lb["flagga"] = fl
+        s.labb.append(lb)
+    s.hr_add[s.span(s.ts(10, 0), s.nu + 60)] += 14  # de senaste tio dagarna
+    return _fraga("Varför har jag hjärtklappning och svettas fast jag sitter still?", 168)
+
+
+def h2_spel_ok(s: Sim) -> dict[str, Any]:
+    s.standard(lagg=-30, upp=480, kvall="spel", kvall_tid=(18 * 60, 23 * 60))
+    s.standardprover()
+    return _fraga("Spelar jag för mycket? Märks det på sömnen?", 168)
+
+
+HOLDOUT2: list[Scenario] = [
+    Scenario("h2_morgonlopning", "Holdout 2: hög puls under morgonlöpning", "12:00", h2_morgonlopning, Facit(
+        "ingen", ("ingen", "bevaka"),
+        [("kopplar till löppasset", r"löp|träning|pass")],
+        [("larmar", r"kontakta vården (nu|omedelbart|direkt)|ring 112")],
+        "Pulsen 170-180 kom under ett registrerat löppass 07:50-08:25 med cirka 168 steg/min. Rätt: träningspuls, ingen oro.")),
+    Scenario("h2_snarkning", "Holdout 2: snarkning och syrefall", "13:00", h2_snarkning, Facit(
+        "ta_upp_med_varden", ("ta_upp_med_varden",),
+        [("syrefall", r"syre|spo2|mättnad"), ("flera nätter", r"nätter|varje natt|återkommande|upprepade|mönster"),
+         ("utredning", r"sömnapn|andningsuppeh|utredning|sömnregistrering")],
+        [("lugnar", r"inget att oroa")],
+        "Varje natt senaste veckan syrefall på 5-8 procentenheter var 5-9:e minut (cirka 8 per timme), plus sambons uppgift om "
+        "andningsuppehåll. Rätt: ta upp med vården för sömnutredning, inte akut.")),
+    Scenario("h2_feber", "Holdout 2: tecken på feber", "10:00", h2_feber, Facit(
+        "bevaka", ("bevaka", "ta_upp_med_varden"),
+        [("temperatur upp", r"temp"), ("puls upp", r"puls"), ("vila / infektion", r"vila|infektion|sjuk|feber|förkyl")],
+        [("akut", r"ring 112"), ("träna", r"(kör|gör) (ett )?(hårt|intervall)")],
+        "Två nätter: hudtemperatur +0,9 och +1,2 grader, nattpuls +10-13, andning +2,5-3, HRV halverad, lite rörelse. "
+        "Rätt: tecken på infektion/feber, vila, bevaka, kontakta vården vid andnöd eller hög feber.")),
+    Scenario("h2_tsh", "Holdout 2: lågt TSH och hög vilopuls", "15:00", h2_tsh, Facit(
+        "ta_upp_med_varden", ("ta_upp_med_varden",),
+        [("TSH", r"tsh|sköldkörtel|t4"), ("vilopuls", r"puls")],
+        [("akut", r"ring 112")],
+        "TSH 0,05 (under referens) och fritt T4 31 (över) för 15 dagar sedan, pulsen cirka 14 slag högre dygnet runt de senaste "
+        "tio dagarna. Rätt: provsvaren tyder på överfunktion i sköldkörteln, ta upp med vården.")),
+    Scenario("h2_spel_ok", "Holdout 2: spel på kvällen men bra sömn", "14:00", h2_spel_ok, Facit(
+        "ingen", ("ingen",),
+        [("spelminuter", r"spel"), ("sömnen räcker", r"sömn")],
+        [("vårdkontakt", r"kontakta vården|boka tid")],
+        "Spelar 18-23 varje kväll men somnar cirka 23:30 och sover cirka 8 timmar; HRV och nattpuls normala. Rätt: sömnen "
+        "påverkas inte märkbart, ingen oro.")),
+]
+SCENARIO.update({s.id: s for s in HOLDOUT2})

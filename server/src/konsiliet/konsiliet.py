@@ -815,6 +815,11 @@ def _worker() -> None:
                 log.exception("kunde inte spara det avbrutna mötet")
         finally:
             llm.kontext.consult_id = None
+            try:
+                for namn in llm.lasta_ur_om_for_stor():
+                    log.info("laddade ur %s: minnet hade vuxit över %.0f GiB", namn, llm.MAX_MINNE_GIB)
+            except Exception:
+                pass
 
 
 def start_async(trigger: dict[str, Any]) -> str:

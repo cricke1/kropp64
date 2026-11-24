@@ -234,5 +234,50 @@
   },
   "fran_vakt": false,
   "nu": 1795509000
+ },
+ "h2_morgonlopning": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Varför låg min puls på nästan 180 i morse?",
+   "hours": 12
+  },
+  "fran_vakt": false,
+  "nu": 1795518000
+ },
+ "h2_snarkning": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Min sambo säger att jag snarkar och slutar andas ibland. Syns något i datan?",
+   "hours": 168
+  },
+  "fran_vakt": false,
+  "nu": 1795521600
+ },
+ "h2_feber": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Jag känner mig hängig sedan i går. Vad säger klockan?",
+   "hours": 72
+  },
+  "fran_vakt": false,
+  "nu": 1795510800
+ },
+ "h2_tsh": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Varför har jag hjärtklappning och svettas fast jag sitter still?",
+   "hours": 168
+  },
+  "fran_vakt": false,
+  "nu": 1795528800
+ },
+ "h2_spel_ok": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Spelar jag för mycket? Märks det på sömnen?",
+   "hours": 168
+  },
+  "fran_vakt": false,
+  "nu": 1795525200
  }
 }

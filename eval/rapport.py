@@ -7,7 +7,7 @@ from pathlib import Path
 
 HIT = Path(__file__).resolve().parent
 sys.path.insert(0, str(HIT))
-from scenarier import HOLDOUT, SCENARIER  # noqa: E402
+from scenarier import HOLDOUT, HOLDOUT2, SCENARIER  # noqa: E402
 
 
 def main() -> None:
@@ -40,7 +40,7 @@ def main() -> None:
     rad += ["", "## Per scenario (brådska, täckning)", "",
             "| Scenario | Facit | " + " | ".join(d["variant"] for d in data) + " |",
             "|---|---|" + "---|" * len(data)]
-    for sc in SCENARIER + HOLDOUT:
+    for sc in SCENARIER + HOLDOUT + HOLDOUT2:
         celler = []
         for d in data:
             r = next((x for x in d["rader"] if x["scenario"] == sc.id), None)
