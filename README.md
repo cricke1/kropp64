@@ -1,37 +1,62 @@
-# Konsiliet
+# Kropp64
 
-Ett läkarteam av lokala AI-agenter som bevakar min hälsodata från klockan, på en Mac mini M4 med 16 GB.
+**Sensorpanelen för din viktigaste rigg: dig själv.**
 
-När något i datan avviker från min egen baslinje kallas teamet in: en ordförande, de specialister som behövs,
-en djävulens advokat och en granskare. De läser samma data och journal, och varje påstående de gör måste peka
-på en mätpunkt, en journalrad eller ett provsvar. Granskaren är vanlig kod, inte en språkmodell, och stryker
-allt som inte går att belägga. Det som blir kvar är ett underlag med frågor att ta med till vården, aldrig en
-diagnos. Allt körs på Mac minin. Ingen hälsodata skickas till någon molntjänst.
+Som AIDA64 och HWiNFO64, fast för kroppen, och med ett lokalt läkarteam av AI-agenter som läser sensorerna.
+Allt körs på en Mac mini M4 med 16 GB. Ingen hälsodata skickas till någon molntjänst.
 
-I webben syns mötet som ett pixelkontor där läkarna går till arkivet, slår upp kurvor och pratar med varandra.
+Pixel Watch, mobilen och Mac minin samlar puls, HRV, syremättnad, andning, hudtemperatur, sömn och steg. Mac minin
+loggar dessutom vilken sorts program jag har i fokus, så att jag kan se klockfrekvensen under ett kodpass eller en
+spelkväll bredvid vilopulsen. När något avviker från min egen baslinje startar en tråd: ett läkarteam av lokala
+agenter svarar, varje påstående måste peka på en mätpunkt, en journalrad eller ett provsvar, och en moderator i
+ren kod stryker allt som inte går att belägga. Det som blir kvar är ett underlag med frågor att ta med till
+vården, aldrig en diagnos.
+
+I webben syns tråden som ett pixelkontor där läkarna går till arkivet, slår upp kurvor och svarar varandra.
 
 ![Arkitektur](docs/arkitektur.svg)
 
 ## Status
 
-Ärligt läge den 24 november 2026:
+Läget den 24 november 2026:
 
-- Hela kedjan klocka, mobil, server, vakt och konsilium fungerar och är testad på emulatorer och syntetisk
+- Hela kedjan klocka, mobil, server, vakt och läkarteam fungerar och är testad på emulatorer och syntetisk
   testdata (se [RESAN.md](RESAN.md)). Den har ännu inte gått länge på min riktiga klocka, så det finns inga
   resultat från riktig data att visa än.
-- Utvärderingen av konsiliet pågår. Den första mätningen (3 scenarier) gav rätt brådska i 1 av 3 fall och
-  missade det akuta fallet. Senaste siffror: [eval/RESULTAT.md](eval/RESULTAT.md) och `eval/resultat/`.
+- Läkarteamet utvärderas mot 15 scenarier med syntetisk data och facit ([eval/RESULTAT.md](eval/RESULTAT.md)).
+  Från första körningen till nuvarande version gick godtagbar brådska från 40 % till 100 % och mediantiden från
+  300 till 117 sekunder. Brådskan styrs numera av ett regelverk, och fixarna gjordes mot samma 15 scenarier, så
+  siffran är optimistisk tills de fem holdout-scenarierna körts.
 - Alla skärmbilder och filmer i repot är märkta som demo, syntetisk testdata eller emulator.
+
+## Sensorpanelen
+
+Översikten är byggd som en hårdvarumonitor: en tät tabell med Aktuellt, Min, Max och Medel per sensor, grupperat
+som hårdvara.
+
+| Grupp | Sensorer |
+|---|---|
+| Hjärta (Pixel Watch) | Klockfrekvens (puls, BPM), Idle-klock (vilopuls, BPM), Timingmarginal (HRV, ms) |
+| Andning | Andningsfrekvens (/min), SpO2 (%) |
+| Kylning | Hudtemperatur (°C), Headroom (återhämtning, av 100) |
+| Last | Steg, Stresstest (minuter med puls över 100), Uptime vid datorn (min) |
+
+Skämten står i rubrikerna, enheterna står alltid bredvid siffrorna. Under tabellen finns tidslinjen med
+datortiden som band (kod, spel, chatt, webb), sömnen, nätterna, Headroom med öppen formel och POST-skärmen,
+morgonbriefen som idrottsläkaren skriver utifrån nattens siffror.
+
+**Uptime vid datorn** är den del jag själv tittar mest på: minuter per programkategori och medianpulsen under just
+de minuterna. Bara kategorin sparas, aldrig fönstertitlar eller innehåll.
 
 ## Varför lokalt
 
 Puls dygnet runt, sömn, journalanteckningar och provsvar från 1177 är bland det känsligaste som finns om en
 människa. Jag vill inte skicka det till en molnmodell för att få en sammanfattning. En Mac mini med 16 GB räcker
 för en 9B-modell om man är snål med minnet, och det är just begränsningen som gjort bygget intressant: allt i
-konsiliet är format efter att en modell som läser prompten i ungefär 75 tokens/s och skriver i 17 tokens/s ska
+läkarteamet är format efter att en modell som läser prompten i ungefär 75 tokens/s och skriver i 17 tokens/s ska
 hinna klart innan nästa larm.
 
-Molnet (Claude Code) användes bara för att bygga koden. Ingen hälsodata gick dit.
+Molnet (Claude Code) användes bara för att bygga koden, mot testdatabaser med syntetisk data.
 
 ## Varför agenter, och var det inte är agenter
 
@@ -44,48 +69,51 @@ Men det som måste vara rätt varje gång är inte en språkmodell:
 - **Vakten** är regler och statistik. Akuta larm (t.ex. puls över 140 i vila, SpO2 under 88 %, klockans
   fall-larm) går till mobilen på millisekunder utan att vänta på någon modell. Bara de reglerna kan leda till
   sms till en anhörig.
-- **Faktabladet** räknas fram i kod innan mötet: observerat mot baslinje, nätter, prover, med en referens per del.
-- **Granskaren** är deterministisk kod. Ingen modell kan prata sig förbi den.
+- **Faktabladet** räknas fram i kod innan tråden startar: observerat mot baslinje, nätter, prover, med en
+  referens per del.
+- **Moderatorn** (granskaren) är deterministisk kod. Ingen modell kan prata sig förbi den.
 - **Brådskan** styrs av regelverket. Teamet kan justera inom en ram men aldrig ge "kontakta vården nu" om inte
   en akut vaktregel slagit till.
 
-## Ett konsilium, steg för steg
+## En tråd, steg för steg
 
-Koden finns i [server/src/konsiliet/konsiliet.py](server/src/konsiliet/konsiliet.py).
+Koden finns i [server/src/konsiliet/konsiliet.py](server/src/konsiliet/konsiliet.py) (internt heter tråden
+fortfarande konsilium).
 
 1. **Utlösare.** Vakten hittar en avvikelse (robust z-poäng mot min egen baslinje för samma timme på dygnet,
-   28 dagar bakåt, med puls bara från vilominuter), eller så ställer jag en fråga.
+   28 dagar bakåt, med puls bara från vilominuter), eller så startar jag en tråd med en fråga.
 2. **Faktablad.** Räknas fram deterministiskt. Varje del får en referens (`F:puls`, `F:natter`, `F:prover` ...),
    och verktygsuppslag ger egna: `S:hr:<start>-<slut>` (serie), `B:` (baslinje), `J:` (journal), `L:` (provsvar),
    `N:` (natt).
-3. **Ordföranden** (allmänläkare) läser utlösaren och faktabladet och kallar in 2-4 av kardiolog, sömnläkare,
-   idrottsläkare, stressmedicin och klinisk kemist.
-4. **Specialisterna** lämnar varsin bedömning som strukturerad JSON (Ollama `format` med JSON-schema). Varje
-   påstående har en lista med källor, och schemat låser källorna till referenser som faktiskt finns i mötet.
-   De kan slå upp mer med verktyg: `hamta_serie`, `jamfor_baslinje`, `hamta_somn`, `sok_journal`, `hamta_labb`.
-5. **Granskaren** prövar varje påstående (se nedan). Det som stryks syns som en överstruken mening i kontoret.
-6. **Djävulens advokat** letar vardagliga och tekniska förklaringar, med källor. Specialisterna bemöter dem.
-7. **Ordföranden** skriver slutbedömningen. Den granskas igen, mening för mening, och brådskan sätts av
-   regelverket.
+3. **Trådstartaren** (allmänläkare) läser utlösaren och faktabladet och kallar in 2-4 av kardiolog, sömnläkare,
+   idrottsläkare, stressläkare och Labbet (klinisk kemist).
+4. **Specialisterna** svarar i tråden med strukturerad JSON (Ollama `format` med JSON-schema). Varje påstående
+   har en lista med källor, och schemat låser källorna till referenser som faktiskt finns i tråden. De kan slå
+   upp mer med verktyg: `hamta_serie`, `jamfor_baslinje`, `hamta_somn`, `sok_journal`, `hamta_labb`.
+5. **Moderatorn** prövar varje påstående (se nedan). Det som stryks syns som "Strukit av moderator" i kontoret.
+6. **Trollet** (djävulens advokat) letar vardagliga och tekniska förklaringar, med källor: "har du testat att
+   dra åt armbandet?". Specialisterna bemöter dem.
+7. **Trådstartaren** skriver lösningen. Den granskas igen, mening för mening, och brådskan sätts av regelverket.
+   I gränssnittet visas den som "Markerad som lösning".
 8. Allt sparas med transkript, bevis och tokenåtgång. Varje steg sänds som en händelse på en buss, och det är
    de händelserna som styr figurerna i kontoret.
 
-### Granskaren
+### Moderatorn
 
 `kontrollera()` i konsiliet.py stryker ett påstående om något av detta gäller:
 
-- det saknar källa, eller källan finns inte bland det mötet faktiskt hämtat
+- det saknar källa, eller källan finns inte bland det tråden faktiskt hämtat
 - en siffra i texten finns inte bland källans värden. Siffror med enhet jämförs mot rätt sorts värden (puls
   mot puls, procent SpO2 mot SpO2). Avrundning och enkla omräkningar som minuter till timmar godkänns. Klockslag,
   datum och perioder räknas inte som mätvärden.
 - ett tal kallas baslinje men är inget baslinjevärde i källan
 - en slutsats (t.ex. om rytm, infektion eller syresättning) saknar källa av rätt typ
 
-Ett verkligt exempel från bygget: en specialist skrev att baslinjen var 73,2 när källan sa 72,5. Granskaren
+Ett verkligt exempel från bygget: en specialist skrev att baslinjen var 73,2 när källan sa 72,5. Moderatorn
 strök det. Den var också för sträng i början och strök klockslag och omräkningar som 450 min = 7,5 h. Båda
 fallen finns nu som enhetstester i [server/tests/test_granskare.py](server/tests/test_granskare.py).
 
-Granskaren kontrollerar att det som sägs finns i datan. Den kan inte avgöra om en medicinsk tolkning är klok.
+Moderatorn kontrollerar att det som sägs finns i datan. Den kan inte avgöra om en medicinsk tolkning är klok.
 Det är därför slutsatser kräver källa av rätt typ och brådskan inte bestäms av modellen.
 
 ## Uppmätt
@@ -98,16 +126,21 @@ Bara siffror som finns i en fil i repot.
 | qwen3.5:9b, promptläsning | 75,4 tokens/s | samma |
 | qwen3.5:9b, laddningstid / minne i benchen | 20,5 s / 7,21 GB | samma |
 | Rätt verktyg valt på 10 testfrågor | 9 av 10 (rätt argument 8 av 10), median 1,38 s | samma |
-| Första riktiga konsiliet | 278 s, ingen bedömning, 47 656 prompttokens | [RESAN.md](RESAN.md) |
+| Första riktiga tråden | 278 s, ingen bedömning, 47 656 prompttokens | [RESAN.md](RESAN.md) |
 | Minne för modellen med 16k kontext och parallella förfrågningar | 14,7 GB av 16, datorn swappade | RESAN.md |
-| Efter 8k kontext, en förfrågan åt gången, KV-cache q8_0, flash attention | 9,1 GB, ett konsilium 250 s i stället för 563 s | RESAN.md |
-| Första utvärderingen, 3 scenarier | rätt brådska 1 av 3, median 228 s, i snitt 19 960 prompt- och 3 482 ut-tokens | [eval/resultat/2026-11-24-baslinje.json](eval/resultat/2026-11-24-baslinje.json) |
+| Efter 8k kontext, en förfrågan åt gången, KV-cache q8_0, flash attention | 9,1 GB, en tråd 250 s i stället för 563 s | RESAN.md |
+| Utvärdering, 15 scenarier, första körningen | godtagbar brådska 40 %, median 300 s | [eval/RESULTAT.md](eval/RESULTAT.md) |
+| Utvärdering, 15 scenarier, nuvarande version (v3, regelram) | godtagbar brådska 100 %, exakt 87 %, median 117 s | eval/RESULTAT.md |
 | Nätavbrott i kedjan (emulatorer) | 360 punkter köade i mobilen, alla 1 215 på servern 2 s efter att nätet kom tillbaka, inga dubbletter | RESAN.md |
 | Sms-frist efter akut larm, med exakta alarm | sms skickat 39 ms efter fristen (tidigare 70 s för sent) | RESAN.md |
 
-Tokenåtgången, både Claude Code under bygget och de lokala modellerna, räknas fram ur loggarna med
-`python3 tools/tokenredovisning.py`. Skriptet redovisar input, output, cache-skrivning och cache-läsning var för
-sig och beskriver exakt hur avgränsningen görs.
+### Tokens
+
+`python3 tools/tokenredovisning.py` räknar fram tokenåtgången ur Claude Codes loggar och de lokala modellernas
+räknare. Molnet redovisas på två sätt: med cache (input + cache-skrivning + cache-läsning + output, som
+tävlingens egen inlämningsprompt räknar, eftersom hela samtalet skickas som indata vid varje svar) och utan cache
+(bara input + output). Skriptet skriver ut båda, delar upp bygget, idéfasen och den oberoende granskningen, och
+beskriver exakt hur avgränsningen görs. Lokala tokens (Ollama på Mac minin) redovisas separat.
 
 ## Kör själv
 
@@ -134,7 +167,7 @@ cd server && uv sync && uv run uvicorn konsiliet.api:app --host 127.0.0.1 --port
 (`#/kontoret?demo=1`). För att se resten med syntetisk data, starta en **separat** testserver med egen databas
 och fyll den med `web/dev/ingest.mjs` (instruktioner överst i filen). Kör aldrig testskriptet mot den riktiga databasen.
 
-Som tjänst som startar med datorn: [drift/se.konsiliet.server.plist](drift/se.konsiliet.server.plist). Klock-
+Som tjänster som startar med datorn: [drift/](drift/) (server, Ollama-inställningar, Cloudflare Tunnel). Klock-
 och mobilappen byggs och installeras enligt [docs/MOBIL.md](docs/MOBIL.md).
 
 Tester: `cd server && uv run pytest`.
@@ -144,18 +177,14 @@ Tester: `cd server && uv run pytest`.
 `drift/publik-demo.sh` startar en helt separat instans på 127.0.0.1:8795 med en engångsdatabas som fylls med
 7 dygns syntetisk data, och en webb som är låst i demoläge med en banner på varje sida. Där är språkmodellen,
 vakten, rutinerna, datorkopplingen, 1177-hämtningen och WebSocket avstängda, och utifrån går bara läsande
-anrop. Databasen raderas när skriptet avslutas. Skriptet startar ingen tunnel; det gör man själv om man vill
-visa demon utåt.
+anrop. Databasen raderas när skriptet avslutas. Skriptet startar ingen tunnel.
 
 ## Integritet
 
 - All data ligger i en SQLite-fil på Mac minin. Språkmodellerna körs i Ollama på samma dator.
-- Klockan pratar bara med mobilen (Bluetooth). Mobilen pratar bara med Mac minin, över Tailscale.
-- Servern lyssnar på alla gränssnitt för att Tailscale ska nå den, men svarar bara localhost och Tailscale-nätet.
-  Allt annat får 403. Host-headern kontrolleras (skydd mot DNS rebinding), WebSocket kontrollerar Origin, och
-  mobilen skickar en enhetstoken.
-- Åtkomst utifrån via Cloudflare Tunnel med Cloudflare Access är planerad men inte uppsatt. Servern har stöd
-  för tunneln (anrop via tunneln kräver token), men i dag går allt över Tailscale.
+- Klockan pratar bara med mobilen (Bluetooth). Mobilen pratar med Mac minin över Tailscale.
+- Servern svarar bara localhost, Tailscale-nätet och Cloudflare Tunnel. Allt annat får 403. Anrop via tunneln
+  kräver enhetstoken, Host-headern kontrolleras (skydd mot DNS rebinding) och WebSocket kontrollerar Origin.
 - 1177 hämtas med mitt eget BankID i en lokal webbläsare. Journalen sparas bara på Mac minin.
 - Datorkopplingen sparar bara kategorin på programmet i fokus (kod, spel, chatt, webb, annat), aldrig
   fönstertitlar eller innehåll.
@@ -166,33 +195,41 @@ visa demon utåt.
 
 - Det här är inte en medicinteknisk produkt och ställer inga diagnoser. Den kan missa saker och den kan larma i
   onödan. Vid akuta besvär: ring 112.
-- Utvärderingen är liten än så länge och visar att konsiliet kan sätta fel brådska. Det är skälet till att
-  akuta larm aldrig går via språkmodellen.
+- Utvärderingen bygger på syntetiska scenarier, och fixarna är gjorda mot samma scenarier. Akuta larm går därför
+  aldrig via språkmodellen.
 - HRV, SpO2, andningsfrekvens och hudtemperatur finns inte passivt i Wear OS Health Services. De kommer via
   Health Connect när Fitbit-appen synkar, ofta timmar senare. Vakten utvärderar därför på datans egen tid, och
   något som upptäcks i efterhand blir aldrig akut.
-- En 9B-modell på 16 GB är långsam: ett konsilium tar runt fyra minuter.
+- En 9B-modell på 16 GB är långsam: en tråd tar ungefär två minuter.
 - Baslinjen behöver några veckors data innan avvikelser betyder något.
 - Bluetooth-hoppet mellan klocka och mobil är testat på riktig hårdvara först när appen körs på min Pixel Watch;
   på emulatorerna ersattes det av en testbrygga (se RESAN.md).
+
+## Nästa steg (plan, inte mätt)
+
+Med mer minne, till exempel 128 GB, skulle tre saker ändras: en större modell för specialisterna, flera
+specialister som svarar parallellt i stället för en i taget, och därmed en tråd på sekunder i stället för
+minuter. Inget av det är provat.
 
 ## Delar
 
 | Mapp | Vad |
 |---|---|
-| [server/](server/) | FastAPI, SQLite, vakt, konsiliet, granskare, 1177-hämtare, besöksunderlag som PDF |
-| [web/](web/) | Preact och Vite. Pixelkontoret ritat i kod, översikt, konsilier, fråga, systempanel |
+| [server/](server/) | FastAPI, SQLite, vakt, läkarteam, moderator, 1177-hämtare, besöksunderlag som PDF |
+| [web/](web/) | Preact och Vite. Sensorpanel, pixelkontoret ritat i kod, trådar, systempanel |
 | [wear/](wear/) | Wear OS-appen för Pixel Watch |
 | [android/](android/) | Mobilappen: brygga, Health Connect, larm, sms |
 | [bench/](bench/) | Mätningar av lokala modeller |
-| [eval/](eval/) | Utvärdering av konsiliet mot scenarier med facit |
+| [eval/](eval/) | Utvärdering av läkarteamet mot scenarier med facit |
 | [drift/](drift/) | launchd-tjänster och den publika demon |
 | [tools/](tools/) | Tokenredovisning och bildmärkning |
-| [docs/](docs/) | Arkitektur, mobil och klocka, API-önskemål, märkta skärmbilder, bidragsbilder |
+| [docs/](docs/) | Arkitektur, stilguide, mobil och klocka, märkta skärmbilder, bidragsbilder |
 
 ## Hur det byggdes
 
-Koden är skriven av Claude Code-agenter (Claude Opus 5.5) som jag styrt: jag bestämde vad som skulle byggas,
-testade och underkände, agenterna skrev koden och körde testerna, flera parallellt. Allt som gick fel på vägen
-står i [RESAN.md](RESAN.md), inklusive en första version som såg imponerande ut men byggde på påhittade siffror
-och därför slängdes.
+Koden är skriven av Claude Code-agenter (Claude Opus 5.5), flera parallellt. Min roll var produktägare och
+grindvakt: jag bestämde vad som skulle byggas, underkände ett dussintal idéer innan den här fick fortsätta,
+krävde att lösningen skulle vara agentisk från grunden, styrde om när agenterna fyllde ut med demosiffror,
+krävde att allt ska gå att köra på riktig data, och valde namnet. Allt som gick fel på vägen står i
+[RESAN.md](RESAN.md), inklusive en första version, en hälsoagent på påhittad data, som såg imponerande ut men
+slängdes.
