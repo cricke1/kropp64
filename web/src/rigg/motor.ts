@@ -6,10 +6,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
-import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js'
-import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
+import { Kontur } from './kontur'
 import type { Kalla, Komp, RiggData } from './data'
 import { Overlay } from './overlay'
 
@@ -54,6 +51,8 @@ class Fjader {
   satt(x: number) { this.x = x; this.v = 0 }
 }
 
+// ?kvalitet=last stänger av den automatiska sänkningen (för mätningar)
+const LAST_KVALITET = typeof location !== 'undefined' && /kvalitet=last/.test(location.hash + location.search)
 const ARBETE = typeof window !== 'undefined' ? (window as any) : {}
 
 export class Motor {
@@ -62,8 +61,7 @@ export class Motor {
   private scene = new THREE.Scene()
   private camera = new THREE.PerspectiveCamera(30, 1, 0.05, 20)
   private controls: OrbitControls
-  private composer: EffectComposer
-  private outline: OutlinePass
+  private kontur = new Kontur()
   private overlay: Overlay
   private klocka = 0
   private raf = 0
@@ -72,7 +70,7 @@ export class Motor {
   private reducera: boolean
   private mobil: boolean
   private dprTak: number
-  private kvalitet = 2
+  private kvalitet = 3
   private ro: ResizeObserver
   private io: IntersectionObserver
   private mq: MediaQueryList
@@ -119,9 +117,9 @@ export class Motor {
     this.reducera = this.mq.matches
     this.mq.addEventListener('change', this.paRorelse)
     this.mobil = matchMedia('(pointer: coarse)').matches || Math.min(screen.width, screen.height) < 700
-    this.dprTak = this.mobil ? 1.5 : 2
+    this.dprTak = this.mobil ? 1.5 : 1.75
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: !!opt.capture })
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: !!opt.capture })
     this.canvas = this.renderer.domElement
     this.canvas.className = 'rigg-canvas'
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping
@@ -129,6 +127,8 @@ export class Motor {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = THREE.PCFShadowMap
+    // skuggkartan ritas en gång per bild, inte en gång per renderingspass (konturen ritar scenen flera gånger)
+    this.renderer.shadowMap.autoUpdate = false
     this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, this.dprTak))
     host.appendChild(this.canvas)
 
@@ -160,18 +160,6 @@ export class Motor {
       this.canvas.addEventListener('pointerleave', () => { this.controls.enableZoom = false })
     }
 
-    const samples = this.mobil ? 2 : 4
-    const rt = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples })
-    this.composer = new EffectComposer(this.renderer, rt)
-    this.composer.addPass(new RenderPass(this.scene, this.camera))
-    this.outline = new OutlinePass(new THREE.Vector2(4, 4), this.scene, this.camera)
-    this.outline.edgeStrength = 5
-    this.outline.edgeGlow = 0
-    this.outline.edgeThickness = 1
-    this.outline.pulsePeriod = 0
-    this.outline.enabled = false
-    this.composer.addPass(this.outline)
-    this.composer.addPass(new OutputPass())
 
     this.overlay = new Overlay(host)
     this.overlay.onKvittera = () => this.kalla.kvitteraAkut()
@@ -212,6 +200,19 @@ export class Motor {
       const nya = mats.map((mat) => this.material(mat as THREE.MeshStandardMaterial, nn))
       m.material = Array.isArray(m.material) ? nya : nya[0]
     })
+    // Djupförpass för delar som ligger i många lager (30 kylfenor bakom locket, revbenen, fläktbladen):
+    // först bara djup, sedan skuggas varje pixel en gång. Utan det föll bildtakten till 15-20 fps i närbild.
+    const djup = new THREE.MeshBasicMaterial({ colorWrite: false })
+    const lagerdelar: THREE.Mesh[] = []
+    for (const namn of [NOD.hjarta, NOD.kylflans, NOD.rotorV, NOD.rotorH]) {
+      this.nod[namn]?.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh && !lagerdelar.includes(m)) lagerdelar.push(m) })
+    }
+    for (const m of lagerdelar) {
+      const f = new THREE.Mesh(m.geometry, djup)
+      f.renderOrder = -1
+      f.name = m.name + '_djup'
+      m.add(f)
+    }
     this.scene.add(rot)
     rot.updateMatrixWorld(true)
     for (const k of Object.keys(NOD) as (keyof typeof NOD)[]) {
@@ -227,6 +228,15 @@ export class Motor {
     this.overlay.ankare = this.ankare()
     this.storlek()
     this.hemNu()
+    // kompilera konturens shaders redan nu, annars hackar första tråden
+    const h0 = this.nod[NOD.hjarta]
+    if (h0) {
+      this.kontur.valj([h0], FARG.hjarta)
+      this.renderer.shadowMap.needsUpdate = true
+      this.renderer.render(this.scene, this.camera)
+      this.kontur.rita(this.renderer, this.scene, this.camera)
+      this.kontur.valj([], FARG.hjarta)
+    }
     this.planera()
     this.renderaEn(0)
     this.opt.onKlar?.()
@@ -238,7 +248,8 @@ export class Motor {
     const n = mat.name || ''
     if (n.startsWith('glas')) {
       // Härdat glas: bara reflexerna läggs på (additivt), så att det syns som glas utan dyr transmission.
-      return new THREE.MeshStandardMaterial({ name: 'glas', color: 0x000000, metalness: 0, roughness: 0.04, envMapIntensity: 0.55, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false })
+      // MeshBasic med miljökarta: ingen ljusberäkning, så glaset kostar nästan ingenting att rita över hela bilden.
+      return new THREE.MeshBasicMaterial({ name: 'glas', color: 0x000000, envMap: this.scene.environment, combine: THREE.AddOperation, reflectivity: 0.07, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false })
     }
     if (n.startsWith('psu_skarm')) {
       const canvas = document.createElement('canvas')
@@ -266,7 +277,7 @@ export class Motor {
     const u = {
       uVarme: { value: 0 }, uVarmeStyrka: { value: styrka },
       uVarmeCentrum: { value: new THREE.Vector3(0.024, 0.30, -0.06) },
-      uKall: { value: new THREE.Color(0.66, 0.80, 1.0) }, uVarm: { value: new THREE.Color(1.12, 0.70, 0.36) },
+      uKall: { value: new THREE.Color(0.66, 0.80, 1.0) }, uVarm: { value: new THREE.Color(1.06, 0.64, 0.30) },
       uGlod: { value: FARG.varm.clone() },
     }
     mat.onBeforeCompile = (sh) => {
@@ -282,7 +293,7 @@ export class Motor {
           vec3 vTon = mix(uKall, uVarm, vLok);
           diffuseColor.rgb *= mix(vec3(1.0), vTon, uVarmeStyrka);`)
         .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-          totalEmissiveRadiance += uGlod * uVarmeStyrka * 0.22 * smoothstep(0.35, 1.0, vLok) * vNar;`)
+          totalEmissiveRadiance += uGlod * uVarmeStyrka * 0.32 * smoothstep(0.35, 1.0, vLok) * vNar;`)
     }
     mat.customProgramCacheKey = () => 'varme'
     this.varme.push({ mat, u })
@@ -295,7 +306,7 @@ export class Motor {
     key.position.set(-1.1, 1.6, 1.4)
     key.target.position.set(0, 0.3, 0)
     key.castShadow = true
-    const s = this.mobil ? 1024 : 2048
+    const s = this.mobil ? 512 : 1024
     key.shadow.mapSize.set(s, s)
     const c = key.shadow.camera as THREE.OrthographicCamera
     c.left = -0.5; c.right = 0.5; c.top = 0.55; c.bottom = -0.45; c.near = 0.5; c.far = 4.5
@@ -395,15 +406,16 @@ export class Motor {
     this.fps = this.bilder.length
     ARBETE.__rigg.fps = this.fps
     // anpassa kvaliteten om det går trögt de första sekunderna
-    // ett värde per sekund från sekund 4 (efter shaderkompilering); sänk om medianen av tre ligger under 40
+    // ett värde per sekund från sekund 4 (efter shaderkompilering); sänk ett steg om medianen av tre ligger under 50
     if (this.klocka > 4 && this.klocka < 16 && Math.floor(this.klocka) !== this.senastProv) {
       this.senastProv = Math.floor(this.klocka)
       this.prov.push(this.fps)
     }
     const med = this.prov.length >= 3 ? [...this.prov.slice(-3)].sort((a, b) => a - b)[1] : 99
-    if (med < 40 && this.kvalitet > 0) {
+    if (med < 50 && this.kvalitet > 0 && !LAST_KVALITET) {
       this.prov = []
       this.kvalitet--
+      if (this.kvalitet === 2) this.dprTak = Math.min(this.dprTak, 1.25)
       if (this.kvalitet === 1) this.dprTak = 1
       if (this.kvalitet === 0) { this.renderer.shadowMap.enabled = false; this.nyckel.castShadow = false; this.dprTak = 0.85 }
       this.storlek()
@@ -412,6 +424,7 @@ export class Motor {
     }
   }
   private senastProv = -1
+  private bildNr = 0
   private prov: number[] = []
 
   private renderaEn(dt: number) {
@@ -421,7 +434,11 @@ export class Motor {
     this.animera(d, dt)
     this.kamera(d, dt)
     this.controls.update(dt)
-    this.composer.render(dt)
+    this.bildNr++
+    // skuggorna rör sig knappt (hjärtat växer 3 %, fläktbladen snurrar): uppdatera varannan/var tredje bild
+    this.renderer.shadowMap.needsUpdate = this.bildNr % (this.mobil ? 3 : 2) === 0 || dt === 0
+    this.renderer.render(this.scene, this.camera)
+    this.kontur.rita(this.renderer, this.scene, this.camera)
     this.overlay.uppdatera(this.camera, d, this.kalla.demo, this.fps)
   }
 
@@ -509,9 +526,7 @@ export class Motor {
     const dpr = Math.min(devicePixelRatio || 1, this.dprTak)
     this.renderer.setPixelRatio(dpr)
     this.renderer.setSize(w, h, false)
-    this.composer.setPixelRatio(dpr)
-    this.composer.setSize(w, h)
-    this.outline.setSize(w * dpr, h * dpr)
+    this.kontur.storlek(w, h, dpr)
     this.camera.aspect = w / h
     this.camera.updateProjectionMatrix()
     // avstånd så att hela riggen (0,85 m hög, 0,6 m bred) får plats
@@ -539,14 +554,9 @@ export class Motor {
     // konturen
     if (fokus) {
       const k = this.komponent(fokus)
-      this.outline.selectedObjects = k.obj.filter(Boolean)
-      this.outline.visibleEdgeColor.set(farg)
-      this.outline.hiddenEdgeColor.set(farg)
-      this.outline.edgeStrength = d.akut ? 6 : 5
-      this.outline.enabled = true
+      this.kontur.valj(k.obj, farg)
     } else {
-      this.outline.enabled = false
-      this.outline.selectedObjects = []
+      this.kontur.valj([], farg)
     }
     if (this.interaktion) return
     // målet: hem med långsam pendling, eller nära komponenten under en tråd (vid akut: hemvyn, stilla)
@@ -608,7 +618,7 @@ export class Motor {
         x.dispose()
       }
     })
-    this.composer.dispose()
+    this.kontur.dispose()
     this.renderer.dispose()
     this.canvas.remove()
     if (ARBETE.__rigg?.motor === this) delete ARBETE.__rigg
