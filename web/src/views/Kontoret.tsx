@@ -4,6 +4,7 @@ import { api, type Consult, type Ev } from '../api'
 import { bindUnits, cites, dateTime, hms, LEVELS, verdictParts } from '../format'
 import { toolLabel, type Entry } from '../office/director'
 import { demoEvents } from '../office/demo'
+import { rost } from '../office/rost'
 import { director, go, useAsync, useDirector } from '../store'
 
 export function triggerText(t: any): { title: string; detail: string } {
@@ -86,6 +87,7 @@ export function Kontoret({ query }: { query: URLSearchParams }) {
           {s.mode === 'demo' && <span><span class="dot demo" /> Demo: <b>{trig.title}</b></span>}
         </div>
         <span style="flex:1" />
+        <LjudKnapp />
         {!__PUBLIK_DEMO__ && <div class="k-modes">
           <div class="seg" role="group" aria-label="Läge">
             <button aria-pressed={s.mode === 'live'} onClick={() => go('kontoret')}>Live</button>
@@ -120,6 +122,25 @@ export function Kontoret({ query }: { query: URLSearchParams }) {
     </div>
   )
 }
+
+/** Rösterna är av tills man slår på dem. Valet sparas i webbläsaren. */
+function LjudKnapp() {
+  const [on, setOn] = useState(rost.on)
+  useEffect(() => rost.subscribe(() => setOn(rost.on)), [])
+  return (
+    <button class="btn small k-ljud" aria-pressed={on} onClick={() => rost.set(!on)}
+      title={on ? 'Stäng av rösterna' : 'Läkarna läser sina inlägg högt med lokala röster'}>
+      <SpeakerIcon on={on} /><span>{on ? 'Ljud på' : 'Ljud av'}</span>
+    </button>
+  )
+}
+
+const SpeakerIcon = ({ on }: { on: boolean }) => (
+  <svg width="13" height="12" viewBox="0 0 13 12" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3">
+    <path d="M1.5 4.2h2.2L6.8 1.6v8.8L3.7 7.8H1.5z" fill="currentColor" stroke="none" />
+    {on ? <><path d="M8.6 4a2.6 2.6 0 0 1 0 4" /><path d="M10.2 2.4a4.9 4.9 0 0 1 0 7.2" /></> : <path d="M8.8 4.2l3.2 3.6M12 4.2L8.8 7.8" />}
+  </svg>
+)
 
 function ReplayBar() {
   const d = useDirector()

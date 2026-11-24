@@ -5,6 +5,7 @@ import { agentInfo } from '../agents'
 import type { Ev } from '../api'
 import { verdictParts, LEVELS, metricMeta } from '../format'
 import { Scene, esc, type ScreenData } from './scene'
+import { rost } from './rost'
 
 export type EntryKind = 'start' | 'say' | 'tool' | 'handoff' | 'strike' | 'verdict' | 'think' | 'move'
 export interface Entry {
@@ -128,6 +129,8 @@ export class Director {
 
   setSpeed(s: number) {
     this.state.speed = s
+    if (s > 2) rost.stop()
+    else rost.setRate(s)
     if (this.state.mode !== 'live') this.scene.speed = s
     this.emit()
   }
@@ -135,6 +138,7 @@ export class Director {
   togglePlay() {
     this.state.playing = !this.state.playing
     this.scene.paused = !this.state.playing
+    if (this.state.playing) rost.resume(); else rost.pause()
     if (this.state.playing && this.state.finished) this.restart()
     this.emit()
   }
@@ -156,6 +160,7 @@ export class Director {
   }
 
   private hardReset() {
+    rost.stop()
     this.scene.reset()
     this.entries = []
     this.n = 0
@@ -178,6 +183,7 @@ export class Director {
     while (this.queue.length) {
       if (gen !== this.scene.gen) return
       const ev = this.queue.shift()!
+      this.prefetchVoice()
       this.state.backlog = this.queue.length
       if (this.state.mode === 'live') this.scene.speed = 1 + Math.min(3, this.queue.length * 0.35)
       // i uppspelning: håll ungefär de verkliga pauserna, men aldrig längre än 2,5 s
@@ -213,6 +219,7 @@ export class Director {
   async apply(ev: Ev, instant: boolean): Promise<void> {
     const p = ev.payload ?? {}
     const s = this.scene
+    const gen0 = s.gen
     const id: string | undefined = p.agent
     switch (ev.kind) {
       case 'consult.start': {
@@ -279,7 +286,10 @@ export class Director {
         const text = String(p.text ?? '')
         this.add({ kind: 'say', ts: ev.ts, agent: id, to: p.to, text, cites: p.cites })
         if (instant) { await s.say(id, text, p.cites, p.to, true); return }
+        const voice = this.voice(id, text)
         await s.say(id, text, p.cites, p.to)
+        // nästa replik väntar tills rösten är klar, så att två läkare aldrig pratar i munnen på varandra
+        if (voice && s.gen === gen0) await voice
         return
       }
       case 'agent.handoff': {
@@ -327,6 +337,26 @@ export class Director {
         return
       }
     }
+  }
+
+  /** Rösten till en replik, eller null om ljudet är av eller uppspelningen ligger efter. */
+  private voice(id: string, text: string): Promise<void> | null {
+    if (!rost.on) return null
+    const live = this.state.mode === 'live'
+    if (live && this.queue.length >= 3) return null   // live och efter: hoppa över hellre än att släpa
+    if (!live && this.state.speed > 2) return null
+    const a = this.scene.ensure(id)
+    return rost.speak(id, text, {
+      demo: this.state.mode === 'demo',
+      rate: live ? 1 : this.state.speed,
+      onFrame: () => { a.mouthUntil = this.scene.t + 0.15 },
+    })
+  }
+
+  private prefetchVoice() {
+    if (!rost.on) return
+    const next = this.queue.find((e) => e.kind === 'agent.say')
+    if (next?.payload?.agent && next.payload.text) rost.prefetch(String(next.payload.agent), String(next.payload.text), this.state.mode === 'demo')
   }
 
   private async endConsult(quick: boolean) {
