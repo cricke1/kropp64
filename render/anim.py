@@ -20,7 +20,7 @@ F1 = int(a[5]) if len(a) > 5 else 240
 STEP = int(a[6]) if len(a) > 6 else 1
 
 sc = reset()
-setup_render(sc, W, H, samples=SAMPLES, noise=0.012, exposure=-3.2)
+setup_render(sc, W, H, samples=SAMPLES, noise=0.02, exposure=-3.2)
 sc.render.use_persistent_data = True
 sc.render.fps = 30
 sc.frame_start, sc.frame_end = F0, F1
@@ -39,7 +39,7 @@ def L(x, y, z):
 keys = [
     (-25, L(0.075, -0.185, 0.026), led, 95),
     (95, L(0.20, -0.20, 0.07), L(0.02, -0.03, 0.022), 80),
-    (240, Vector((0.20, -0.70, 0.30)), Vector((-0.01, -0.035, 0.02)), 62),
+    (240, Vector((0.14, -0.58, 0.30)), Vector((-0.005, -0.015, 0.012)), 60),
 ]
 cd = bpy.data.cameras.new('anim')
 cam = bpy.data.objects.new('anim', cd)
@@ -57,7 +57,7 @@ cd.dof.aperture_fstop = 2.8
 cd.dof.aperture_blades = 9
 cd.dof.focus_object = foc
 # fokus: lampan i borjan, minins front i slutet (som hjaltebilden)
-foc_keys = [(1, led), (95, L(0.03, -0.0635, 0.025)), (240, Vector((0.09, -0.03, 0.026)))]
+foc_keys = [(1, led), (95, L(0.03, -0.0635, 0.025)), (165, L(0.0, -0.0635, 0.025)), (240, Vector((-0.01, -0.025, 0.01)))]
 for f, pos, t, lens in keys:
     cam.location = pos
     cam.keyframe_insert('location', frame=f)
@@ -65,6 +65,9 @@ for f, pos, t, lens in keys:
     tgt.keyframe_insert('location', frame=f)
     cd.lens = lens
     cd.keyframe_insert('lens', frame=f)
+for f, fs in ((1, 2.8), (95, 3.5), (240, 5.6)):
+    cd.dof.aperture_fstop = fs
+    cd.dof.keyframe_insert('aperture_fstop', frame=f)
 for f, p in foc_keys:
     foc.location = p
     foc.keyframe_insert('location', frame=f)

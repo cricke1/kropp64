@@ -218,7 +218,9 @@ brytningsindex 1,52, så urtavlan förstorades och förvrängdes som genom en li
 Lösning: glas utan brytning med ett klarlackslager för reflexerna.
 
 **Rendertider på RTX 5050 (OptiX, denoising på GPU, adaptiv sampling, upp till 512 sampel):** hjältebild
-1920x1080 55,1 s, 1080x1350 44,6 s, dataflödet 30,4 s, 16 GB-bilden 47,9 s. Skärmarna i hjältebilden är
+1920x1080 55,1 s, 1080x1350 44,6 s, dataflödet 30,4 s, 16 GB-bilden 47,9 s. Animationen (8 s, 240 bilder i 1920x1080)
+tog 61 minuter, 15,3 s per bild i snitt; bilderna med klocka och mobil i oskärpa var långsammast (upp till
+40 s). Skärmarna i hjältebilden är
 en illustration med exempelvärden, inte uppmätt data.
 
 **Röster i kontoret.** Läkarna i pixelkontoret kan nu höras, av som standard med en ljudknapp. Kravet var
