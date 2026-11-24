@@ -3,152 +3,300 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kropp64 - sensorpanelen för kroppen</title>
+<title>Kropp64 - sensorpanelen för din viktigaste rigg</title>
 <meta name="description" content="Som AIDA64 och HWiNFO64, fast för kroppen, och med ett lokalt läkarteam av AI-agenter som läser sensorerna. Allt körs på en Mac mini med 16 GB.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#ebe7de" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b110e" media="(prefers-color-scheme: dark)">
 <meta property="og:title" content="Kropp64">
 <meta property="og:description" content="Sensorpanelen för din viktigaste rigg: dig själv. Lokalt läkarteam av AI-agenter på en Mac mini med 16 GB.">
-<meta property="og:image" content="bilder/hjalte.jpg">
+<meta property="og:image" content="https://kropp64.se/bilder/og.jpg">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="fonts/familjen-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/martian-mono.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('k64-tema');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
 <body>
 
-<header class="top">
-  <div class="wrap">
-    <a class="brand" href="./">
-      <img src="favicon.svg" width="22" height="22" alt="">
-      <span>Kropp64</span>
-    </a>
-    <nav aria-label="Länkar">
-      <a class="hide-s" href="#sensorpanelen">Sensorpanelen</a>
-      <a class="hide-s" href="#uppmatt">Uppmätt</a>
+<header class="topp">
+  <div class="ram">
+    <a class="ordmarke" href="./" aria-label="Kropp64, startsidan">Kropp<span>64</span></a>
+    <nav aria-label="Huvudmeny">
+      <a class="d-s" href="#panelen">Sensorpanelen</a>
+      <a class="d-s" href="#traden">Tråden</a>
+      <a class="d-s" href="#uppmatt">Uppmätt</a>
       <a href="https://demo.kropp64.se">Demo</a>
       <a href="https://github.com/cricke1/kropp64">GitHub</a>
+      <button class="tema" type="button" aria-label="Byt mellan ljust och mörkt läge"><span class="tema-ljus">Mörkt</span><span class="tema-mork">Ljust</span></button>
     </nav>
   </div>
 </header>
 
 <main>
-  <div class="wrap hero">
-    <h1>Sensorpanelen för din viktigaste rigg: dig själv.</h1>
-    <p class="lead">Som AIDA64 och HWiNFO64, fast för kroppen, och med ett lokalt läkarteam av AI-agenter som läser
-      sensorerna. Allt körs på en Mac mini M4 med 16 GB. Ingen hälsodata lämnar huset.</p>
-    <div class="actions">
-      <a class="btn primary" href="https://demo.kropp64.se">Öppna demon</a>
-      <a class="btn" href="https://github.com/cricke1/kropp64">Källkoden på GitHub</a>
+
+<section class="hjalte">
+  <div class="ram hjalte-grid">
+    <div class="hjalte-text">
+      <pre class="post" aria-label="Uppstartsskärm med exempelvärden"><span>Kropp64 BIOS v1.0   demoläge, exempelvärden</span>
+<span>Klockfrekvens ........ 67 BPM      <b>OK</b></span>
+<span>Timingmarginal (HRV) . 53 ms       <b>OK</b></span>
+<span>Syremättnad .......... 97 %        <b>OK</b></span>
+<span>Minne, Mac mini ...... 9,1/16 GB   <b>OK</b></span>
+<span>Läkarteam ............ laddat      <b>OK</b></span>
+<span class="post-sista">Tryck F1 för att fortsätta, eller scrolla.</span></pre>
+      <h1>Sensorpanelen för din viktigaste rigg: dig själv.</h1>
+      <p class="ingress">Som AIDA64 och HWiNFO64, fast för kroppen. Pixel Watch, mobilen och en Mac mini läser av dig dygnet
+        runt, och när något avviker svarar ett lokalt läkarteam av AI-agenter i en forumtråd. Ingen hälsodata lämnar huset.</p>
+      <p class="vidare">
+        <a class="tangent" href="https://demo.kropp64.se"><span>Öppna demon</span><kbd aria-hidden="true">Enter</kbd></a>
+        <a class="lank" href="https://github.com/cricke1/kropp64">eller läs koden på GitHub</a>
+      </p>
     </div>
-    <figure>
-      <img src="bilder/hjalte.jpg" width="1920" height="1080" alt="Mac mini, Pixel Watch och en Pixel-telefon på ett bord">
-      <figcaption>Rendering i Blender. Skärmarna på klockan och telefonen visar exempelvärden, inte uppmätt data.</figcaption>
+
+    <!-- Plats för riggvyn (three.js, web/src/rigg) när den är klar: byt ut <picture> mot vyn och behåll
+         figcaption. Tills dess en rendering. -->
+    <figure class="platta" id="riggvyn-plats">
+      <div class="bild" data-lage="foto">
+        <picture class="foto">
+          <source media="(max-width: 699px)" srcset="bilder/kretskort-mobil-800.webp 800w, bilder/kretskort-mobil-1200.webp 1200w" sizes="100vw">
+          <img src="bilder/kretskort-1600.webp" srcset="bilder/kretskort-1200.webp 1200w, bilder/kretskort-1600.webp 1600w, bilder/kretskort-2400.webp 2400w"
+               sizes="(max-width: 699px) 100vw, 62vw" width="2400" height="1600" fetchpriority="high"
+               alt="Makrobild av ett grönt kretskort. En guldledare formad som ett EKG går in i en processor graverad Kropp64, bredvid sitter en liten lysdiod.">
+        </picture>
+        <picture class="varme" hidden>
+          <source media="(max-width: 699px)" data-srcset="bilder/varme-mobil-800.webp">
+          <img data-src="bilder/varme-1600.webp" width="2400" height="1600" alt="Samma bild som värmekamera: processorn lyser vitgul, kortet svalnar mot kanterna.">
+        </picture>
+        <span class="led" aria-hidden="true"></span>
+        <span class="mark m-cpu under" aria-hidden="true"><i></i><em>U1, Klockfrekvens 67 BPM</em></span>
+        <span class="mark m-led" aria-hidden="true"><i></i><em>D7 blinkar i pulsen</em></span>
+        <span class="mark m-ekg under" aria-hidden="true"><i></i><em>Hjärtbussen, guldpläterad</em></span>
+        <button class="varmeknapp" type="button" aria-pressed="false">Värmekamera</button>
+      </div>
+      <figcaption><span class="cap-foto">Rendering i Blender av ett kretskort som inte finns. Siffrorna på processorn är exempelvärden.</span><span class="cap-varme">Falsk färg ur en renderpass, inte en mätning. Riktiga processorer blir varmare än 67 BPM.</span></figcaption>
     </figure>
   </div>
+</section>
 
-  <section id="sensorpanelen">
-    <div class="wrap split">
-      <div>
-        <h2>Klockans sensorer, som en hårdvarumonitor</h2>
+<section class="panelen" id="panelen">
+  <div class="ram">
+    <h2>Klockans sensorer, som en hårdvarumonitor</h2>
+    <div class="panel-grid">
+      <div class="fonster" role="group" aria-label="Sensortabell med syntetiska värden">
+        <div class="fonster-list"><span>Kropp64 Sensorpanel</span><span class="tyst">syntetisk testdata</span></div>
+        <div class="tabellrull">
+          <table class="sensorer">
+            <thead><tr><th>Sensor</th><th>Aktuellt</th><th>Min</th><th>Max</th><th>Medel</th></tr></thead>
+            <tbody>
+              <tr class="grupp"><th colspan="5">Hjärta (Pixel Watch)</th></tr>
+              <tr data-s="hr" data-v="72" data-lo="64" data-hi="81" data-d="0"><td>Klockfrekvens</td><td>72 <u>BPM</u></td><td>48 <u>BPM</u></td><td>156 <u>BPM</u></td><td>66 <u>BPM</u></td></tr>
+              <tr><td>Idle-klock (vilopuls)</td><td>49 <u>BPM</u></td><td>49 <u>BPM</u></td><td>50 <u>BPM</u></td><td>50 <u>BPM</u></td></tr>
+              <tr data-s="hrv" data-v="53" data-lo="44" data-hi="61" data-d="0"><td>Timingmarginal (HRV)</td><td>53 <u>ms</u></td><td>38 <u>ms</u></td><td>58 <u>ms</u></td><td>47 <u>ms</u></td></tr>
+              <tr class="grupp"><th colspan="5">Andning</th></tr>
+              <tr data-s="rr" data-v="15.8" data-lo="14.6" data-hi="16.9" data-d="1"><td>Andningsfrekvens</td><td>15,8 <u>/min</u></td><td>12,5 <u>/min</u></td><td>17,0 <u>/min</u></td><td>14,8 <u>/min</u></td></tr>
+              <tr data-s="spo2" data-v="97" data-lo="95" data-hi="98" data-d="0"><td>SpO2</td><td>97 <u>%</u></td><td>94 <u>%</u></td><td>98 <u>%</u></td><td>96 <u>%</u></td></tr>
+              <tr class="grupp"><th colspan="5">Kylning</th></tr>
+              <tr data-s="temp" data-v="33.22" data-lo="33.05" data-hi="33.5" data-d="2"><td>Hudtemperatur</td><td>33,22 <u>°C</u></td><td>33,10 <u>°C</u></td><td>34,79 <u>°C</u></td><td>33,78 <u>°C</u></td></tr>
+              <tr><td>Headroom</td><td>45 <u>av 100</u></td><td>-</td><td>-</td><td>-</td></tr>
+              <tr class="grupp"><th colspan="5">Last</th></tr>
+              <tr><td>Steg</td><td>18 435 <u>steg</u></td><td>11 613</td><td>20 127</td><td>16 152</td></tr>
+              <tr><td>Uptime vid datorn</td><td>339 <u>min</u></td><td>-</td><td>-</td><td>-</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel-text">
         <p>Pixel Watch, mobilen och Mac minin samlar puls, HRV, syremättnad, andning, hudtemperatur, sömn och steg.
-          Översikten visar dem som en sensorpanel: Aktuellt, Min, Max och Medel per sensor, grupperat som hårdvara.
-          Hjärta, Andning, Kylning, Last.</p>
-        <p>Pulsen heter Klockfrekvens, vilopulsen Idle-klock och återhämtningen Headroom, men enheten står alltid
-          bredvid: BPM, ms, procent. Skämten står i rubrikerna, inte i siffrorna.</p>
+          Översikten visar dem som en sensorpanel: Aktuellt, Min, Max och Medel per sensor, grupperat som hårdvara.</p>
+        <p>Pulsen heter Klockfrekvens och återhämtningen Headroom, men enheten står alltid bredvid. Skämten står i
+          rubrikerna, inte i siffrorna.</p>
+        <div class="flakt">
+          <svg viewBox="0 0 120 120" width="96" height="96" aria-hidden="true">
+            <rect x="2" y="2" width="116" height="116" rx="10" class="flakt-ram"/>
+            <circle cx="12" cy="12" r="3.2" class="flakt-hal"/><circle cx="108" cy="12" r="3.2" class="flakt-hal"/>
+            <circle cx="12" cy="108" r="3.2" class="flakt-hal"/><circle cx="108" cy="108" r="3.2" class="flakt-hal"/>
+            <circle cx="60" cy="60" r="52" class="flakt-ring"/>
+            <g class="flakt-rotor">
+              <path d="M60 60 C 66 40, 82 30, 98 36 C 90 46, 78 56, 60 60Z"/>
+              <path d="M60 60 C 66 40, 82 30, 98 36 C 90 46, 78 56, 60 60Z" transform="rotate(51.4 60 60)"/>
+              <path d="M60 60 C 66 40, 82 30, 98 36 C 90 46, 78 56, 60 60Z" transform="rotate(102.8 60 60)"/>
+              <path d="M60 60 C 66 40, 82 30, 98 36 C 90 46, 78 56, 60 60Z" transform="rotate(154.2 60 60)"/>
+              <path d="M60 60 C 66 40, 82 30, 98 36 C 90 46, 78 56, 60 60Z" transform="rotate(205.6 60 60)"/>
+              <path d="M60 60 C 66 40, 82 30, 98 36 C 90 46, 78 56, 60 60Z" transform="rotate(257 60 60)"/>
+              <path d="M60 60 C 66 40, 82 30, 98 36 C 90 46, 78 56, 60 60Z" transform="rotate(308.4 60 60)"/>
+              <circle cx="60" cy="60" r="14" class="flakt-nav"/>
+            </g>
+          </svg>
+          <p>Fläkten snurrar ett varv per andetag i demodatan, just nu <span class="rr-ut">15,8</span> varv per minut.
+            Den är inte trasig, bara lugn.</p>
+        </div>
       </div>
-      <figure>
-        <a href="bilder/sensorpanelen.png"><img src="bilder/sensorpanelen.png" width="1920" height="1080" loading="lazy" alt="Översikten med mätartavlor och sensortabellen"></a>
-        <figcaption>Demoläget med syntetisk testdata, märkt i bilden.</figcaption>
-      </figure>
     </div>
-  </section>
+    <figure class="skarm">
+      <a href="bilder/sensorpanelen.webp"><img src="bilder/sensorpanelen.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="Översikten i webbappen med mätartavlor och sensortabellen"></a>
+      <figcaption>Översikten i webbappen. Demoläget med syntetisk testdata, märkt i bilden.</figcaption>
+    </figure>
+  </div>
+</section>
 
-  <section id="datorn">
-    <div class="wrap split rev">
-      <figure>
-        <a href="bilder/puls-vid-datorn.png"><img src="bilder/puls-vid-datorn.png" width="1920" height="1080" loading="lazy" alt="Pulsen under dygnet med datortiden som band, sömn och uptime vid datorn"></a>
-        <figcaption>Demoläget med syntetisk testdata, märkt i bilden.</figcaption>
-      </figure>
-      <div>
-        <h2>Pulsen under kodpasset</h2>
-        <p>Mac minin loggar varje minut vilken sorts program som är i fokus: kod, spel, chatt eller webb. Bredvid
-          pulsen blir det tydligt vad en spelkväll eller ett sent kodpass gör med kroppen.</p>
-        <p>Bara kategorin sparas, aldrig fönstertitlar eller innehåll.</p>
+<section class="datorn" id="datorn">
+  <div class="ram datorn-grid">
+    <div>
+      <h2>Pulsen under kodpasset</h2>
+      <p>Mac minin loggar varje minut vilken sorts program som är i fokus: kod, spel, chatt eller webb. Bredvid
+        pulsen syns vad en spelkväll eller ett sent kodpass gör med kroppen.</p>
+      <p>Bara kategorin sparas, aldrig fönstertitlar eller innehåll.</p>
+    </div>
+    <figure class="skarm">
+      <a href="bilder/puls-vid-datorn.webp"><img src="bilder/puls-vid-datorn.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="Pulsen under dygnet med datortiden som band, sömn och uptime vid datorn"></a>
+      <figcaption>Demoläget med syntetisk testdata.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="traden" id="traden">
+  <div class="ram">
+    <h2>Läkarteamet är en supporttråd</h2>
+    <p class="smal">När något avviker från din egen baslinje startar en tråd. Lokala agenter (qwen3.5:9b i Ollama) svarar,
+      och varje påstående måste peka på en mätpunkt, en journalrad eller ett provsvar. Så här ser demons manus ut:</p>
+
+    <div class="trad-grid">
+      <ol class="trad" aria-label="Exempeltråd ur demons manus">
+        <li class="inlagg">
+          <div class="vem"><b>Trådstartaren</b><span>allmänläkare</span></div>
+          <p>Vakten flaggade att vilopulsen i natt låg klart över baslinjen. Kardiologen börjar med pulsen.</p>
+          <div class="kallor"><span class="kalla">Puls 02:14-02:31</span></div>
+        </li>
+        <li class="inlagg">
+          <div class="vem"><b>Kardiologen</b></div>
+          <p>Pulsen låg på 68 till 74 mellan 02:14 och 02:31, mot normalt 57 vid den tiden. Jämn kurva, inga plötsliga hopp.</p>
+          <div class="kallor"><span class="kalla">Puls 02:14-02:31</span> <span class="kalla">Puls baslinje 28 d</span></div>
+        </li>
+        <li class="inlagg troll">
+          <div class="vem"><b>Trollet</b><span>djävulens advokat</span></div>
+          <p>Har du testat att dra åt armbandet? Klockan kan ha suttit löst.</p>
+        </li>
+        <li class="inlagg">
+          <div class="vem"><b>Kardiologen</b><span>svar till Trollet</span></div>
+          <p>Syremättnaden mättes utan avbrott under samma period, så klockan verkar ha suttit på.</p>
+          <div class="kallor"><span class="kalla">SpO2 02:00-03:00</span></div>
+        </li>
+        <li class="inlagg">
+          <div class="vem"><b>Sömnläkaren</b></div>
+          <p>Sömnen var kort i natt: 5 h 40 min mot snittet 7 h 10 min. Djupsömnen kom sent och var kortare än vanligt.</p>
+          <div class="kallor"><span class="kalla">Sömn i natt</span></div>
+        </li>
+        <li class="inlagg struken">
+          <div class="vem"><b>Kardiologen</b></div>
+          <p><s>Sammantaget tyder det på en begynnande hjärtmuskelinflammation.</s></p>
+          <p class="mod">Strukit av moderator. Anledning: saknar källa.</p>
+        </li>
+        <li class="inlagg losning">
+          <div class="vem"><b>Trådstartaren</b><span class="markerad">Markerad som lösning</span></div>
+          <p>Vi bevakar. Ingen åtgärd nu. Om nattpulsen är hög två nätter till, eller om feber eller bröstsmärta
+            tillkommer, ska vården kontaktas.</p>
+        </li>
+      </ol>
+
+      <div class="trad-sida">
+        <figure class="kontoret">
+          <video data-src="bilder/kontoret.webm" poster="bilder/kontoret.webp" width="1280" height="720" muted loop playsinline preload="none" aria-label="Pixelkontoret där läkarteamet svarar i tråden"></video>
+          <figcaption>Pixelkontoret i demon, samma tråd som ovan. Ett manus, inga uppmätta värden.</figcaption>
+        </figure>
+        <dl class="flode">
+          <dt>Faktablad</dt><dd>räknas fram i kod innan tråden startar.</dd>
+          <dt>Trådstartaren</dt><dd>kallar in 2-4 specialister.</dd>
+          <dt>Specialisterna</dt><dd>svarar med källor låsta till det tråden hämtat.</dd>
+          <dt>Moderatorn</dt><dd>är vanlig Python och stryker allt som inte finns i datan.</dd>
+          <dt>Trollet</dt><dd>ifrågasätter, alltid med den tråkigaste förklaringen.</dd>
+          <dt>Brådskan</dt><dd>sätts av ett regelverk, inte av modellen.</dd>
+        </dl>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section id="traden">
-    <div class="wrap split">
-      <div>
-        <h2>Läkarteamet är en supporttråd</h2>
-        <p>När något avviker från din egen baslinje startar en tråd. Lokala agenter (qwen3.5:9b i Ollama) svarar,
-          och varje påstående måste peka på en mätpunkt, en journalrad eller ett provsvar.</p>
-        <ol class="steps">
-          <li><b>Faktablad</b> räknas fram i kod innan tråden startar.</li>
-          <li><b>Trådstartaren</b> kallar in 2-4 specialister.</li>
-          <li><b>Specialisterna</b> svarar med källor som är låsta till det tråden hämtat.</li>
-          <li><b>Moderatorn</b>, vanlig Python, stryker allt som inte finns i datan.</li>
-          <li><b>Trollet</b> frågar om du har testat att dra åt armbandet.</li>
-          <li><b>Lösningen</b> granskas igen. Brådskan sätts av ett regelverk, inte av modellen.</li>
-        </ol>
+<section class="akut" id="akut">
+  <div class="ram">
+    <h2>Akut är aldrig en språkmodell</h2>
+    <p>Akuta larm, som puls över 140 i vila, syremättnad under 88 % eller klockans fall-larm, är vanliga regler som
+      larmar mobilen på millisekunder. Bara de reglerna kan leda till sms till en anhörig, och det är avstängt tills du
+      själv slår på det. Läkarteamet ger underlag och frågor att ta med till vården, aldrig en diagnos.</p>
+    <p class="akut-nummer">Vid akuta besvär, ring <a href="tel:112">112</a>. Vid frågor om vård, ring <a href="tel:1177">1177</a>.</p>
+  </div>
+</section>
+
+<section class="uppmatt" id="uppmatt">
+  <div class="ram">
+    <h2>Uppmätt</h2>
+    <p class="smal">Bara siffror som finns i en fil i repot. Mac mini M4 med 16 GB, Ollama, en förfrågan i taget.</p>
+
+    <div class="bench">
+      <div class="test">
+        <h3>qwen3.5:9b, tokens per sekund <span>högre är bättre</span></h3>
+        <div class="stapel" style="--v:23%"><span class="namn">Generering</span><span class="bar"></span><span class="tal">17,4</span></div>
+        <div class="stapel" style="--v:100%"><span class="namn">Promptläsning</span><span class="bar"></span><span class="tal">75,4</span></div>
+        <a class="kalla-l" href="https://github.com/cricke1/kropp64/blob/main/bench/resultat/qwen3.5_9b.json">bench/resultat/qwen3.5_9b.json</a>
       </div>
-      <figure>
-        <video src="bilder/kontoret.webm" poster="bilder/kontoret.jpg" width="1280" height="720" autoplay muted loop playsinline preload="metadata" aria-label="Pixelkontoret där läkarteamet svarar i tråden"></video>
-        <img class="poster-only" src="bilder/kontoret.jpg" width="1280" height="720" alt="Pixelkontoret där moderatorn stryker ett påstående" style="display:none">
-        <figcaption>Pixelkontoret i demoläget: ett manus, inga uppmätta värden.</figcaption>
-      </figure>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap">
-      <h2>Akut är aldrig en språkmodell</h2>
-      <p>Akuta larm, som puls över 140 i vila, syremättnad under 88 % eller klockans fall-larm, är vanliga regler som
-        larmar mobilen på millisekunder. Bara de reglerna kan leda till sms till en anhörig, och det är avstängt tills du
-        själv slår på det. Läkarteamet ger underlag och frågor att ta med till vården, aldrig en diagnos.</p>
-    </div>
-  </section>
-
-  <section id="uppmatt">
-    <div class="wrap">
-      <h2>Uppmätt</h2>
-      <p>Bara siffror som finns i en fil i repot.</p>
-      <div class="tablewrap">
-        <table>
-          <thead><tr><th>Vad</th><th>Värde</th><th>Källa</th></tr></thead>
-          <tbody>
-            <tr><td>qwen3.5:9b på Mac mini M4, generering / promptläsning</td><td class="v">17,4 / 75,4 tokens/s</td><td class="src"><a href="https://github.com/cricke1/kropp64/blob/main/bench/resultat/qwen3.5_9b.json">bench/resultat</a></td></tr>
-            <tr><td>Rätt verktyg valt på 10 testfrågor</td><td class="v">9 av 10</td><td class="src"><a href="https://github.com/cricke1/kropp64/blob/main/bench/resultat/qwen3.5_9b.json">bench/resultat</a></td></tr>
-            <tr><td>Minne för modellen, före och efter 8k kontext, KV-cache q8_0 och en förfrågan åt gången</td><td class="v">14,7 → 9,1 GB</td><td class="src"><a href="https://github.com/cricke1/kropp64/blob/main/RESAN.md">RESAN.md</a></td></tr>
-            <tr><td>Utvärdering mot 15 scenarier med syntetisk data, godtagbar brådska</td><td class="v">40 % → 100 %</td><td class="src"><a href="https://github.com/cricke1/kropp64/blob/main/eval/RESULTAT.md">eval/RESULTAT.md</a></td></tr>
-            <tr><td>Samma utvärdering, mediantid för en tråd</td><td class="v">300 → 117 s</td><td class="src"><a href="https://github.com/cricke1/kropp64/blob/main/eval/RESULTAT.md">eval/RESULTAT.md</a></td></tr>
-            <tr><td>Nätavbrott i kedjan klocka, mobil, server (emulatorer)</td><td class="v">1 215 av 1 215 punkter, 0 dubbletter</td><td class="src"><a href="https://github.com/cricke1/kropp64/blob/main/RESAN.md">RESAN.md</a></td></tr>
-            <tr><td>Sms efter akut larm, avvikelse från fristen</td><td class="v">39 ms</td><td class="src"><a href="https://github.com/cricke1/kropp64/blob/main/RESAN.md">RESAN.md</a></td></tr>
-          </tbody>
-        </table>
+      <div class="test">
+        <h3>Minne för modellen <span>lägre är bättre, taket är 16 GB</span></h3>
+        <div class="tak">
+          <div class="stapel gammal" style="--v:91.9%"><span class="namn">16k kontext, parallellt</span><span class="bar"></span><span class="tal">14,7 GB</span></div>
+          <div class="stapel" style="--v:56.9%"><span class="namn">8k, KV-cache q8_0, en i taget</span><span class="bar"></span><span class="tal">9,1 GB</span></div>
+        </div>
+        <a class="kalla-l" href="https://github.com/cricke1/kropp64/blob/main/RESAN.md">RESAN.md</a>
       </div>
-      <p class="note" style="margin-top:18px">Utvärderingens fixar gjordes mot samma 15 scenarier, och brådskan styrs nu av ett regelverk.
-        Siffran är därför optimistisk tills holdout-scenarierna har körts.</p>
+      <div class="test">
+        <h3>Utvärdering, 15 scenarier med syntetisk data <span>godtagbar brådska</span></h3>
+        <div class="stapel gammal" style="--v:40%"><span class="namn">Första versionen</span><span class="bar"></span><span class="tal">40 %</span></div>
+        <div class="stapel" style="--v:100%"><span class="namn">Nuvarande</span><span class="bar"></span><span class="tal">100 %</span></div>
+        <a class="kalla-l" href="https://github.com/cricke1/kropp64/blob/main/eval/RESULTAT.md">eval/RESULTAT.md</a>
+      </div>
+      <div class="test">
+        <h3>Samma utvärdering, mediantid per tråd <span>lägre är bättre</span></h3>
+        <div class="stapel gammal" style="--v:100%"><span class="namn">Första versionen</span><span class="bar"></span><span class="tal">300 s</span></div>
+        <div class="stapel" style="--v:39%"><span class="namn">Nuvarande</span><span class="bar"></span><span class="tal">117 s</span></div>
+        <a class="kalla-l" href="https://github.com/cricke1/kropp64/blob/main/eval/RESULTAT.md">eval/RESULTAT.md</a>
+      </div>
     </div>
-  </section>
 
-  <section id="status">
-    <div class="wrap">
-      <h2>Status</h2>
-      <ul class="status">
-        <li>Hela kedjan klocka, mobil, server, vakt och läkarteam fungerar och är testad på emulatorer och syntetisk data.</li>
-        <li>Den har ännu inte gått länge på riktig data, så det finns inga resultat från verklig användning att visa än.</li>
-        <li>Alla bilder och filmer här är märkta som demo, syntetisk testdata eller emulator.</li>
-        <li>Koden är skriven av Claude Code-agenter som ägaren styrt. Allt som gick fel står i
-          <a href="https://github.com/cricke1/kropp64/blob/main/RESAN.md">RESAN.md</a>.</li>
-      </ul>
-    </div>
-  </section>
+    <table class="matt">
+      <tbody>
+        <tr><td>Rätt verktyg valt på 10 testfrågor</td><td class="v">9 av 10</td><td><a href="https://github.com/cricke1/kropp64/blob/main/bench/resultat/qwen3.5_9b.json">bench/resultat</a></td></tr>
+        <tr><td>Nätavbrott i kedjan klocka, mobil, server (emulatorer)</td><td class="v">1 215 av 1 215 punkter, 0 dubbletter</td><td><a href="https://github.com/cricke1/kropp64/blob/main/RESAN.md">RESAN.md</a></td></tr>
+        <tr><td>Sms efter akut larm, avvikelse från fristen</td><td class="v">39 ms</td><td><a href="https://github.com/cricke1/kropp64/blob/main/RESAN.md">RESAN.md</a></td></tr>
+      </tbody>
+    </table>
+    <p class="not">Utvärderingens fixar gjordes mot samma 15 scenarier, och brådskan styrs nu av ett regelverk. Siffran är
+      därför optimistisk tills holdout-scenarierna har körts.</p>
+  </div>
+</section>
+
+<section class="status" id="status">
+  <div class="ram">
+    <h2>Status</h2>
+    <ul class="logg">
+      <li><b class="ok">OK</b><span>Hela kedjan klocka, mobil, server, vakt och läkarteam fungerar och är testad på emulatorer och syntetisk data.</span></li>
+      <li><b class="vantar">väntar</b><span>Riktig data. Kedjan har inte gått länge på en riktig klocka, så det finns inga resultat från verklig användning än.</span></li>
+      <li><b class="vantar">väntar</b><span>Holdout-scenarierna i utvärderingen.</span></li>
+      <li><b class="ok">OK</b><span>Alla bilder och filmer här är märkta som rendering, demo, syntetisk testdata eller emulator.</span></li>
+      <li><b class="info">info</b><span>Koden är skriven av Claude Code-agenter som ägaren styrt. Allt som gick fel står i
+        <a href="https://github.com/cricke1/kropp64/blob/main/RESAN.md">RESAN.md</a>.</span></li>
+    </ul>
+  </div>
+</section>
+
 </main>
 
-<footer>
-  <div class="wrap">
-    <p>Kropp64 är inte en medicinteknisk produkt och ställer inga diagnoser. Vid akuta besvär, ring 112. Vid frågor om vård, ring 1177.</p>
-    <p>Bidrag i SweClockers AI-tävling 2026. <a href="https://github.com/cricke1/kropp64">github.com/cricke1/kropp64</a></p>
+<footer class="fot">
+  <div class="ram">
+    <p class="fot-viktigt">Kropp64 är inte en medicinteknisk produkt och ställer inga diagnoser. Vid akuta besvär, ring 112. Vid frågor om vård, ring 1177.</p>
+    <p>Bidrag i SweClockers AI-tävling 2026. <a href="https://demo.kropp64.se">demo.kropp64.se</a> och <a href="https://github.com/cricke1/kropp64">github.com/cricke1/kropp64</a>.</p>
+    <p class="uptime" aria-hidden="true">Uptime på den här fliken: <span>00:00:00</span></p>
   </div>
 </footer>
+
+<script src="sida.js" defer></script>
 </body>
 </html>
