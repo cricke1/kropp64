@@ -52,5 +52,9 @@ object Api {
 
     suspend fun health(): Boolean = runCatching { getObject("/api/health").optBoolean("ok") }.getOrDefault(false)
 
-    fun wsUrl(): String = base().replaceFirst("https://", "wss://").replaceFirst("http://", "ws://") + "/ws"
+    fun wsUrl(): String {
+        val token = Prefs.config.value.deviceToken
+        val q = if (token.isNotEmpty()) "?token=" + java.net.URLEncoder.encode(token, "UTF-8") else ""
+        return base().replaceFirst("https://", "wss://").replaceFirst("http://", "ws://") + "/ws" + q
+    }
 }

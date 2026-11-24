@@ -48,6 +48,18 @@ sealed interface FlushResult {
 object Sender {
     private val mutex = Mutex()
 
+    /** Batchformatet: kompakta trippler [ts, metric, value] för att hålla meddelandet litet. */
+    fun encode(rows: List<se.konsiliet.wear.data.Pending>): ByteArray {
+        val samples = JSONArray()
+        for (r in rows) samples.put(JSONArray().put(r.ts).put(r.metric).put(r.value))
+        return JSONObject()
+            .put("v", 1)
+            .put("source", WatchState.source)
+            .put("device", Build.MODEL)
+            .put("samples", samples)
+            .toString().toByteArray()
+    }
+
     suspend fun findPhone(ctx: Context): Node? {
         val info = Wearable.getCapabilityClient(ctx)
             .getCapability(Protocol.CAP_PHONE, CapabilityClient.FILTER_REACHABLE).await()
@@ -74,14 +86,7 @@ object Sender {
         while (true) {
             val rows = dao.oldest(Protocol.BATCH_SIZE)
             if (rows.isEmpty()) break
-            val samples = JSONArray()
-            for (r in rows) samples.put(JSONArray().put(r.ts).put(r.metric).put(r.value))
-            val payload = JSONObject()
-                .put("v", 1)
-                .put("source", WatchState.source)
-                .put("device", Build.MODEL)
-                .put("samples", samples)
-                .toString().toByteArray()
+            val payload = encode(rows)
             val resp = withTimeout(30_000) { client.sendRequest(node.id, Protocol.PATH_BATCH, payload).await() }
             val ack = JSONObject(String(resp))
             if (!ack.optBoolean("ok")) throw IOException("mobilen avvisade batchen: ${ack.optString("error")}")

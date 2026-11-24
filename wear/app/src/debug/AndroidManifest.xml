@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bara i debug-bygget. Används för att testa kedjan på emulatorer utan Wear OS-parkoppling. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <receiver android:name=".debug.DebugBridge" android:exported="true">
+            <intent-filter>
+                <action android:name="se.konsiliet.debug.EXPORT" />
+                <action android:name="se.konsiliet.debug.ACK" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

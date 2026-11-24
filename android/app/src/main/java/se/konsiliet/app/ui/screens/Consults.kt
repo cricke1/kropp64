@@ -94,7 +94,10 @@ private fun OfficeWeb() {
             },
             update = { wv ->
                 val headers = if (config.deviceToken.isNotEmpty()) mapOf("X-Device-Token" to config.deviceToken) else emptyMap()
-                if (wv.url == null || !wv.url!!.startsWith(config.serverUrl)) { error = null; wv.loadUrl(config.serverUrl + "/", headers) }
+                // Servern sätter en httpOnly-cookie från ?token=, så att webbappens egna anrop och /ws
+                // också är behöriga via Cloudflare Tunnel. Via Tailscale behövs ingen token.
+                val q = if (config.deviceToken.isNotEmpty()) "?token=" + java.net.URLEncoder.encode(config.deviceToken, "UTF-8") else ""
+                if (wv.url == null || !wv.url!!.startsWith(config.serverUrl)) { error = null; wv.loadUrl(config.serverUrl + "/" + q + "#/kontoret", headers) }
             },
         )
         error?.let {

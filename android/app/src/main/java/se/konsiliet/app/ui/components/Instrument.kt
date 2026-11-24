@@ -95,7 +95,8 @@ fun ReadoutRow(label: String, value: String?, unit: String = "", note: String? =
                 if (note != null) Text(note, style = Type.small, color = noteColor ?: t.ink3)
             }
             if (value != null) {
-                Text(value, style = Type.value, color = t.ink)
+                // Tal visas som mätvärden, text (t.ex. "nyss") i brödstil.
+                Text(value, style = if (value.any { it.isLetter() }) Type.body else Type.value, color = t.ink)
                 if (unit.isNotEmpty()) Text(" $unit", style = Type.small, color = t.ink2, modifier = Modifier.padding(top = 6.dp))
             } else {
                 Text("ingen data", style = Type.small, color = t.ink3)

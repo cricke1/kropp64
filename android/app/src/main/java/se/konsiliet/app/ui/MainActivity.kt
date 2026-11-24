@@ -11,7 +11,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -96,11 +99,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
             Box(Modifier.fillMaxWidth().height(1.dp).background(t.rule))
-            Row(Modifier.fillMaxWidth().background(t.surface).navigationBarsPadding()) {
+            Row(Modifier.fillMaxWidth().background(t.surface).navigationBarsPadding().padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween) {
                 Tab.entries.forEach { e ->
                     val sel = e == tab && consult == null
                     Column(
-                        Modifier.weight(1f).clickable { tab = e; openConsult = null },
+                        Modifier.width(IntrinsicSize.Max).clickable { tab = e; openConsult = null }.padding(horizontal = 4.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Box(Modifier.fillMaxWidth().height(2.dp).background(if (sel) t.accent else t.surface))

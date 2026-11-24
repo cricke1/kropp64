@@ -188,7 +188,7 @@ private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
             }
             item {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(top = 6.dp)) {
-                    Text("Senast skickat ${ago(status.lastSentAt, now)}", color = Ink, fontSize = 13.sp, style = Tab)
+                    Text("Senast skickat: ${ago(status.lastSentAt, now)}", color = Ink, fontSize = 13.sp, style = Tab)
                     Text("I kö på klockan: $pending", color = Dim, fontSize = 12.sp, style = Tab)
                     status.lastError?.let {
                         Text(it, color = Warn, fontSize = 11.sp, textAlign = TextAlign.Center,

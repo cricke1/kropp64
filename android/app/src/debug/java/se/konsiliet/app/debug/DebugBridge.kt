@@ -1,0 +1,34 @@
+package se.konsiliet.app.debug
+
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.util.Log
+import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import org.json.JSONObject
+import se.konsiliet.app.link.WatchListenerService
+
+/**
+ * Endast debug. Tar emot en batch som klockemulatorn exporterat (via adb i stället för Bluetooth)
+ * och lämnar den till exakt samma kod som WatchListenerService.onRequest använder.
+ * Källan tvingas till något som innehåller "emulator" så att testdata aldrig kan se riktig ut.
+ * Kvittensen skrivs till files/ack.json, som testskriptet läser innan klockan får ACK.
+ */
+class DebugBridge : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        val file = File(context.filesDir, "inject.json")
+        val reply = try {
+            val o = JSONObject(file.readText())
+            if (!o.optString("source").contains("emulator")) o.put("source", "watch-emulator")
+            val n = runBlocking(Dispatchers.IO) { WatchListenerService.store(context, o.toString().toByteArray()) }
+            JSONObject().put("ok", true).put("stored", n)
+        } catch (e: Exception) {
+            Log.e("KonsilietDebug", "inject misslyckades", e)
+            JSONObject().put("ok", false).put("error", e.toString())
+        }
+        File(context.filesDir, "ack.json").writeText(reply.toString())
+        Log.i("KonsilietDebug", "inject: $reply")
+    }
+}

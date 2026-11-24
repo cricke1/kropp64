@@ -116,7 +116,8 @@ fun TodayScreen() {
         Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 18.dp)) {
             Text("Puls", style = Type.label, color = t.ink2)
             Row(verticalAlignment = Alignment.Bottom) {
-                Text(hrVal?.let { Fmt.int(it) } ?: "--", style = Type.display, color = t.ink)
+                Text(hrVal?.let { Fmt.int(it) } ?: "ej mätt", style = if (hrVal == null) Type.value else Type.display,
+                    color = if (hrVal == null) t.ink3 else t.ink)
                 Text("  slag/min", style = Type.small, color = t.ink2, modifier = Modifier.padding(bottom = 10.dp))
             }
             val stale = hrTs != null && now / 1000.0 - hrTs > 15 * 60
@@ -128,9 +129,11 @@ fun TodayScreen() {
         }
         Spacer(Modifier.height(12.dp))
         Column(Modifier.padding(horizontal = 20.dp)) {
-            TraceChart(hrSeries, from24, now / 1000.0, unit = "slag/min")
+            // Finns bara en kort stund data (t.ex. första timmen) zoomas axeln in på den, annars hela dygnet.
+            val chartFrom = hrSeries.firstOrNull()?.let { maxOf(from24, it.ts - 15 * 60) } ?: from24
+            TraceChart(hrSeries, chartFrom, now / 1000.0, unit = "slag/min")
             if (hrSeries.isNotEmpty()) {
-                Text("Senaste dygnet: min ${Fmt.int(hrSeries.minOf { it.value })} · max ${Fmt.int(hrSeries.maxOf { it.value })} · ${Fmt.int(hrSeries.size.toDouble())} punkter",
+                Text((if (chartFrom > from24 + 60) "Sedan ${Fmt.hm(chartFrom)}" else "Senaste dygnet") + ": min ${Fmt.int(hrSeries.minOf { it.value })} · max ${Fmt.int(hrSeries.maxOf { it.value })} · ${Fmt.int(hrSeries.size.toDouble())} punkter",
                     style = Type.small, color = t.ink3, modifier = Modifier.padding(top = 6.dp))
             }
         }
