@@ -24,6 +24,8 @@ METRIC_NAMES = {
     "hr": "puls (slag/min)", "hrv_rmssd": "HRV RMSSD (ms)", "spo2": "syremättnad (%)",
     "steps": "steg", "resp_rate": "andningsfrekvens (andetag/min)", "skin_temp": "hudtemperatur (°C)",
     "resting_hr": "vilopuls (slag/min)", "calories": "energi (kcal)",
+    "dator_kod": "minuter vid datorn och kodade (1 per minut)", "dator_spel": "minuter vid datorn och spelade",
+    "dator_chatt": "minuter i chattappar på datorn", "dator_webb": "minuter i webbläsaren på datorn",
 }
 
 

@@ -18,3 +18,11 @@ Lärdom: en agent som får "gör det imponerande" som mål optimerar för att de
 
 **Arkitektur bestämd.** Egen Wear OS-app på klockan för realtid (Fitbit-synken kommer bara var 15:e minut),
 Android-app som brygga, Mac minin som server bakom Cloudflare Tunnel, lokala modeller via Ollama.
+
+**Port upptagen.** Servern skulle köra på 8787, men den porten hade ett annat av mina projekt (en node-server
+som stått igång i 17 timmar). Flyttade till 8790.
+
+**Tjänsten startade men svarade aldrig.** Som launchd-tjänst hängde servern tyst utan en enda loggrad.
+Orsak: macOS skyddar Skrivbordet (TCC), och en process som startas av launchd får inte läsa där, inte ens
+Python-miljön. Samma fel har bitit mig förut. Lösning: repot flyttat till ~/konsiliet med en symlänk kvar
+på Skrivbordet, Python-miljön återskapad med nya sökvägar.

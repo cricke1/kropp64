@@ -13,7 +13,7 @@ def _env(name: str, default: str) -> str:
 class Settings:
     db_path: str = _env("DB", "~/.konsiliet/konsiliet.db")
     host: str = _env("HOST", "127.0.0.1")
-    port: int = int(_env("PORT", "8787"))
+    port: int = int(_env("PORT", "8790"))
     ollama_url: str = _env("OLLAMA", "http://127.0.0.1:11434")
     # Modellval sätts efter mätningarna i bench/. Se bench/RESULTAT.md.
     model_orchestrator: str = _env("MODEL_ORCH", "qwen3.5:9b")

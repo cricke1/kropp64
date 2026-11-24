@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import re
 import time
 from pathlib import Path
@@ -88,9 +89,12 @@ class ConsultRequest(BaseModel):
 async def _startup() -> None:
     bus.bind(asyncio.get_running_loop())
     db.conn()
-    from . import vakt  # noqa: F401  startar vaktens bakgrundsloop
+    from . import datorn, rutiner, vakt
 
     vakt.start()
+    rutiner.start()
+    if os.environ.get("KONSILIET_DATORN", "1") == "1":
+        datorn.start()
 
 
 @app.get("/api/health")
@@ -197,6 +201,37 @@ def sync_1177() -> dict[str, Any]:
 
     hamtare1177.start_async()
     return {"started": True}
+
+
+@app.get("/api/aterhamtning", dependencies=[Depends(auth)])
+def aterhamtning() -> dict[str, Any]:
+    from . import rutiner
+
+    return rutiner.aterhamtning()
+
+
+@app.post("/api/brief", dependencies=[Depends(auth)])
+def brief() -> dict[str, Any]:
+    from . import rutiner
+
+    return rutiner.morgonbrief()
+
+
+@app.get("/api/datorn", dependencies=[Depends(auth)])
+def datortid(hours: float = 24) -> dict[str, Any]:
+    """Minuter vid datorn per kategori, och puls under respektive kategori."""
+    start = time.time() - hours * 3600
+    hr = dict(db.query_samples("hr", start))
+    hr_min: dict[int, list[float]] = {}
+    for ts, v in hr.items():
+        hr_min.setdefault(int(ts // 60), []).append(v)
+    out = {}
+    for kat in ("kod", "spel", "chatt", "webb", "annat"):
+        minuter = [int(ts // 60) for ts, _ in db.query_samples(f"dator_{kat}", start)]
+        pulser = [v for m in minuter for v in hr_min.get(m, [])]
+        out[kat] = {"minuter": len(minuter),
+                    "puls_median": round(sorted(pulser)[len(pulser) // 2], 1) if pulser else None}
+    return {"timmar": hours, "kategorier": out}
 
 
 def _mac_minne() -> dict[str, Any]:

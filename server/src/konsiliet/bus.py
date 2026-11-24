@@ -13,7 +13,10 @@ Händelsetyper (payload-fält inom parentes) som klienterna förstår:
   review.strike    (consult_id, claim, reason)          granskaren stryker ett påstående
   consult.verdict  (consult_id, verdict)                slutbedömning
   alert.raise      (level, title, body)                 larm till mobilen
-  sync.1177        (status, detail)                     status för journalhämtning
+  sync.1177        (status, ...)                        journalhämtning: loggar_in, qr (png base64, kvar),
+                                                        bankid_lank (url), inloggad, hamtar, klar, misslyckades
+  nudge.move       (title, body)                        stillasittandevakten
+  brief.morgon     (datum, text, fakta)                 morgonbrief med återhämtningspoäng
 """
 from __future__ import annotations
 
