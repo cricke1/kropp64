@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 import time
 from pathlib import Path
 from typing import Any
@@ -196,6 +197,42 @@ def sync_1177() -> dict[str, Any]:
 
     hamtare1177.start_async()
     return {"started": True}
+
+
+def _mac_minne() -> dict[str, Any]:
+    """Unified memory på Mac minin, för nördpanelen."""
+    import subprocess
+
+    try:
+        total = int(subprocess.run(["sysctl", "-n", "hw.memsize"], capture_output=True, text=True).stdout)
+        vm = subprocess.run(["vm_stat"], capture_output=True, text=True).stdout
+        page = int(re.search(r"page size of (\d+)", vm).group(1))
+        pages = {k.strip(): int(v.strip(" .")) for k, v in re.findall(r"^(.+?):\s+(\d+)\.?$", vm, re.M)}
+        used = (pages.get("Pages active", 0) + pages.get("Pages wired down", 0)
+                + pages.get("Pages occupied by compressor", 0)) * page
+        tryck = subprocess.run(["memory_pressure", "-Q"], capture_output=True, text=True).stdout
+        fri = re.search(r"(\d+)%", tryck)
+        return {"total_gb": round(total / 2**30, 1), "anvant_gb": round(used / 2**30, 1),
+                "fritt_procent": int(fri.group(1)) if fri else None}
+    except Exception as e:
+        return {"fel": str(e)}
+
+
+@app.get("/api/system", dependencies=[Depends(auth)])
+def system() -> dict[str, Any]:
+    from . import llm
+
+    since = time.time() - 60
+    epm = db.conn().execute("SELECT COUNT(*) FROM events WHERE ts > ?", (since,)).fetchone()[0]
+    return {
+        "modeller_laddade": [{"namn": m.get("name"), "storlek_gb": round(m.get("size", 0) / 2**30, 2),
+                              "vram_gb": round(m.get("size_vram", 0) / 2**30, 2)} for m in llm.loaded_models()],
+        "modeller_konfig": {"orkestrerare": settings.model_orchestrator, "specialist": settings.model_specialist},
+        "tokens_sedan_start": llm.total_usage.as_dict(),
+        "minne": _mac_minne(),
+        "handelser_per_minut": epm,
+        "matvarden": db.metrics_available(),
+    }
 
 
 @app.websocket("/ws")
