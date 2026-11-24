@@ -27,8 +27,8 @@ const NAV: [string, string][] = __PUBLIK_DEMO__
   : [
       ['kontoret', 'Kontoret'],
       ['oversikt', 'Översikt'],
-      ['konsilier', 'Konsilier'],
-      ['fraga', 'Fråga'],
+      ['konsilier', 'Trådar'],
+      ['fraga', 'Ny tråd'],
       ['systemet', 'Systemet'],
     ]
 
@@ -57,16 +57,23 @@ function DemoBanner() {
   return (
     <div class="demo-banner publik" role="note">
       <strong>Demo - syntetisk data.</strong>
-      <span>Mätvärdena kommer från ett testskript och konsiliet i kontoret är ett manus. Inga riktiga hälsodata finns på den här servern.</span>
+      <span>Mätvärdena kommer från ett testskript och tråden i kontoret är ett manus. Inga riktiga hälsodata finns på den här servern.</span>
     </div>
   )
 }
 
+/** Ett chip med pinnar och en pulskurva: kroppen som hårdvara. */
 function Logo() {
   return (
-    <svg width="20" height="20" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
-      <rect width="16" height="16" rx="3" fill="var(--surface-2)" stroke="var(--line-2)" />
-      <path fill="var(--hr)" d="M2 9h3l1-3 2 6 2-8 1 5h3v1h-3.8l-.4-2-2 7.6-2-6.2-.6 1.6H2z" />
+    <svg width="20" height="20" viewBox="0 0 16 16" aria-hidden="true">
+      <g fill="var(--text-3)">
+        <rect x="5" y="0" width="1" height="2" /><rect x="7.5" y="0" width="1" height="2" /><rect x="10" y="0" width="1" height="2" />
+        <rect x="5" y="14" width="1" height="2" /><rect x="7.5" y="14" width="1" height="2" /><rect x="10" y="14" width="1" height="2" />
+        <rect x="0" y="5" width="2" height="1" /><rect x="0" y="7.5" width="2" height="1" /><rect x="0" y="10" width="2" height="1" />
+        <rect x="14" y="5" width="2" height="1" /><rect x="14" y="7.5" width="2" height="1" /><rect x="14" y="10" width="2" height="1" />
+      </g>
+      <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" fill="var(--surface-2)" stroke="var(--line-2)" />
+      <path d="M3.8 8.6h1.9l1-2.1 1.5 4 1.5-5.4 1 3.5h1.5" fill="none" stroke="var(--hr)" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round" />
     </svg>
   )
 }
@@ -119,7 +126,7 @@ function App() {
   return (
     <div class="app">
       <header class="topbar">
-        <a class="brand" href="#/kontoret"><Logo /><span>Konsiliet</span></a>
+        <a class="brand" href="#/kontoret"><Logo /><span>Överklockad</span></a>
         <nav class="nav" aria-label="Huvudmeny">
           {NAV.map(([k, label]) => <a href={`#/${k}`} aria-current={view === k ? 'page' : undefined}>{label}</a>)}
         </nav>

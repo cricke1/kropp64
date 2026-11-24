@@ -197,7 +197,7 @@ function SleepPanel() {
   const asleep = totals.rem + totals.light + totals.deep
   return (
     <section class="panel">
-      <header><h2>Sömn i natt</h2>{last && <span class="meta num">{hm(last.start)}-{hm(last.end)}</span>}</header>
+      <header><h2>Viloläge i natt</h2>{last && <span class="meta num">{hm(last.start)}-{hm(last.end)}</span>}</header>
       <div class="body">
         {!last ? <div class="empty">{sleep.error ? 'Kunde inte hämta sömndata.' : 'Inget sömnpass registrerat de senaste två veckorna.'}</div> : (
           <>
@@ -244,8 +244,8 @@ function RecoveryPanel() {
       <div class="body">
         {!d || (!d.hrv.length && !d.hr.length) ? <div class="empty">{data.loading ? 'Hämtar.' : 'För lite nattdata än. Kräver minst tio mätpunkter per natt.'}</div> : (
           <div class="recov">
-            <NightBars rows={d.hrv} label="HRV" unit="ms" color="var(--hrv)" />
-            <NightBars rows={d.hr} label="Vilopuls" unit="slag/min" color="var(--hr)" />
+            <NightBars rows={d.hrv} label="Timingmarginal (HRV)" unit="ms" color="var(--hrv)" />
+            <NightBars rows={d.hr} label="Idle-klock (vilopuls)" unit="BPM" color="var(--hr)" />
           </div>
         )}
       </div>
@@ -303,7 +303,7 @@ function LoadPanel() {
   const total = rows.reduce((a, r) => a + r.mins.reduce((x, y) => x + y, 0), 0)
   return (
     <section class="panel">
-      <header><h2>Träningsbelastning</h2><span class="meta">Minuter per dag i pulszon, fasta gränser i slag/min</span></header>
+      <header><h2>Stresstest</h2><span class="meta">Minuter per dag i pulszon, fasta gränser i BPM</span></header>
       <div class="body">
         {!rows.length || total < 1 ? <div class="empty">{data.loading ? 'Hämtar.' : 'Ingen tid med puls över 100 de senaste sju dagarna.'}</div> : (
           <div class="load">

@@ -7,7 +7,7 @@ import { demoEvents } from '../office/demo'
 import { director, go, useAsync, useDirector } from '../store'
 
 export function triggerText(t: any): { title: string; detail: string } {
-  if (!t) return { title: 'Konsilium', detail: '' }
+  if (!t) return { title: 'Tråd', detail: '' }
   if (typeof t === 'string') return { title: t, detail: '' }
   if (t.kind === 'question') return { title: 'Fråga från dig', detail: String(t.question ?? '') }
   return { title: String(t.title ?? t.rule ?? 'Avvikelse'), detail: String(t.detail ?? '') }
@@ -58,7 +58,7 @@ export function Kontoret({ query }: { query: URLSearchParams }) {
     if (demo) director.replay(demoEvents(), 'demo', Number(query.get('speed') ?? 1) || 1)
     else if (replayId) {
       consultEvents(replayId).then(({ events }) => {
-        if (!events.length) { setErr('Hittade inga händelser för det här konsiliet.'); return }
+        if (!events.length) { setErr('Hittade inga händelser för den här tråden.'); return }
         director.replay(events, 'replay', 1)
       }).catch((e) => setErr(String(e)))
     } else if (director.state.mode !== 'live') director.backToLive()
@@ -81,7 +81,7 @@ export function Kontoret({ query }: { query: URLSearchParams }) {
         <div class="k-status">
           {s.mode === 'live' && (s.active
             ? <span><span class="dot on pulse" /> Pågår: <b>{trig.title}</b></span>
-            : <span class="muted"><span class="dot" /> Inget pågående konsilium. Vakten bevakar din data.</span>)}
+            : <span class="muted"><span class="dot" /> Ingen öppen tråd. Vakten övervakar riggen.</span>)}
           {s.mode === 'replay' && <span><span class="dot" /> Uppspelning: <b>{trig.title}</b></span>}
           {s.mode === 'demo' && <span><span class="dot demo" /> Demo: <b>{trig.title}</b></span>}
         </div>
@@ -91,8 +91,8 @@ export function Kontoret({ query }: { query: URLSearchParams }) {
             <button aria-pressed={s.mode === 'live'} onClick={() => go('kontoret')}>Live</button>
             <button aria-pressed={s.mode === 'demo'} onClick={() => go(`kontoret?demo=1&t=${Date.now()}`)}>Demo</button>
           </div>
-          <select aria-label="Spela upp ett konsilium" value={replayId ?? ''} onChange={(e) => { const v = (e.target as HTMLSelectElement).value; if (v) go(`kontoret?replay=${encodeURIComponent(v)}`) }}>
-            <option value="">{list.length ? 'Spela upp konsilium' : 'Inga sparade konsilier'}</option>
+          <select aria-label="Spela upp en tråd" value={replayId ?? ''} onChange={(e) => { const v = (e.target as HTMLSelectElement).value; if (v) go(`kontoret?replay=${encodeURIComponent(v)}`) }}>
+            <option value="">{list.length ? 'Spela upp en tråd' : 'Inga sparade trådar'}</option>
             {list.map((c) => <option value={c.id}>{dateTime(c.started)}, {triggerText(c.trigger).title}</option>)}
           </select>
         </div>}
@@ -101,7 +101,7 @@ export function Kontoret({ query }: { query: URLSearchParams }) {
       {s.mode === 'demo' && !__PUBLIK_DEMO__ && (
         <div class="demo-banner" role="note">
           <strong>Demo - syntetisk data.</strong>
-          <span>Ett påhittat exempel som visar hur konsiliet arbetar. Inga av siffrorna är uppmätta.</span>
+          <span>Ett påhittat exempel som visar hur läkarteamet arbetar. Inga av siffrorna är uppmätta.</span>
         </div>
       )}
       {err && <div class="demo-banner" role="alert"><strong>Kunde inte spela upp.</strong> <span>{err}</span></div>}
@@ -113,7 +113,7 @@ export function Kontoret({ query }: { query: URLSearchParams }) {
           <Legend />
         </section>
         <aside class="panel k-transcript">
-          <header><h2>Samtalet</h2><span class="meta">{s.consultId && s.mode !== 'demo' ? <span class="mono">{s.consultId.slice(0, 8)}</span> : null}</span></header>
+          <header><h2>Tråden</h2><span class="meta">{s.consultId && s.mode !== 'demo' ? <span class="mono">{s.consultId.slice(0, 8)}</span> : null}</span></header>
           <Transcript entries={d.entries} />
         </aside>
       </div>
@@ -165,7 +165,7 @@ export function Transcript({ entries, compact }: { entries: Entry[]; compact?: b
     const el = ref.current
     if (el && stick.current) el.scrollTop = el.scrollHeight
   }, [entries.length, entries[entries.length - 1]?.struck?.length])
-  if (!entries.length) return <div class="tr-list"><div class="empty">Samtalet visas här när konsiliet arbetar.</div></div>
+  if (!entries.length) return <div class="tr-list"><div class="empty">Tråden visas här när läkarteamet svarar.</div></div>
   return (
     <div class={`tr-list ${compact ? 'compact' : ''}`} ref={ref} onScroll={(e) => {
       const el = e.currentTarget as HTMLDivElement
@@ -203,7 +203,7 @@ function EntryRow({ e }: { e: Entry }) {
       const t = triggerText(e.trigger)
       return (
         <div class="tr-start">
-          <div class="row"><b>Konsiliet kallas in</b>{time}</div>
+          <div class="row"><b>Tråd startad</b>{time}</div>
           <div>{t.title}</div>
           {t.detail && <div class="muted">{t.detail}</div>}
         </div>
@@ -214,10 +214,10 @@ function EntryRow({ e }: { e: Entry }) {
       const cs = cites(e.cites)
       return (
         <div class="tr-say">
-          <div class="row"><Who id={e.agent!} />{to && <span class="faint">till {to}</span>}{time}</div>
+          <div class="row"><Who id={e.agent!} /><span class="faint">{to ? `svarade ${to}` : 'svarade i tråden'}</span>{time}</div>
           <p>{struckText(e.text ?? '', e.struck)}</p>
           {cs.length > 0 && <div class="cites">{cs.map((c) => <span class={`chip k-${c.kind}`} title={c.title}><i />{c.label}</span>)}</div>}
-          {e.struck?.map((s) => <div class="tr-reason"><b>Struket:</b> {s.reason}</div>)}
+          {e.struck?.map((s) => <div class="tr-reason"><b>Strukit av moderator.</b> Anledning: {s.reason}</div>)}
         </div>
       )
     }
@@ -228,9 +228,9 @@ function EntryRow({ e }: { e: Entry }) {
     case 'strike':
       return e.matched ? null : (
         <div class="tr-say tr-struck">
-          <div class="row"><Who id="granskare" /><span class="faint">stryker {e.to ? `${agentInfo(e.to).name.toLowerCase()}s påstående` : ''}</span>{time}</div>
+          <div class="row"><Who id="granskare" /><span class="faint">strök ett påstående{e.to ? ` från ${agentInfo(e.to).name.toLowerCase()}` : ''}</span>{time}</div>
           <p><span class="strike-anim">{e.claim}</span></p>
-          <div class="tr-reason">{e.reason}</div>
+          <div class="tr-reason"><b>Strukit av moderator.</b> Anledning: {e.reason}</div>
         </div>
       )
     case 'verdict': {
@@ -238,7 +238,7 @@ function EntryRow({ e }: { e: Entry }) {
       const lvl = v.level ? LEVELS[String(v.level).toLowerCase()] : null
       return (
         <div class="tr-verdict">
-          <div class="row"><b>Bedömning</b>{lvl && <span class={`tag ${lvl.cls}`}>{lvl.label}</span>}{time}</div>
+          <div class="row"><b>Markerad som lösning</b>{lvl && <span class={`tag ${lvl.cls}`}>{lvl.label}</span>}{time}</div>
           {v.summary && <p>{bindUnits(v.summary)}</p>}
           {v.points.length > 0 && <ul>{v.points.map((p) => <li>{p}</li>)}</ul>}
           {v.questions.length > 0 && <><div class="faint qs-h">Att ta med till vården</div><ol>{v.questions.map((q) => <li>{q}</li>)}</ol></>}

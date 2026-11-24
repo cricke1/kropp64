@@ -288,7 +288,7 @@ export class Scene {
     if (to && this.actors.has(to)) this.face(id, to)
     const b = this.el('ob-bubble')
     b.style.setProperty('--agent', a.info.color)
-    const toName = to ? (to === 'alla' || to === 'all' ? 'till alla' : this.actors.has(to) ? `till ${agentInfo(to).name.toLowerCase()}` : '') : ''
+    const toName = to ? (to === 'alla' || to === 'all' ? 'i tråden' : this.actors.has(to) ? `till ${agentInfo(to).name.toLowerCase()}` : '') : ''
     b.innerHTML = `<div class="who"><b>${esc(a.info.name)}</b>${toName ? `<span>${esc(toName)}</span>` : ''}</div><div class="txt"></div><div class="cites"></div><i class="tail"></i>`
     a.els.bubble = b
     const txt = b.querySelector('.txt') as HTMLElement
@@ -365,7 +365,7 @@ export class Scene {
     const anchor = speaker && this.actors.has(speaker) ? speaker : 'granskare'
     const card = this.el('ob-card ob-strike')
     card.dataset.anchor = anchor
-    card.innerHTML = `<div class="claim"><span>${esc(claim)}</span></div><div class="reason"><b>Struket av granskaren.</b> ${esc(reason || 'Saknar stöd i datan.')}</div>`
+    card.innerHTML = `<div class="claim"><span>${esc(claim)}</span></div><div class="reason"><b>Strukit av moderator.</b> Anledning: ${esc(reason || 'saknar stöd i datan.')}</div>`
     await this.wait(0.5)
     card.querySelector('.claim span')!.classList.add('struck')
     await this.wait(2.8 + Math.min(4, (claim.length + reason.length) / 50))

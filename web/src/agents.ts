@@ -24,7 +24,7 @@ const coatWhite = '#e9ecea'
 
 export const AGENTS: Record<string, AgentInfo> = {
   ordforande: {
-    id: 'ordforande', name: 'Ordföranden', role: 'Allmänläkare', color: '#5b8bc9',
+    id: 'ordforande', name: 'Trådstartaren', role: 'Allmänläkare', color: '#5b8bc9',
     look: { skin: '#e8b996', hair: '#b9b4ad', hairStyle: 'side', coat: coatWhite, shirt: '#2f4f7a', pants: '#3a4150', stethoscope: true, beard: true },
   },
   kardiolog: {
@@ -44,15 +44,15 @@ export const AGENTS: Record<string, AgentInfo> = {
     look: { skin: '#e2ad88', hair: '#7a3f22', hairStyle: 'long', coat: '#c6a04a', shirt: '#efe6d2', pants: '#4a3f33' },
   },
   labb: {
-    id: 'labb', name: 'Kemisten', role: 'Klinisk kemist', color: '#3fa6a0',
+    id: 'labb', name: 'Labbet', role: 'Klinisk kemist', color: '#3fa6a0',
     look: { skin: '#f2cfb3', hair: '#5a3a26', hairStyle: 'curly', coat: coatWhite, shirt: '#2f8f8a', pants: '#35403f', glasses: true },
   },
   advokat: {
-    id: 'advokat', name: 'Advokaten', role: 'Djävulens advokat', color: '#9aa3a8',
+    id: 'advokat', name: 'Trollet', role: 'Djävulens advokat', color: '#9aa3a8',
     look: { skin: '#d9a27c', hair: '#141414', hairStyle: 'short', coat: '#363c42', shirt: '#b23b33', pants: '#2a2e33', beard: true },
   },
   granskare: {
-    id: 'granskare', name: 'Granskaren', role: 'Faktagranskare', color: '#e5574e',
+    id: 'granskare', name: 'Moderatorn', role: 'Faktagranskare', color: '#e5574e',
     look: { skin: '#eec3a2', hair: '#8c8c88', hairStyle: 'bald', coat: '#8f8467', shirt: '#e9e4d6', pants: '#3d3a33', glasses: true },
   },
 }

@@ -17,7 +17,7 @@ export function RecoveryScore() {
   const p: number | null = d?.poang ?? null
   return (
     <section class="panel score">
-      <header><h2>Återhämtning i dag</h2><span class="meta">Öppen formel, inga dolda vikter</span></header>
+      <header><h2>Headroom i dag</h2><span class="meta">Öppen formel, inga dolda vikter</span></header>
       <div class="body">
         {q.error ? <div class="empty">Kunde inte hämta ({q.error}).</div> : p == null ? <div class="empty">{q.loading ? 'Hämtar.' : 'För lite data än. Poängen kräver nattdata och minst en veckas baslinje.'}</div> : (
           <div class="score-grid">
@@ -30,8 +30,8 @@ export function RecoveryScore() {
               <tbody>
                 <tr><td>Start</td><td /><td /><td /><td class="r num">50</td></tr>
                 {delar.hrv && <tr><td>HRV</td><td class="r num">{fmtNum(delar.hrv.natt_ms, 0)} ms</td><td class="r num">{fmtNum(delar.hrv.baslinje_ms, 0)} ms</td><td class="r num">{zText(delar.hrv.z)}</td><td class="r num">{zText(12 * delar.hrv.z, 1)}</td></tr>}
-                {delar.vilopuls && <tr><td>Vilopuls</td><td class="r num">{fmtNum(delar.vilopuls.natt, 0)}</td><td class="r num">{fmtNum(delar.vilopuls.baslinje, 0)}</td><td class="r num">{zText(delar.vilopuls.z)}</td><td class="r num">{zText(-10 * delar.vilopuls.z, 1)}</td></tr>}
-                {delar.somn && <tr><td>Sömn</td><td class="r num">{fmtNum(delar.somn.timmar, 1)} h</td><td class="r num">7,5 h</td><td /><td class="r num">{zText(8 * (delar.somn.timmar - 7.5), 1)}</td></tr>}
+                {delar.vilopuls && <tr><td>Idle-klock (vilopuls)</td><td class="r num">{fmtNum(delar.vilopuls.natt, 0)}</td><td class="r num">{fmtNum(delar.vilopuls.baslinje, 0)}</td><td class="r num">{zText(delar.vilopuls.z)}</td><td class="r num">{zText(-10 * delar.vilopuls.z, 1)}</td></tr>}
+                {delar.somn && <tr><td>Viloläge (sömn)</td><td class="r num">{fmtNum(delar.somn.timmar, 1)} h</td><td class="r num">7,5 h</td><td /><td class="r num">{zText(8 * (delar.somn.timmar - 7.5), 1)}</td></tr>}
               </tbody>
             </table>
             <code class="formula">{d.formel ?? '50 + 12*z_hrv - 10*z_vilopuls + 8*(sömntimmar-7.5)'}</code>
@@ -54,9 +54,9 @@ export function BriefPanel() {
   }
   return (
     <section class="panel brief">
-      <header><h2>Morgonbrief</h2><span class="meta">{b ? b.datum : 'Idrottsläkaren, lokal modell'}</span></header>
+      <header><h2>POST-skärmen</h2><span class="meta">{b ? b.datum : 'Idrottsläkaren, lokal modell'}</span></header>
       <div class="body">
-        {b ? <p class="lead">{b.text}</p> : <div class="faint">{__PUBLIK_DEMO__ ? 'Språkmodellen är avstängd i den publika demon. På riktigt skrivs briefen varje morgon av idrottsläkaren utifrån nattens siffror.' : 'Ingen brief i dag än. Den skrivs varje morgon av idrottsläkaren utifrån nattens siffror.'}</div>}
+        {b ? <p class="lead">{b.text}</p> : <div class="faint">{__PUBLIK_DEMO__ ? 'Språkmodellen är avstängd i den publika demon. På riktigt skriver idrottsläkaren morgonens POST-rapport utifrån nattens siffror.' : 'Ingen POST-rapport i dag än. Idrottsläkaren skriver den varje morgon utifrån nattens siffror.'}</div>}
         {b?.fakta && (
           <div class="brief-facts">
             {b.fakta.steg_senaste_dygnet != null && <span class="tag">{Number(b.fakta.steg_senaste_dygnet).toLocaleString('sv-SE')} steg</span>}
@@ -88,16 +88,16 @@ export function DatornPanel() {
   return (
     <section class="panel">
       <header>
-        <h2>Puls vid datorn</h2>
+        <h2>Uptime vid datorn</h2>
         <div class="seg" role="group" aria-label="Period">
           {[[24, 'Dygn'], [168, 'Vecka']].map(([h, l]) => <button aria-pressed={hours === h} onClick={() => setHours(h as number)}>{l}</button>)}
         </div>
       </header>
       <div class="body">
-        <p class="faint small first">Minuter med varje typ av program i förgrunden, och medianpulsen under just de minuterna. Bara kategorin sparas, aldrig fönstertitlar.</p>
+        <p class="faint small first">Minuter med varje typ av program i förgrunden, och medianpulsen (BPM) under just de minuterna. Bara kategorin sparas, aldrig fönstertitlar.</p>
         {q.error ? <div class="empty">Kunde inte hämta ({q.error}).</div> : !total ? <div class="empty">{q.loading ? 'Hämtar.' : 'Ingen datortid registrerad.'}</div> : (
           <table class="data datorn">
-            <thead><tr><th>Kategori</th><th class="r">Tid</th><th style="width:30%" /><th class="r">Medianpuls</th><th style="width:26%" /></tr></thead>
+            <thead><tr><th>Kategori</th><th class="r">Tid</th><th style="width:30%" /><th class="r">Klockfrekvens, median</th><th style="width:26%" /></tr></thead>
             <tbody>
               {KATS.map(([key, label, col]) => {
                 const x = k![key]

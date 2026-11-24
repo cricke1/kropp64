@@ -1,8 +1,8 @@
 // Formattering av tider, mätvärden och källhänvisningar.
 
 export const METRICS: Record<string, { label: string; short: string; unit: string; color: string; digits: number }> = {
-  hr: { label: 'Puls', short: 'HR', unit: 'slag/min', color: 'var(--hr)', digits: 0 },
-  hrv_rmssd: { label: 'HRV (RMSSD)', short: 'HRV', unit: 'ms', color: 'var(--hrv)', digits: 0 },
+  hr: { label: 'Klockfrekvens', short: 'Puls', unit: 'BPM', color: 'var(--hr)', digits: 0 },
+  hrv_rmssd: { label: 'Timingmarginal (HRV)', short: 'HRV', unit: 'ms', color: 'var(--hrv)', digits: 0 },
   spo2: { label: 'Syremättnad', short: 'SpO2', unit: '%', color: 'var(--spo2)', digits: 0 },
   resp_rate: { label: 'Andningsfrekvens', short: 'Andn', unit: '/min', color: 'var(--resp)', digits: 1 },
   dator_kod: { label: 'Kod', short: 'Kod', unit: 'min', color: 'var(--spo2)', digits: 0 },

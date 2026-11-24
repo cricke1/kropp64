@@ -50,7 +50,7 @@ export function Systemet() {
     <div class="systemet">
       <div class="pagehead">
         <h1>Systemet</h1>
-        <p>Allt körs lokalt på en Mac mini M4 med 16 GB. Här syns vad det kostar.</p>
+        <p>Rigg nr 2: Mac minin, M4 med 16 GB. Allt körs lokalt, och här syns vad det kostar.</p>
       </div>
       {missing && (
         <div class="demo-banner" role="note">
@@ -116,7 +116,7 @@ export function Systemet() {
               <>
                 <table class="data">
                   <thead><tr><th>Steg</th><th class="r">p50</th><th class="r">p95</th></tr></thead>
-                  <tbody>{['Mottagning (ingest)', 'Vakt, regelkoll', 'Specialist, per verktygsrunda', 'Granskning', 'Hela konsiliet'].map((x) => <tr><td>{x}</td><td class="r faint">-</td><td class="r faint">-</td></tr>)}</tbody>
+                  <tbody>{['Mottagning (ingest)', 'Vakt, regelkoll', 'Specialist, per verktygsrunda', 'Granskning', 'Hela tråden'].map((x) => <tr><td>{x}</td><td class="r faint">-</td><td class="r faint">-</td></tr>)}</tbody>
                 </table>
                 <p class="faint small">Servern mäter inte latens per steg än. Önskemålet finns i docs/API-ONSKEMAL.md.</p>
               </>

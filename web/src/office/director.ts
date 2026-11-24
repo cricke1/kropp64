@@ -316,8 +316,8 @@ export class Director {
         this.add({ kind: 'verdict', ts: ev.ts, verdict: v })
         const parts = verdictParts(v)
         const lvl = parts.level ? LEVELS[String(parts.level).toLowerCase()] : undefined
-        s.showVerdict(`<header><b>Bedömning</b>${lvl ? `<span class="tag ${lvl.cls}">${esc(lvl.label)}</span>` : ''}<button class="x" aria-label="Stäng">Stäng</button></header>
-          <p>${esc(parts.summary || 'Konsiliet har lämnat en bedömning.')}</p>
+        s.showVerdict(`<header><b>Markerad som lösning</b>${lvl ? `<span class="tag ${lvl.cls}">${esc(lvl.label)}</span>` : ''}<button class="x" aria-label="Stäng">Stäng</button></header>
+          <p>${esc(parts.summary || 'Trådstartaren har markerat tråden som löst.')}</p>
           ${parts.questions.length ? `<div class="qs"><span>Att ta med till vården</span><ol>${parts.questions.slice(0, 4).map((q) => `<li>${esc(q)}</li>`).join('')}</ol></div>` : ''}`)
         if (instant) { this.state.active = false; return }
         const chair = s.members.includes('ordforande') ? 'ordforande' : s.members[0]

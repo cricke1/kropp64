@@ -21,18 +21,18 @@ function List() {
   return (
     <div>
       <div class="pagehead">
-        <h1>Konsilier</h1>
-        <p>Varje gång vakten eller du kallar in läkarteamet sparas hela samtalet här.</p>
+        <h1>Trådar</h1>
+        <p>Varje gång vakten eller du startar en tråd sparas hela tråden här, med källor och strykningar.</p>
       </div>
       <section class="panel">
-        {q.error ? <div class="empty">Kunde inte hämta konsilier ({q.error}).</div>
+        {q.error ? <div class="empty">Kunde inte hämta trådar ({q.error}).</div>
           : !rows.length ? (
             <div class="empty">
-              {q.loading ? 'Hämtar.' : <>Inga konsilier än. <a href="#/kontoret?demo=1">Se demon i kontoret</a> eller <a href="#/fraga">ställ en fråga</a>.</>}
+              {q.loading ? 'Hämtar.' : <>Inga trådar än. <a href="#/kontoret?demo=1">Se demon i kontoret</a> eller <a href="#/fraga">starta en tråd</a>.</>}
             </div>
           ) : (
             <table class="data clickable">
-              <thead><tr><th>Start</th><th>Anledning</th><th>Bedömning</th><th class="r">Tid</th><th class="r">Tokens</th></tr></thead>
+              <thead><tr><th>Start</th><th>Anledning</th><th>Lösning</th><th class="r">Tid</th><th class="r">Tokens</th></tr></thead>
               <tbody>
                 {rows.map((c) => {
                   const t = triggerText(c.trigger)
@@ -42,7 +42,7 @@ function List() {
                     <tr onClick={() => go(`konsilier/${encodeURIComponent(c.id)}`)} tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') go(`konsilier/${encodeURIComponent(c.id)}`) }}>
                       <td class="num nowrap">{dateTime(c.started)}</td>
                       <td><div>{t.title}</div>{t.detail && <div class="faint clamp">{t.detail}</div>}</td>
-                      <td>{c.verdict ? <div class="vcell">{levelTag(c.verdict)}<span class="clamp">{v.summary}</span></div> : <span class="faint">{c.ended ? 'Ingen bedömning' : 'Pågår'}</span>}</td>
+                      <td>{c.verdict ? <div class="vcell">{levelTag(c.verdict)}<span class="clamp">{v.summary}</span></div> : <span class="faint">{c.ended ? 'Ingen lösning' : 'Pågår'}</span>}</td>
                       <td class="r num">{sec != null ? duration(sec) : '-'}</td>
                       <td class="r num">{fmtNum(tokens(c.stats))}</td>
                     </tr>
@@ -92,13 +92,13 @@ function Detail({ id }: { id: string }) {
   return (
     <div class="konsil">
       <div class="pagehead">
-        <a class="btn small" href="#/konsilier">Alla konsilier</a>
+        <a class="btn small" href="#/konsilier">Alla trådar</a>
         <h1>{trig.title}</h1>
         <span style="flex:1" />
         <button class="btn primary small" onClick={() => go(`kontoret?replay=${encodeURIComponent(id)}`)}>Spela upp i kontoret</button>
       </div>
       {q.loading && <div class="empty">Hämtar.</div>}
-      {q.error && <div class="empty">Kunde inte hämta konsiliet ({q.error}).</div>}
+      {q.error && <div class="empty">Kunde inte hämta tråden ({q.error}).</div>}
       {q.data && (
         <div class="k-detail">
           <div class="col">
@@ -107,7 +107,7 @@ function Detail({ id }: { id: string }) {
               <div class="body"><p class="lead">{trig.detail || trig.title}</p></div>
             </section>
             <section class="panel">
-              <header><h2>Bedömning</h2>{levelTag(verdict)}</header>
+              <header><h2>Markerad som lösning</h2>{levelTag(verdict)}</header>
               <div class="body">
                 {verdict ? (
                   <>
@@ -116,11 +116,11 @@ function Detail({ id }: { id: string }) {
                     {v.questions.length > 0 && <><h3 class="sub">Att ta med till vården</h3><ol class="plain">{v.questions.map((x) => <li>{x}</li>)}</ol></>}
                     <p class="faint small">Underlag, inte diagnos. Kontakta vården vid oro.</p>
                   </>
-                ) : <div class="empty">Ingen bedömning sparad.</div>}
+                ) : <div class="empty">Ingen lösning sparad.</div>}
               </div>
             </section>
             <section class="panel">
-              <header><h2>Struket av granskaren</h2><span class="meta num">{strikes.length}</span></header>
+              <header><h2>Strukit av moderator</h2><span class="meta num">{strikes.length}</span></header>
               <div class="body">
                 {!strikes.length ? <div class="faint">Inget struket.</div> : (
                   <ul class="strikes">{strikes.map((s) => <li><span class="strike-anim">{s.claim}</span><div class="muted">{s.reason}</div></li>)}</ul>
@@ -148,7 +148,7 @@ function Detail({ id }: { id: string }) {
             </section>
           </div>
           <section class="panel k-transcript">
-            <header><h2>Samtalet</h2><span class="meta num">{entries.filter((e) => e.kind === 'say').length} inlägg</span></header>
+            <header><h2>Tråden</h2><span class="meta num">{entries.filter((e) => e.kind === 'say').length} inlägg</span></header>
             <Transcript entries={entries} />
           </section>
         </div>

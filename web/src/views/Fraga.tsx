@@ -23,15 +23,15 @@ export function Fraga() {
       await api.ask(text, hours)
       go('kontoret')
     } catch (x: any) {
-      setErr(x?.status === 401 ? 'Servern nekade frågan (ej behörig).' : `Kunde inte starta konsiliet: ${x?.message ?? x}`)
+      setErr(x?.status === 401 ? 'Servern nekade frågan (ej behörig).' : `Kunde inte starta tråden: ${x?.message ?? x}`)
     } finally { setBusy(false) }
   }
 
   return (
     <div class="fraga">
       <div class="pagehead">
-        <h1>Fråga konsiliet</h1>
-        <p>Läkarteamet läser din data och journal, diskuterar och svarar. Du kan följa arbetet live i kontoret.</p>
+        <h1>Ny tråd</h1>
+        <p>Starta en tråd så svarar läkarteamet utifrån din data och journal. Du kan följa tråden live i kontoret.</p>
       </div>
       <form class="panel ask" onSubmit={submit}>
         <div class="body">
@@ -54,12 +54,12 @@ export function Fraga() {
             </label>
             <span style="flex:1" />
             <span class="faint num">{q.length}/600</span>
-            <button class="btn primary" disabled={busy || !q.trim()}>{busy ? 'Skickar' : 'Kalla in konsiliet'}</button>
+            <button class="btn primary" disabled={busy || !q.trim()}>{busy ? 'Skickar' : 'Starta tråden'}</button>
           </div>
           {err && <div class="err">{err}</div>}
         </div>
       </form>
-      <p class="faint small note">Konsiliet ställer inga diagnoser. Svaret är ett underlag med frågor att ta med till vården. Vid akuta besvär, ring 112. Vid frågor om vård, ring 1177.</p>
+      <p class="faint small note">Läkarteamet ställer inga diagnoser. Svaret är ett underlag med frågor att ta med till vården. Vid akuta besvär, ring 112. Vid frågor om vård, ring 1177.</p>
     </div>
   )
 }
