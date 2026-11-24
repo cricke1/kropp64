@@ -1,6 +1,6 @@
 # Skärmbilder
 
-Utvecklingsbilder från bygget. Ingen av dem visar riktig hälsodata: allt är syntetiskt, demo eller emulator.
+Utvecklingsbilder från bygget, tagna före namnbytet till Kropp64 (gränssnittet hette då Konsiliet). Ingen av dem visar riktig hälsodata: allt är syntetiskt, demo eller emulator. Bilderna till tävlingsbidraget finns i docs/bidrag-bilder.
 Varje bild har samma märkning i en remsa i nederkanten (gjord med `tools/etikett.py`).
 
 | Bild | Märkning | Vad det är |
