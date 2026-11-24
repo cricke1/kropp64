@@ -1,10 +1,23 @@
-# Överklockad - stilguide
+# Kropp64 - stilguide
 
-Projektet heter **Överklockad** (tidigare arbetsnamn Konsiliet, bytt eftersom "konsilium" på svenska
-främst betyder kyrkomöte). Domän: overklockad.se. Tagline: **Hårdvaruövervakning för din viktigaste rigg: dig själv.**
+Projektet heter **Kropp64** (skrivs alltid så: versal K, siffrorna ihop). Domän: kropp64.se.
+Tagline: **Sensorpanelen för din viktigaste rigg: dig själv.** Förklaring i en mening där det behövs:
+"Som AIDA64 och HWiNFO64, fast för kroppen, och med ett lokalt läkarteam av AI-agenter som läser sensorerna."
 
-Idén: kroppen är riggen, jag är hårdvaran, och läkarteamet är en supporttråd på forumet. Humorn talar
-SweClockers-språk. Aldrig em dash (—), använd bindestreck (-).
+Namnhistorik (för RESAN): arbetsnamnet Konsiliet byttes när vi såg att "konsilium" på svenska främst betyder
+kyrkomöte; "Överklockad" testades men kunde betyda vilket hårdvaruverktyg som helst. Kropp64 säger både kropp och
+hårdvarumonitor direkt.
+
+Idén: kroppen är riggen, jag är hårdvaran, översikten ser ut och känns som en sensorpanel (HWiNFO-känsla: tät
+tabell med Aktuellt / Min / Max / Medel per sensor, värden i tabulära siffror), och läkarteamet är en supporttråd
+på forumet. Humorn talar SweClockers-språk. Ordet "överklockad" får användas i texter ("överklockad utan last").
+Nämn AIDA64/HWiNFO bara som jämförelse i text, aldrig som logga eller i namn på funktioner. Aldrig em dash (—),
+använd bindestreck (-).
+
+## Sensorpanelen (översikten)
+Rubriker i HWiNFO-stil: Sensor | Aktuellt | Min | Max | Medel, grupperat som hårdvara:
+"Hjärta (Pixel Watch)": Klockfrekvens, Idle-klock, Timingmarginal (HRV); "Andning": Andningsfrekvens, SpO2;
+"Kylning": Hudtemperatur, Headroom; "Last": Steg, Stresstest (träning), Uptime vid datorn.
 
 ## Grundregel: akut är aldrig skämt
 
