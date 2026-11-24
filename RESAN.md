@@ -144,3 +144,17 @@ tidigare tiotals sekunder med 1 Hz-data, nu 0,1 s). Nätter definieras av sömnp
 klockan 00-06, som passar dåligt för någon som kodar till två. Nedkylningen överlever omstart.
 Källprioriteten (klockappen före Health Connect) gäller per minut i stället för per fönster, så att
 historik från innan klockappen installerades inte kastas. Sex nya tester.
+
+**1177-hämtaren litade för mycket på sig själv.** Granskningen visade att inloggningskontrollen var sann
+redan före BankID (adressen journalen.1177.se syns direkt), att hämtaren klickade på alla knappar med
+aria-expanded (menyer, språkval) och följde alla länkar, och att kontrollen av den lokala modellens
+tolkning var trasig: `"" in sidtext` är alltid sant, så en tom analys passerade, och anteckningstexten
+kontrollerades inte alls. Ett test jag skrev hittade dessutom att ett felparat provvärde ("Ferritin
+141 g/L", där 141 egentligen var Hb) slank igenom. Fix: inloggning kräver en "Logga ut"-knapp,
+expandering bara inom huvudinnehållet, bara journallänkar följs, modellens anteckningar måste vara
+avskrivna (80 % av orden finns i sidan) med ett datum som står i sidan, och analys och värde måste stå
+på samma rad med värdet som ett helt tal. Stabila id så att en ny hämtning inte ger dubbletter, och
+två likadana prover samma dag slås inte längre ihop. Tre tester med en fiktiv journalsida.
+
+**Gamla larm kunde väcka sms-kedjan igen.** När mobilen återansluter skickar servern de senaste 300
+händelserna, inklusive gamla akutlarm. Omskickade händelser märks nu `replay: true`.

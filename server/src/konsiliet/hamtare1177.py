@@ -73,7 +73,7 @@ def tolka_anteckningar(poster: list[dict[str, str]], kind: str) -> int:
             datum = "-".join(m.groups()) if m else ""
             c.execute(
                 "INSERT OR REPLACE INTO journal(id, date, unit, author, kind, title, text, fetched) VALUES (?,?,?,?,?,?,?,?)",
-                (_hid(kind, datum, text[:400]), datum, p.get("enhet"), p.get("yrke"), kind,
+                (_hid(datum, re.sub(r"\W+", "", text)[:600]), datum, p.get("enhet"), p.get("yrke"), kind,
                  p.get("rubrik", "")[:200], text, time.time()))
             n += 1
     return n
@@ -81,6 +81,7 @@ def tolka_anteckningar(poster: list[dict[str, str]], kind: str) -> int:
 
 def tolka_provsvar(rader: list[dict[str, str]]) -> int:
     n = 0
+    sedda: dict[str, int] = {}
     with db.tx() as c:
         for r in rader:
             analyt, varde = r.get("analys", "").strip(), r.get("varde", "").strip()
@@ -102,7 +103,8 @@ def tolka_provsvar(rader: list[dict[str, str]]) -> int:
             c.execute(
                 "INSERT OR REPLACE INTO labs(id, date, analyte, value, value_raw, unit, ref_low, ref_high, flag, fetched)"
                 " VALUES (?,?,?,?,?,?,?,?,?,?)",
-                (_hid(datum, analyt, varde), datum, analyt, value, varde, unit or r.get("enhet"), lo, hi, flag, time.time()))
+                (_hid(datum, analyt, varde, str(sedda.setdefault(f"{datum}|{analyt}|{varde}", 0))), datum, analyt, value, varde, unit or r.get("enhet"), lo, hi, flag, time.time()))
+            sedda[f"{datum}|{analyt}|{varde}"] = sedda.get(f"{datum}|{analyt}|{varde}", 0) + 1
             n += 1
     return n
 
@@ -180,7 +182,9 @@ def _llm_tolka(sidtext: str, kategori: str) -> tuple[list[dict[str, str]], list[
 
     anteckningar: list[dict[str, str]] = []
     prov: list[dict[str, str]] = []
-    for i in range(0, min(len(sidtext), 60000), 6000):
+    if len(sidtext) > 200000:
+        _status("varning", detalj=f"Sidan är {len(sidtext)} tecken, bara de första 200 000 tolkas")
+    for i in range(0, min(len(sidtext), 200000), 6000):
         bit = sidtext[i:i + 6500]
         r = llm.chat(settings.model_orchestrator, [
             {"role": "system", "content": "Du tolkar text från en svensk patientjournal (1177) till strukturerad data. "
@@ -191,11 +195,25 @@ def _llm_tolka(sidtext: str, kategori: str) -> tuple[list[dict[str, str]], list[
             d = json.loads(r.content)
         except json.JSONDecodeError:
             continue
+        normal = re.sub(r"\s+", " ", sidtext)
+        rader = [re.sub(r"\s+", " ", r) for r in sidtext.splitlines()]
         for a in d.get("anteckningar", []):
-            if a.get("datum", "") in sidtext and len(a.get("text", "")) > 15:
+            datum, text = a.get("datum", "").strip(), re.sub(r"\s+", " ", a.get("text", "")).strip()
+            # Datumet måste stå i sidan, och anteckningstexten måste vara avskriven, inte sammanfattad:
+            # minst 80 % av dess ord ska finnas i sidtexten.
+            ord_ = text.split()
+            tackning = sum(1 for o in ord_ if o in normal) / max(1, len(ord_))
+            if DATE.fullmatch(datum) and datum in normal and len(text) > 15 and tackning >= 0.8:
                 anteckningar.append(a)
         for p in d.get("provsvar", []):
-            if str(p.get("varde", "")).strip() and str(p["varde"]).strip() in sidtext and p.get("analys", "") in sidtext:
+            analys, varde = str(p.get("analys", "")).strip(), str(p.get("varde", "")).strip()
+            if not analys or not varde:
+                continue
+            # Analys och värde måste stå på samma rad, i den ordningen, med värdet som ett helt tal
+            # (så att 14 inte matchar 141 och ett värde inte kan paras med fel analys).
+            monster = re.compile(re.escape(analys) + r".*?(?<![\d,.])" + re.escape(varde.split()[0]) + r"(?![\d,.])")
+            ok = any(monster.search(r) for r in rader)
+            if ok:
                 prov.append(p)
     return anteckningar, prov
 
@@ -227,8 +245,13 @@ async def _login(page: Any) -> bool:
         pass
     t0 = time.time()
     while time.time() - t0 < LOGIN_TIMEOUT:
-        if "journalen.1177.se" in page.url or "e-tjanster.1177.se" in page.url:
-            return True
+        # URL:en räcker inte (journalen.1177.se syns redan före inloggning). Kräv en utloggningsknapp.
+        if "idp." not in page.url and ("1177.se" in page.url):
+            try:
+                if await page.get_by_text(re.compile(r"^\s*Logga ut\s*$", re.I)).count():
+                    return True
+            except Exception:
+                pass
         img = page.locator('img[alt*="QR-kod"]').first
         try:
             if await img.count():
@@ -259,7 +282,9 @@ async def _hamta() -> dict[str, int]:
         _status("inloggad")
         await page.goto(START, wait_until="networkidle")
         start = await page.evaluate(EXTRACT_JS)
-        kategorier = {a["href"]: a["text"] for a in start["nav"] if "/logout" not in a["href"].lower()}
+        UNDVIK = re.compile(r"logout|logga|lang|sprak|språk|installning|inställning|kontakt|hjalp|hjälp|om-|cookie|#", re.I)
+        kategorier = {a["href"]: a["text"] for a in start["nav"]
+                      if not UNDVIK.search(a["href"]) and not UNDVIK.search(a["text"])}
         (outdir / "start.json").write_text(json.dumps(start, ensure_ascii=False, indent=1))
 
         for i, (url, namn) in enumerate(kategorier.items()):
@@ -267,9 +292,10 @@ async def _hamta() -> dict[str, int]:
             try:
                 await page.goto(url, wait_until="networkidle", timeout=30000)
                 # Expandera allt som går att expandera.
-                for _ in range(20):
-                    knapp = page.locator("button:has-text('Visa fler'), button:has-text('Visa mer'), "
-                                         "button[aria-expanded='false']").first
+                for _ in range(40):
+                    knapp = page.locator("main button:has-text('Visa fler'), main button:has-text('Visa mer'), "
+                                         "main button:has-text('Visa hela'), main [role='region'] "
+                                         "button[aria-expanded='false'], main article button[aria-expanded='false']").first
                     if not await knapp.count():
                         break
                     await knapp.click(timeout=3000)
