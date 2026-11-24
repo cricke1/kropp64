@@ -62,6 +62,14 @@ CREATE TABLE IF NOT EXISTS labs (
     fetched   REAL NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS exercise (
+    id      TEXT PRIMARY KEY,
+    start   REAL NOT NULL,
+    end     REAL,                   -- NULL medan passet pågår
+    typ     TEXT NOT NULL,
+    source  TEXT NOT NULL DEFAULT 'watch'
+);
+
 CREATE TABLE IF NOT EXISTS events (
     id      INTEGER PRIMARY KEY AUTOINCREMENT,
     ts      REAL NOT NULL,
@@ -205,3 +213,10 @@ def recent_events(limit: int = 200, kinds: list[str] | None = None) -> list[dict
         {"id": r["id"], "ts": r["ts"], "kind": r["kind"], "payload": json.loads(r["payload"])}
         for r in reversed(rows)
     ]
+
+
+def under_pass(start: float, end: float) -> bool:
+    """Sant om ett träningspass överlappar perioden (pågående pass räknas till nu)."""
+    r = conn().execute("SELECT 1 FROM exercise WHERE start < ? AND COALESCE(end, ?) > ? "
+                       "AND source NOT LIKE '%emulator%' LIMIT 1", (end, time.time(), start)).fetchone()
+    return r is not None

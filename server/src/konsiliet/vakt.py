@@ -65,7 +65,9 @@ def _baseline(metric: str, hour: int) -> tuple[float, float] | None:
 
 
 def _resting(minutes: float) -> bool:
-    """Sant om nästan inga steg tagits under perioden."""
+    """Sant om nästan inga steg tagits under perioden och inget träningspass pågår."""
+    if db.under_pass(time.time() - minutes * 60, time.time()):
+        return False
     steps = _window("steps", minutes)
     return steps.size == 0 or float(steps[:, 1].sum()) < 20
 

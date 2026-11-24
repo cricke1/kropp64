@@ -155,6 +155,23 @@ def ingest_sleep(sess: SleepSession) -> dict[str, Any]:
     return {"stored": 1}
 
 
+class Exercise(BaseModel):
+    id: str
+    start: float
+    end: float | None = None
+    typ: str
+    source: str = "watch"
+
+
+@app.post("/api/ingest/exercise", dependencies=[Depends(auth)])
+def ingest_exercise(ex: Exercise) -> dict[str, Any]:
+    """Träningspass. Skicka vid start (end=null) och igen vid slut. Vakten bortser från hög puls under pass."""
+    with db.tx() as c:
+        c.execute("INSERT OR REPLACE INTO exercise(id, start, end, typ, source) VALUES (?,?,?,?,?)",
+                  (ex.id, ex.start, ex.end, ex.typ, ex.source))
+    return {"stored": 1}
+
+
 @app.get("/api/metrics", dependencies=[Depends(auth)])
 def metrics() -> list[dict[str, Any]]:
     return db.metrics_available()
