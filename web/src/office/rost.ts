@@ -28,6 +28,8 @@ interface DemoRad { nr: number; agent: string; text: string; fil: string }
 
 export interface SpeakOpts {
   rate: number                 // uppspelningshastighet, följer scenens hastighet
+  maxWait: number              // sekunder att vänta på att rösten börjar (syntesen är långsammare än realtid)
+  giveUp?: () => boolean       // avbryt väntan i förtid, t.ex. när nya händelser väntar live
   onFrame?: () => void         // anropas medan rösten hörs (munrörelser)
 }
 
@@ -70,7 +72,7 @@ class Rost {
     if (u) fetch(u).catch(() => {})
   }
 
-  /** Spelar repliken. Löser när den är slut, avbruten, eller om ljudet inte hunnit börja inom 8 s. */
+  /** Spelar repliken. Löser när den är slut, avbruten, eller om ljudet inte hunnit börja inom maxWait. */
   async speak(l: Line, o: SpeakOpts): Promise<void> {
     if (!this.on) return
     this.stop()
@@ -83,13 +85,17 @@ class Rost {
     this.audio = a
     await new Promise<void>((resolve) => {
       let tick = 0
+      const t0 = Date.now()
       const done = () => {
-        clearTimeout(slow); clearInterval(tick)
+        clearInterval(slow); clearInterval(tick)
         if (this.audio === a) { this.audio = null; this.finish = null }
         resolve()
       }
       this.finish = () => { a.pause(); done() }
-      const slow = setTimeout(() => { if (a.currentTime === 0) this.finish?.() }, 8000)
+      const slow = setInterval(() => {
+        if (a.currentTime > 0) return
+        if (Date.now() - t0 > o.maxWait * 1000 || o.giveUp?.()) this.finish?.()
+      }, 250)
       a.addEventListener('ended', done)
       a.addEventListener('error', done)
       a.addEventListener('playing', () => { if (o.onFrame && !tick) tick = window.setInterval(() => { if (!a.paused) o.onFrame!() }, 80) })

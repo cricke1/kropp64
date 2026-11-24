@@ -348,6 +348,9 @@ export class Director {
     const a = this.scene.ensure(line.agent)
     return rost.speak(line, {
       rate: live ? 1 : this.state.speed,
+      // Live väntar så länge inget annat händer; uppspelning upp till 40 s (rösten görs i förväg på servern)
+      maxWait: this.state.mode === 'demo' ? 5 : live ? 90 : 40,
+      giveUp: live ? () => this.queue.length > 0 : undefined,
       onFrame: () => { a.mouthUntil = this.scene.t + 0.15 },
     })
   }
