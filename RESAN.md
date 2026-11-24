@@ -181,3 +181,14 @@ Fem nya enhetstester (totalt 13). Testat mot separat instans: mobilens nät av, 
 40 sekunder. Larmet kom fram som historik, gav notis, och fristen blev larmets tid plus två minuter (inte mottagningstid
 plus två). Sms:et gick 20 millisekunder efter fristen. Servern startades sedan om medan larmet fortfarande var under
 5 minuter gammalt: historiken skickades om men gav ingen ny notis och ingen ny sms-kedja.
+
+**Klockappen klipptes av den runda skärmen.** Listan var en ScalingLazyColumn utan utfyllnad från ScreenScaffold,
+så innehåll scrollade in under klockslaget överst och breda knappar och textrader sköts ut över cirkelns kant.
+Fix: TransformingLazyColumn med ScreenScaffolds utfyllnad, SurfaceTransformation på knapparna (de krymper mot
+kanten), samma krympning på textblocken plus extra sidomarginal, och klockslaget tonas bort så fort listan inte
+står högst upp. Klockans skärmbilder är tagna om och maskerade till cirkeln som syns på en rund klocka.
+
+**Serveradressen låg inbyggd i mobilappen.** Standardadressen var Mac minins Tailscale-adress, vilket inte hör
+hemma i ett publikt repo. Nu finns ingen inbyggd adress: första gången visas en egen vy där adressen måste anges
+och testas (med möjlighet att spara ändå om servern inte svarar just då). Utan adress görs inga anrop alls och
+klockdata ligger kvar i kön tills adressen är satt.

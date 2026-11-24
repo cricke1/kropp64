@@ -85,7 +85,7 @@ object Sender {
         dao.pruneOlderThan(System.currentTimeMillis() / 1000.0 - 30 * 86400)
         if (dao.count() == 0) return FlushResult.Empty
         val node = findPhone(ctx) ?: run {
-            WatchState.noteError("Mobilen nås inte. Data sparas på klockan.")
+            WatchState.noteError("Mobilen nås inte. Sparas på klockan.")
             return FlushResult.NoPhone
         }
         val client = Wearable.getMessageClient(ctx)

@@ -30,6 +30,8 @@ object Api {
     fun base(): String = Prefs.config.value.serverUrl.trimEnd('/')
 
     fun request(path: String): Request.Builder {
+        // Ingen inbyggd adress: utan inställd server görs inga anrop alls (kön ligger kvar).
+        if (base().isBlank()) throw IOException("Ingen serveradress angiven")
         val b = Request.Builder().url(base() + path)
         val token = Prefs.config.value.deviceToken
         if (token.isNotEmpty()) b.header("X-Device-Token", token)
@@ -51,6 +53,13 @@ object Api {
     suspend fun getArray(path: String): JSONArray = JSONArray(call(request(path).get().build()))
 
     suspend fun health(): Boolean = runCatching { getObject("/api/health").optBoolean("ok") }.getOrDefault(false)
+
+    /** Testar en adress innan den sparas (första start). */
+    suspend fun healthAt(base: String, token: String): Boolean = runCatching {
+        val b = Request.Builder().url(base.trimEnd('/') + "/api/health")
+        if (token.isNotBlank()) b.header("X-Device-Token", token.trim())
+        JSONObject(call(b.get().build())).optBoolean("ok")
+    }.getOrDefault(false)
 
     fun wsUrl(): String {
         val token = Prefs.config.value.deviceToken

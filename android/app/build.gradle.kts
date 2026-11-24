@@ -18,8 +18,8 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
-        // Standardadress under utveckling: Mac minins Tailscale-adress. Ändras i Inställningar.
-        buildConfigField("String", "DEFAULT_SERVER", "\"http://100.69.247.16:8790\"")
+        // Ingen inbyggd serveradress (repot är publikt). Anges vid första start.
+        buildConfigField("String", "DEFAULT_SERVER", "\"\"")
     }
 
     buildTypes {

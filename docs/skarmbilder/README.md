@@ -16,6 +16,7 @@ Varje bild har samma märkning i en remsa i nederkanten (gjord med `tools/etiket
 | [kontoret-mobil.png](kontoret-mobil.png) | Demo - syntetisk data | Demoläget i webben: ett manus, inga uppmätta värden och ingen språkmodell. |
 | [kontoret-uppspelning.png](kontoret-uppspelning.png) | Syntetisk testdata, riktiga lokala modeller | Konsilierna kördes av qwen3.5:9b på Mac minin mot en testdatabas med syntetisk puls. |
 | [mobil-akut-larm-test.png](mobil-akut-larm-test.png) | Testlarm på emulator | Larmet är infogat för hand i testdatabasen för att prova larmkedjan. Ingen riktig mätning. |
+| [mobil-forsta-start.png](mobil-forsta-start.png) | Emulator, första start | Ingen serveradress är inbyggd i appen. Inga mätvärden visas. |
 | [mobil-fraga.png](mobil-fraga.png) | Syntetisk testdata från emulator | Klock- och mobilemulator mot en testserver, Health Services testläge. Inte en människa. |
 | [mobil-idag-morkt.png](mobil-idag-morkt.png) | Syntetisk testdata från emulator | Klock- och mobilemulator mot en testserver, Health Services testläge. Inte en människa. |
 | [mobil-idag-testdata.png](mobil-idag-testdata.png) | Syntetisk testdata från emulator | Klock- och mobilemulator mot en testserver, Health Services testläge. Inte en människa. |

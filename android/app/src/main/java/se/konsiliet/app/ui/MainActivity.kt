@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -39,7 +40,9 @@ import se.konsiliet.app.hc.HcScheduler
 import se.konsiliet.app.link.LiveService
 import se.konsiliet.app.link.UploadScheduler
 import se.konsiliet.app.link.WatchListenerService
+import se.konsiliet.app.data.Prefs
 import se.konsiliet.app.ui.screens.AskScreen
+import se.konsiliet.app.ui.screens.FirstRunScreen
 import se.konsiliet.app.ui.screens.ConsultDetail
 import se.konsiliet.app.ui.screens.ConsultsScreen
 import se.konsiliet.app.ui.screens.SettingsScreen
@@ -85,9 +88,13 @@ class MainActivity : ComponentActivity() {
         val t = LocalTokens.current
         var tab by rememberSaveable { mutableStateOf(Tab.Idag) }
         val consult = openConsult
+        // Första start: ingen serveradress än. Bara första-gångs-vyn, ingen flikrad.
+        val firstRun = Prefs.config.collectAsState().value.serverUrl.isBlank()
         Column(Modifier.fillMaxSize().background(t.bg).statusBarsPadding()) {
             Box(Modifier.weight(1f)) {
-                if (consult != null) {
+                if (firstRun) {
+                    FirstRunScreen()
+                } else if (consult != null) {
                     BackHandler { openConsult = null }
                     ConsultDetail(consult, onBack = { openConsult = null })
                 } else when (tab) {
@@ -98,8 +105,8 @@ class MainActivity : ComponentActivity() {
                     Tab.Installningar -> SettingsScreen()
                 }
             }
-            Box(Modifier.fillMaxWidth().height(1.dp).background(t.rule))
-            Row(Modifier.fillMaxWidth().background(t.surface).navigationBarsPadding().padding(horizontal = 8.dp),
+            if (!firstRun) Box(Modifier.fillMaxWidth().height(1.dp).background(t.rule))
+            if (!firstRun) Row(Modifier.fillMaxWidth().background(t.surface).navigationBarsPadding().padding(horizontal = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween) {
                 Tab.entries.forEach { e ->
                     val sel = e == tab && consult == null

@@ -118,7 +118,7 @@ fun TodayScreen() {
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(hrVal?.let { Fmt.int(it) } ?: "ej mätt", style = if (hrVal == null) Type.value else Type.display,
                     color = if (hrVal == null) t.ink3 else t.ink)
-                Text("  slag/min", style = Type.small, color = t.ink2, modifier = Modifier.padding(bottom = 10.dp))
+                if (hrVal != null) Text("  slag/min", style = Type.small, color = t.ink2, modifier = Modifier.padding(bottom = 10.dp))
             }
             val stale = hrTs != null && now / 1000.0 - hrTs > 15 * 60
             Text(

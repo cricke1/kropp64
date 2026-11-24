@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -36,14 +39,25 @@ import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.DeltaDataType
 import androidx.lifecycle.lifecycleScope
-import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
-import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
+import androidx.wear.compose.foundation.lazy.TransformingLazyColumnItemScope
+import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
+import androidx.wear.compose.material3.SurfaceTransformation
+import androidx.wear.compose.material3.lazy.TransformationSpec
+import androidx.wear.compose.material3.lazy.rememberTransformationSpec
+import androidx.wear.compose.material3.lazy.transformedHeight
 import androidx.wear.compose.material3.AppScaffold
 import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.ButtonDefaults
 import androidx.wear.compose.material3.ColorScheme
 import androidx.wear.compose.material3.MaterialTheme
+import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.ScreenScaffold
+import androidx.wear.compose.material3.TimeText
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.wear.compose.material3.Text
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -112,7 +126,7 @@ class MainActivity : ComponentActivity() {
         else (application as KonsilietWearApp).reregister()
         setContent {
             MaterialTheme(colorScheme = ColorScheme(primary = Accent, onPrimary = Color(0xFF0E1A1E))) {
-                AppScaffold { Screen(permsOk, onAskPerms = { askForeground.launch(Permissions.foreground()) }) }
+                AppScaffold(timeText = {}) { Screen(permsOk, onAskPerms = { askForeground.launch(Permissions.foreground()) }) }
             }
         }
     }
@@ -167,14 +181,37 @@ private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
         available = runCatching { Passive.available(ctx) }.getOrDefault(emptyList())
         while (true) { delay(1000); now = System.currentTimeMillis() }
     }
-    val listState = rememberScalingLazyListState()
+    val listState = rememberTransformingLazyColumnState()
+    val spec = rememberTransformationSpec()
 
-    ScreenScaffold(scrollState = listState) {
-        ScalingLazyColumn(state = listState, modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally) {
+    // Rund skärm: ScreenScaffold ger utfyllnad så att listan börjar under klockan (TimeText) och slutar
+    // ovanför nederkanten, och tonar bort klockan när man skrollar. TransformingLazyColumn krymper och
+    // tonar rader som närmar sig den runda kanten (SurfaceTransformation för knappar, samma
+    // container-transformation för textblock), så att inget skärs av cirkeln.
+    val side = (LocalConfiguration.current.screenWidthDp * 0.08f).dp
+    // Klockan överst visas bara när listan står högst upp. Så fort man skrollar tonas den bort,
+    // så att inget innehåll någonsin ligger under den.
+    ScreenScaffold(
+        scrollState = listState,
+        timeText = {
+            AnimatedVisibility(visible = !listState.canScrollBackward, enter = fadeIn(), exit = fadeOut()) { TimeText() }
+        },
+    ) { contentPadding ->
+        TransformingLazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = side, end = side,
+                top = contentPadding.calculateTopPadding(), bottom = contentPadding.calculateBottomPadding(),
+            ),
+        ) {
             item {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Puls", color = Dim, fontSize = 12.sp)
+                ListHeader(Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec)) {
+                    Text("Puls", color = Dim)
+                }
+            }
+            item {
+                Column(Modifier.fillMaxWidth().morph(this, spec), horizontalAlignment = Alignment.CenterHorizontally) {
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(status.lastHr?.let { "%.0f".format(it) } ?: "--",
                             style = Tab, fontSize = 44.sp, fontWeight = FontWeight.Medium, color = Ink)
@@ -184,57 +221,59 @@ private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
                 }
             }
             if (WatchState.isEmulator()) {
-                item { Text("Emulator: syntetisk testdata", color = Warn, fontSize = 11.sp) }
+                item { Text("Emulator: syntetisk testdata", color = Warn, fontSize = 11.sp, textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().morph(this, spec)) }
             }
             item {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(top = 6.dp)) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().morph(this, spec).padding(top = 6.dp)) {
                     Text("Senast skickat: ${ago(status.lastSentAt, now)}", color = Ink, fontSize = 13.sp, style = Tab)
                     Text("I kö på klockan: $pending", color = Dim, fontSize = 12.sp, style = Tab)
                     status.lastError?.let {
                         Text(it, color = Warn, fontSize = 11.sp, textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 12.dp))
+                            )
                     }
                 }
             }
             if (!permsOk) {
                 item {
-                    Button(onClick = onAskPerms, modifier = Modifier.fillMaxWidth()) { Text("Ge behörighet") }
+                    Button(onClick = onAskPerms, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec)) { Text("Ge behörighet") }
                 }
             }
             if (status.exerciseActive) {
                 item {
                     val min = (now - status.exerciseStartedAt) / 60000
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Pass pågår, $min min", color = Accent, fontSize = 13.sp, style = Tab)
-                        Spacer(Modifier.height(4.dp))
-                        Button(onClick = { ExerciseService.stop(ctx) }, modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.filledTonalButtonColors()) { Text("Avsluta pass") }
-                    }
+                    Text("Pass pågår, $min min", color = Accent, fontSize = 13.sp, style = Tab, textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth().morph(this, spec))
+                }
+                item {
+                    Button(onClick = { ExerciseService.stop(ctx) }, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec),
+                        colors = ButtonDefaults.filledTonalButtonColors()) { Text("Avsluta pass") }
                 }
             } else if (choosing) {
                 EXERCISE_CHOICES.forEach { (type, label) ->
                     item {
                         Button(onClick = { choosing = false; ExerciseService.start(ctx, type) },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec),
                             colors = ButtonDefaults.filledTonalButtonColors()) { Text(label) }
                     }
                 }
-                item { Button(onClick = { choosing = false }, modifier = Modifier.fillMaxWidth()) { Text("Avbryt") } }
+                item { Button(onClick = { choosing = false }, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec)) { Text("Avbryt") } }
             } else {
                 item {
-                    Button(onClick = { choosing = true }, enabled = permsOk, modifier = Modifier.fillMaxWidth()) {
+                    Button(onClick = { choosing = true }, enabled = permsOk, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec)) {
                         Text("Starta träningspass")
                     }
                 }
             }
-            msg?.let { m -> item { Text(m, color = Warn, fontSize = 11.sp, textAlign = TextAlign.Center) } }
+            msg?.let { m -> item { Text(m, color = Warn, fontSize = 11.sp, textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().morph(this, spec)) } }
             item {
-                Button(onClick = { scope.launch { Flush.request(ctx, urgent = true) } }, modifier = Modifier.fillMaxWidth(),
+                Button(onClick = { scope.launch { Flush.request(ctx, urgent = true) } }, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec),
                     colors = ButtonDefaults.outlinedButtonColors()) { Text("Skicka nu") }
             }
             item {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp),
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)) {
+                    modifier = Modifier.fillMaxWidth().morph(this, spec).padding(vertical = 8.dp)) {
                     Text("Registrerat passivt", color = Dim, fontSize = 11.sp)
                     Text(status.registered ?: "inget ännu", color = Ink, fontSize = 11.sp, textAlign = TextAlign.Center)
                     Text("Klockan erbjuder", color = Dim, fontSize = 11.sp)
@@ -245,3 +284,14 @@ private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
     }
 }
 
+
+/** Textblock i listan krymper och tonar mot den runda kanten på samma sätt som knapparna. */
+private fun Modifier.morph(scope: TransformingLazyColumnItemScope, spec: TransformationSpec): Modifier =
+    // Text har ingen yta som kan krympa, så den får extra sidomarginal för att rymmas i cirkelns korda.
+    transformedHeight(scope, spec).padding(horizontal = 12.dp).graphicsLayer {
+        val progress = with(scope) { scrollProgress }
+        with(spec) {
+            applyContainerTransformation(progress)
+            applyContentTransformation(progress)
+        }
+    }
