@@ -395,7 +395,7 @@ def _bitar(text: str, n: int) -> list[str]:
     return ut + ([nu] if nu else [])
 
 
-def _skarva(wavar: list[bytes], paus_s: float = 0.25) -> bytes:
+def _skarva(wavar: list[bytes], paus_s: float = 0.17) -> bytes:
     ut = io.BytesIO()
     with wave.open(ut, "wb") as w:
         for i, b in enumerate(wavar):

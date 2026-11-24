@@ -174,6 +174,16 @@ class Parambe:
         # Chatterbox vattenmärke (Perth) behålls: ljudet går att känna igen som syntetiskt
         return torch.from_numpy(m.watermarker.apply_watermark(wav, sample_rate=m.sr))
 
+    def _paus(self, w):
+        """0,17 s mellan meningar med tagningens eget brusgolv. Digital tystnad hörs som en konstig paus
+        (erfarenhet från ägarens reklamfilmer med samma röster)."""
+        import numpy as np
+
+        f = int(self.m.sr * 0.02)
+        rms = [float(np.sqrt(np.mean(w[i:i + f] ** 2))) for i in range(0, max(1, len(w) - f), f)]
+        golv = min(rms) if rms else 0.0
+        return (np.random.default_rng().standard_normal(int(self.m.sr * 0.17)) * golv).astype(np.float32)
+
     def _meningar(self, text: str) -> list[str]:
         """Chatterbox tappar ord i långa stycken. Högst ungefär 220 tecken per bit, delat vid meningsslut."""
         delar, nu = [], ""
@@ -206,13 +216,12 @@ class Parambe:
                 self.villkor[nyckel] = self.m.conds
             self.m.conds = self.villkor[nyckel]
             bitar = []
-            paus = np.zeros(int(self.m.sr * 0.22), dtype=np.float32)
             with torch.inference_mode():
                 for i, mening in enumerate(self._meningar(text)):
-                    w = self._generera(mening, uttryck, cfg)
+                    w = self._generera(mening, uttryck, cfg).numpy().astype(np.float32)
                     if i:
-                        bitar.append(paus)
-                    bitar.append(w.numpy().astype(np.float32))
+                        bitar.append(self._paus(w))
+                    bitar.append(w)
             if self.enhet == "mps":
                 torch.mps.empty_cache()
         ljud = np.concatenate(bitar)
