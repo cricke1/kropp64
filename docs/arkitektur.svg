@@ -150,7 +150,7 @@
   <rect class="det" x="1020" y="508" width="516" height="136" rx="6"/>
   <text class="h2" x="1036" y="536">4. Moderatorn</text>
   <text class="s amb" x="1160" y="536">deterministisk kod, ingen språkmodell</text>
-  <text class="t" x="1036" y="562">Finns ref:en bland det mötet faktiskt hämtat? Finns varje siffra</text>
+  <text class="t" x="1036" y="562">Finns ref:en bland det tråden faktiskt hämtat? Finns varje siffra</text>
   <text class="t" x="1036" y="581">bland källans värden, med enkla omräkningar? Är ett baslinjevärde</text>
   <text class="t" x="1036" y="600">verkligen baslinjen? Har en slutsats källa av rätt typ? Annars stryks</text>
   <text class="t" x="1036" y="619">påståendet, och strykningen syns i kontoret.</text>
@@ -164,7 +164,7 @@
   <path class="line" d="M1145 644 V666" marker-end="url(#pil)"/>
 
   <rect class="llm" x="1300" y="670" width="236" height="100" rx="6"/>
-  <text class="h2" x="1316" y="696">6. Slutbedömning</text>
+  <text class="h2" x="1316" y="696">6. Lösningen</text>
   <text class="t" x="1316" y="718">Granskas igen. Brådskan</text>
   <text class="t" x="1316" y="738">styrs av regelverket, bara</text>
   <text class="t" x="1316" y="758">en akut regel ger "nu".</text>
@@ -186,7 +186,7 @@
   <rect class="step" x="452" y="652" width="538" height="184" rx="6"/>
   <text class="h2" x="470" y="680">Webb och app</text>
   <text class="s" x="580" y="680">web/, via WebSocket /ws</text>
-  <text class="t" x="470" y="706">Pixelkontoret: varje händelse från mötet (gå, slå upp, säga, räcka över,</text>
+  <text class="t" x="470" y="706">Pixelkontoret: varje händelse i tråden (gå, slå upp, säga, räcka över,</text>
   <text class="t" x="470" y="726">stryka) blir en rörelse eller en pratbubbla. Sensorpanel, tidslinje, sömn,</text>
   <text class="t" x="470" y="746">puls vid datorn, systempanel med minne och tokens.</text>
   <text class="t" x="470" y="776">Besöksunderlag som PDF: kurvor, bedömningar med källor och frågor att</text>
