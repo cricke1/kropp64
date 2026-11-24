@@ -124,3 +124,23 @@ databas fick en ny tabell med en riktig migrering, inte en destruktiv, så att k
 Testat på emulatorerna mot testinstansen: passet "promenad" kom in med tomt slut och fick sluttid tre minuter
 senare med samma id. Larmtestet kördes om med `USE_EXACT_ALARM`: alarmet stod som exakt (fönster 0) och sms:et
 skickades 39 millisekunder efter fristen, i stället för 70 sekunder sent som förra gången.
+
+**Säkerhetshål hittat i granskning.** En separat agent fick granska hela projektet som en skeptisk
+forumanvändare. Den verifierade att vem som helst på mitt hemnätverk kunde läsa journalen och skicka in
+falsk puls genom att lägga till en påhittad header (`Cf-Access-Authenticated-User-Email`), eftersom
+servern litade på den headern utan att kontrollera var den kom ifrån. Med falsk puls 150 i vila hade
+man kunnat utlösa akutlarm. Fix: headern ger inte längre någon åtkomst, allt utanför localhost och
+Tailscale får 403, Host-headern kontrolleras (DNS rebinding), WebSocket kontrollerar Origin, token
+jämförs i konstant tid och syns inte längre i loggen. Mottagningen avvisar orimliga värden (puls 400,
+NaN, tidsstämplar i framtiden). Testat: LAN med falsk header 403, tunnel utan token 401, falsk Host 421.
+
+**Vakten kunde inte se data som kom sent.** Samma granskning: alla regler räknade bakåt från "nu",
+men SpO2, HRV och hudtemperatur kommer via Health Connect, som Fitbit ofta synkar timmar senare. Larmet
+"SpO2 under 88 %" kunde alltså i praktiken aldrig slå till. Vakten utvärderar nu på mätpunkternas egen
+tid. Något som hände för mer än 30 minuter sedan blir "upptäckt i efterhand" och aldrig akut, så att
+mobilen inte skickar sms om något som redan är över. Baslinjen för puls bygger nu bara på vilominuter
+(inga steg, inget träningspass), räknas om var sjätte timme och sparas i databasen (ett varv tog
+tidigare tiotals sekunder med 1 Hz-data, nu 0,1 s). Nätter definieras av sömnpassen i stället för
+klockan 00-06, som passar dåligt för någon som kodar till två. Nedkylningen överlever omstart.
+Källprioriteten (klockappen före Health Connect) gäller per minut i stället för per fönster, så att
+historik från innan klockappen installerades inte kastas. Sex nya tester.

@@ -7,7 +7,7 @@
   <key>ProgramArguments</key>
   <array>
     <string>/Users/sture/.local/bin/uv</string><string>run</string><string>uvicorn</string>
-    <string>konsiliet.api:app</string><string>--host</string><string>0.0.0.0</string><string>--port</string><string>8790</string>
+    <string>konsiliet.api:app</string><string>--host</string><string>0.0.0.0</string><string>--port</string><string>8790</string><string>--no-access-log</string>
   </array>
   <key>EnvironmentVariables</key>
   <dict><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string></dict>

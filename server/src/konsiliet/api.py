@@ -18,7 +18,9 @@ X-Device-Token som jämförs med KONSILIET_DEVICE_TOKENS. Anrop från localhost 
 from __future__ import annotations
 
 import asyncio
+import hmac
 import ipaddress
+import math
 import json
 import os
 import re
@@ -44,8 +46,21 @@ TAILNET = ipaddress.ip_network("100.64.0.0/10")  # Tailscale: bara mina egna enh
 COOKIE = "konsiliet_token"
 
 
+def _token_ok(token: str | None) -> bool:
+    """Jämförelse i konstant tid, så att token inte kan gissas tecken för tecken via svarstider."""
+    if not token:
+        return False
+    return any(hmac.compare_digest(token.encode(), t.encode()) for t in settings.device_tokens)
+
+
 def _betrodd(host: str, headers: Any, token: str | None) -> bool:
-    via_tunnel = "cf-connecting-ip" in headers  # Cloudflare Tunnel ansluter från localhost men sätter headern
+    """Säkerhetsmodell:
+    - Servern lyssnar bara på 127.0.0.1 och Mac minins Tailscale-adress (se drift/), aldrig på LAN.
+    - Anrop direkt från localhost eller Tailscale-nätet (bara mina egna enheter) är betrodda.
+    - Allt som kommer via en tunnel (Cf-Connecting-Ip satt) kräver giltig enhetstoken. Inga headers
+      från klienten litas på i sig: en påhittad Cf-Access-header ger ingenting (hål hittat i granskning).
+    """
+    via_tunnel = "cf-connecting-ip" in headers
     if not via_tunnel:
         if host in ("127.0.0.1", "::1"):
             return True
@@ -54,16 +69,48 @@ def _betrodd(host: str, headers: Any, token: str | None) -> bool:
                 return True
         except ValueError:
             pass
-    if token and token in settings.device_tokens:
+    return _token_ok(token)
+
+
+TILLATNA_HOSTAR = {"127.0.0.1", "localhost", "[::1]"} | {
+    h.strip() for h in os.environ.get("KONSILIET_HOSTAR", "").split(",") if h.strip()}
+
+
+def _host_ok(host_header: str | None) -> bool:
+    """Skydd mot DNS rebinding: Host-headern måste vara en adress vi faktiskt svarar på."""
+    if not host_header:
+        return False
+    h = host_header.rsplit(":", 1)[0] if not host_header.startswith("[") else host_header.split("]")[0] + "]"
+    if h in TILLATNA_HOSTAR:
         return True
-    return bool(headers.get("cf-access-authenticated-user-email"))
+    try:
+        return ipaddress.ip_address(h) in TAILNET
+    except ValueError:
+        return False
 
 
 def auth(request: Request, x_device_token: str | None = Header(default=None)) -> None:
     host = request.client.host if request.client else ""
     token = x_device_token or request.cookies.get(COOKIE)
-    if not _betrodd(host, request.headers, token):
+    if not _host_ok(request.headers.get("host")) or not _betrodd(host, request.headers, token):
         raise HTTPException(status_code=401, detail="Ej behörig")
+
+
+@app.middleware("http")
+async def _bara_egna_natet(request: Request, call_next: Any) -> Any:
+    """Servern lyssnar på alla gränssnitt för att Tailscale ska nå den, men svarar bara localhost,
+    Tailscale-nätet och tunneln (med token). Allt från LAN eller annat får 403, även webbsidan."""
+    host = request.client.host if request.client else ""
+    lokal = host in ("127.0.0.1", "::1")
+    try:
+        tailnet = ipaddress.ip_address(host) in TAILNET
+    except ValueError:
+        tailnet = False
+    if not (lokal or tailnet):
+        return Response("Ej tillgänglig", status_code=403)
+    if not _host_ok(request.headers.get("host")):
+        return Response("Fel värd", status_code=421)
+    return await call_next(request)
 
 
 @app.middleware("http")
@@ -71,10 +118,19 @@ async def _token_cookie(request: Request, call_next: Any) -> Any:
     """WebView i mobilappen: /?token=... sätter en httpOnly-cookie så att webbappens egna anrop går igenom."""
     resp = await call_next(request)
     tok = request.query_params.get("token")
-    if tok and tok in settings.device_tokens:
+    if tok and _token_ok(tok):
         resp.set_cookie(COOKIE, tok, httponly=True, secure=request.url.scheme == "https",
-                        samesite="lax", max_age=365 * 86400)
+                        samesite="strict", max_age=365 * 86400)
     return resp
+
+
+METRIC_NAMN = re.compile(r"^[a-z][a-z0-9_]{0,40}$")
+# Rimliga gränser per mätvärde. Värden utanför är mätfel eller fusk och tas inte emot.
+GRANSER = {"hr": (20, 250), "hr_resting": (20, 150), "resting_hr": (20, 150), "hrv_rmssd": (1, 400),
+           "spo2": (50, 100), "resp_rate": (2, 80), "skin_temp": (20, 45), "skin_temp_delta": (-10, 10),
+           "steps": (0, 50000)}
+# Appen skickar några namn som servern internt kallar annat.
+ALIAS = {"hr_resting": "resting_hr"}
 
 
 class Sample(BaseModel):
@@ -84,8 +140,8 @@ class Sample(BaseModel):
 
 
 class IngestBatch(BaseModel):
-    source: str = "watch"
-    samples: list[Sample]
+    source: str = Field(default="watch", max_length=40, pattern=r"^[a-z0-9_.-]+$")
+    samples: list[Sample] = Field(max_length=20000)
 
 
 class SleepStage(BaseModel):
@@ -129,7 +185,17 @@ def ingest(batch: IngestBatch) -> dict[str, Any]:
     from . import matning
 
     t0 = time.perf_counter()
-    rows = [(s.ts, s.metric, s.value, batch.source) for s in batch.samples]
+    nu = time.time()
+    rows, avvisade = [], 0
+    for smp in batch.samples:
+        metric = ALIAS.get(smp.metric, smp.metric)
+        lo, hi = GRANSER.get(metric, (-1e9, 1e9))
+        ok = (METRIC_NAMN.match(metric) and math.isfinite(smp.value) and math.isfinite(smp.ts)
+              and nu - 400 * 86400 < smp.ts < nu + 300 and lo <= smp.value <= hi)
+        if ok:
+            rows.append((smp.ts, metric, smp.value, batch.source))
+        else:
+            avvisade += 1
     n = db.insert_samples(rows)
     # Senaste värdet per mätvärde går ut live, utan att sparas som händelse.
     latest: dict[str, Sample] = {}
@@ -140,9 +206,12 @@ def ingest(batch: IngestBatch) -> dict[str, Any]:
         bus.publish("sample.live", s.model_dump(), persist=False)
     from . import vakt
 
-    vakt.notify_new_data([s.metric for s in latest.values()])
+    # Vakten får veta vilken period som fått ny data, så att sent inkommande data (Health Connect,
+    # offlinekö) också utvärderas på mätpunkternas egen tid.
+    if rows:
+        vakt.notify_new_data([r[1] for r in rows], min(r[0] for r in rows), max(r[0] for r in rows))
     matning.record("Mottagning (ingest)", (time.perf_counter() - t0) * 1000)
-    return {"stored": n}
+    return {"stored": n, "avvisade": avvisade}
 
 
 @app.post("/api/ingest/sleep", dependencies=[Depends(auth)])
@@ -180,6 +249,7 @@ def metrics() -> list[dict[str, Any]]:
 @app.get("/api/series/{metric}", dependencies=[Depends(auth)])
 def series(metric: str, hours: float = 24, step: float = 0) -> dict[str, Any]:
     """Utan step: [ts, värde]. Med step (sekunder): en punkt per hink, [ts, min, max, median]."""
+    hours = min(max(hours, 0.1), 24 * 90)
     start = time.time() - hours * 3600
     pts = db.query_samples(metric, start)
     if step > 0:
@@ -337,7 +407,10 @@ def system() -> dict[str, Any]:
 async def ws(sock: WebSocket) -> None:
     host = sock.client.host if sock.client else ""
     token = sock.query_params.get("token") or sock.headers.get("x-device-token") or sock.cookies.get(COOKIE)
-    if not _betrodd(host, sock.headers, token):
+    origin = sock.headers.get("origin")
+    # Origin-kontroll mot Cross-Site WebSocket Hijacking: bara samma värd (eller appens WebView utan Origin).
+    origin_ok = origin is None or origin.split("://", 1)[-1] == sock.headers.get("host", "")
+    if not origin_ok or not _host_ok(sock.headers.get("host")) or not _betrodd(host, sock.headers, token):
         await sock.close(code=4401)
         return
     await sock.accept()

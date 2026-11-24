@@ -138,28 +138,42 @@ def insert_samples(rows: Iterable[tuple[float, str, float, str]]) -> int:
     return len(rows)
 
 
-TILLAT_EMULATOR = os.environ.get("KONSILIET_TILLAT_EMULATOR") == "1"
-KALLPRIORITET = ("watch", "health_connect")
+TILLAT_TESTDATA = os.environ.get("KONSILIET_TILLAT_EMULATOR") == "1"
+TESTKALLOR = ("emulator", "dev-syntetisk", "syntetisk", "test")
+KALLPRIORITET = ("watch", "health_connect", "macmini")
+
+
+def ar_testkalla(source: str) -> bool:
+    return any(t in source for t in TESTKALLOR)
+
+
+def _prio(source: str) -> int:
+    return KALLPRIORITET.index(source) if source in KALLPRIORITET else len(KALLPRIORITET)
 
 
 def query_samples(metric: str, start: float, end: float | None = None) -> list[tuple[float, float]]:
-    """Mätpunkter för ett mätvärde. Samma puls kan komma både från klockappen och från Health Connect:
-    då används en källa i taget (klockappen först) så att inget räknas dubbelt. Emulatordata
-    hålls ute om den inte uttryckligen tillåts."""
+    """Mätpunkter för ett mätvärde.
+
+    Samma puls kan komma både från klockappen och från Health Connect. Prioriteten avgörs per minut:
+    finns klockappens data för en minut används bara den, annars Health Connect. Då räknas inget
+    dubbelt, och Health Connect-historik från innan klockappen installerades finns kvar.
+    Testdata (emulator, syntetisk) hålls ute om den inte uttryckligen tillåts."""
     end = end or time.time()
     rows = conn().execute(
         "SELECT ts, value, source FROM samples WHERE metric=? AND ts BETWEEN ? AND ? ORDER BY ts",
         (metric, start, end),
     ).fetchall()
-    if not TILLAT_EMULATOR:
-        rows = [r for r in rows if "emulator" not in r[2]]
-    kallor = {r[2] for r in rows}
-    if len(kallor) > 1:
-        vald = next((k for k in KALLPRIORITET if k in kallor), None)
-        if vald is None:
-            vald = max(kallor, key=lambda k: sum(1 for r in rows if r[2] == k))
-        rows = [r for r in rows if r[2] == vald]
-    return [(r[0], r[1]) for r in rows]
+    if not TILLAT_TESTDATA:
+        rows = [r for r in rows if not ar_testkalla(r[2])]
+    if len({r[2] for r in rows}) <= 1:
+        return [(r[0], r[1]) for r in rows]
+    basta: dict[int, int] = {}
+    for r in rows:
+        m = int(r[0] // 60)
+        p = _prio(r[2])
+        if p < basta.get(m, 99):
+            basta[m] = p
+    return [(r[0], r[1]) for r in rows if _prio(r[2]) == basta[int(r[0] // 60)]]
 
 
 def downsample(points: list[tuple[float, float]], step: float) -> list[list[float]]:

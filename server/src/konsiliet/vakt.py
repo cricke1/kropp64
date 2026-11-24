@@ -1,16 +1,23 @@
 """Vakten. Körs hela tiden och letar avvikelser mot min egen baslinje.
 
 Två nivåer:
-  1. Akut (regelbaserat, millisekunder): t.ex. puls 150 i vila eller SpO2 under 88 %.
-     Larmar mobilen direkt, utan att vänta på någon språkmodell.
-  2. Avvikelse (statistiskt): robust z-poäng mot samma timme på dygnet de senaste 28 dagarna,
-     plus trender över flera nätter (HRV, vilopuls). Kallar in konsiliet.
+  1. Akut (regelbaserat, millisekunder): t.ex. puls 140+ i vila, SpO2 under 88 %, klockans fall-larm.
+     Larmar mobilen direkt, utan att vänta på någon språkmodell. Det är BARA dessa regler som
+     kan leda till sms till anhöriga.
+  2. Avvikelse (statistiskt): robust z-poäng mot min egen baslinje för samma timme på dygnet,
+     plus trender över flera nätter (HRV). Kallar in konsiliet.
 
-Baslinjen är median och MAD (median absolute deviation) per mätvärde och timme. MAD i stället för
-standardavvikelse så att enstaka träningspass inte förstör baslinjen.
+Reglerna utvärderas på mätpunkternas egen tid, inte på "nu". Data som kommer sent (Health Connect
+synkar ofta timmar efteråt, och mobilen kan ha legat offline) utvärderas för den period den gäller.
+Ett larm om något som hände för länge sedan märks som "i efterhand" och blir aldrig akut.
+
+Baslinjen: median och MAD (median absolute deviation, robust mot enstaka träningspass) per mätvärde
+och timme på dygnet, senaste 28 dagarna. För puls används bara vilominuter (inga steg, inget pass)
+så att vilopuls jämförs med vilopuls. Baslinjen räknas om var sjätte timme och sparas i databasen.
 """
 from __future__ import annotations
 
+import json
 import logging
 import threading
 import time
@@ -26,8 +33,19 @@ from .bus import bus
 log = logging.getLogger("vakt")
 
 BASELINE_DAYS = 28
+BASELINE_TTL = 6 * 3600
 TICK_SECONDS = 60
-MAD_TO_SD = 1.4826  # MAD * 1.4826 ~ standardavvikelse för normalfördelning
+MAD_TO_SD = 1.4826
+MIN_SD = {"hr": 2.0, "resting_hr": 2.0, "hrv_rmssd": 5.0, "resp_rate": 0.7, "skin_temp": 0.2}
+EFTERHAND_S = 30 * 60   # äldre än så: larmet gäller något som redan har hänt
+COOLDOWN = {"akut": 15 * 60, "avvikelse": 6 * 3600}
+
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS baslinje (
+    metric TEXT NOT NULL, timme INTEGER NOT NULL, median REAL NOT NULL, sd REAL NOT NULL,
+    n INTEGER NOT NULL, uppdaterad REAL NOT NULL, PRIMARY KEY (metric, timme));
+CREATE TABLE IF NOT EXISTS vakt_state (rule TEXT PRIMARY KEY, senast REAL NOT NULL);
+"""
 
 
 @dataclass
@@ -43,149 +61,215 @@ class Finding:
 
 # ---------------------------------------------------------------- hjälpfunktioner
 
-def _window(metric: str, minutes: float) -> np.ndarray:
-    pts = db.query_samples(metric, time.time() - minutes * 60)
+def _schema() -> None:
+    db.conn().executescript(SCHEMA)
+
+
+def _window(metric: str, minutes: float, slut: float) -> np.ndarray:
+    pts = db.query_samples(metric, slut - minutes * 60, slut)
     return np.array(pts, dtype=float).reshape(-1, 2)
 
 
-def _baseline(metric: str, hour: int) -> tuple[float, float] | None:
-    """Median och robust spridning för given timme på dygnet, senaste BASELINE_DAYS dagarna."""
-    now = time.time()
-    rows = db.conn().execute(
-        "SELECT ts, value FROM samples WHERE metric=? AND ts BETWEEN ? AND ?",
-        (metric, now - BASELINE_DAYS * 86400, now - 3600),
-    ).fetchall()
-    vals = [v for ts, v in rows if datetime.fromtimestamp(ts).hour == hour]
-    if len(vals) < 60:
-        return None
-    a = np.array(vals)
-    med = float(np.median(a))
-    mad = float(np.median(np.abs(a - med))) * MAD_TO_SD
-    return med, max(mad, 1e-6)
-
-
-def _resting(minutes: float) -> bool:
-    """Sant om nästan inga steg tagits under perioden och inget träningspass pågår."""
-    if db.under_pass(time.time() - minutes * 60, time.time()):
+def _resting(minutes: float, slut: float) -> bool:
+    """Sant om nästan inga steg tagits under perioden och inget träningspass pågick."""
+    start = slut - minutes * 60
+    if db.under_pass(start, slut):
         return False
-    steps = _window("steps", minutes)
+    steps = _window("steps", minutes, slut)
     return steps.size == 0 or float(steps[:, 1].sum()) < 20
 
 
-# ---------------------------------------------------------------- regler
+def _vilominuter(start: float, slut: float) -> set[int]:
+    """Minuter utan steg (±2 min) och utan pass."""
+    steg = db.query_samples("steps", start, slut)
+    rorelse = {int(ts // 60) + d for ts, v in steg if v >= 5 for d in range(-2, 3)}
+    pass_ = db.conn().execute("SELECT start, COALESCE(end, ?) FROM exercise WHERE start < ? AND COALESCE(end, ?) > ?",
+                              (time.time(), slut, time.time(), start)).fetchall()
+    for a, b in pass_:
+        rorelse |= set(range(int(a // 60) - 5, int(b // 60) + 15))  # och en stund efter passet
+    alla = {int(ts // 60) for ts, _ in db.query_samples("hr", start, slut)}
+    return alla - rorelse
 
-def rule_hr_rest_acute() -> Finding | None:
-    hr = _window("hr", 10)
-    if len(hr) < 5 or not _resting(10):
+
+def _rakna_baslinje(metric: str) -> None:
+    nu = time.time()
+    start, slut = nu - BASELINE_DAYS * 86400, nu - 2 * 3600  # utesluter det pågående fönstret
+    pts = db.query_samples(metric, start, slut)
+    if metric == "hr":
+        vila = _vilominuter(start, slut)
+        pts = [(ts, v) for ts, v in pts if int(ts // 60) in vila]
+    per_timme: dict[int, list[float]] = {}
+    for ts, v in pts:
+        per_timme.setdefault(datetime.fromtimestamp(ts).hour, []).append(v)
+    with db.tx() as c:
+        c.execute("DELETE FROM baslinje WHERE metric=?", (metric,))
+        for h, vals in per_timme.items():
+            # Minst 3 dagars data för timmen, räknat i antal punkter med marginal för glesa källor.
+            if len(vals) < 30:
+                continue
+            a = np.array(vals)
+            med = float(np.median(a))
+            sd = max(float(np.median(np.abs(a - med))) * MAD_TO_SD, MIN_SD.get(metric, 1e-3))
+            c.execute("INSERT INTO baslinje VALUES (?,?,?,?,?,?)", (metric, h, med, sd, len(vals), nu))
+
+
+def baslinje(metric: str, timme: int) -> tuple[float, float, int] | None:
+    _schema()
+    r = db.conn().execute("SELECT median, sd, n, uppdaterad FROM baslinje WHERE metric=? AND timme=?",
+                          (metric, timme)).fetchone()
+    senast = db.conn().execute("SELECT MAX(uppdaterad) FROM baslinje WHERE metric=?", (metric,)).fetchone()[0]
+    if senast is None or time.time() - senast > BASELINE_TTL:
+        _rakna_baslinje(metric)
+        r = db.conn().execute("SELECT median, sd, n, uppdaterad FROM baslinje WHERE metric=? AND timme=?",
+                              (metric, timme)).fetchone()
+    return (r[0], r[1], r[2]) if r else None
+
+
+def natter(antal: int, slut: float) -> list[tuple[float, float]]:
+    """De senaste nätterna som (start, slut). Sömnpassen används när de finns, annars 00-06 lokal tid."""
+    rows = db.conn().execute("SELECT start, end FROM sleep WHERE end <= ? AND source NOT LIKE '%emulator%' "
+                             "ORDER BY end DESC LIMIT ?", (slut + 3600, antal)).fetchall()
+    if len(rows) >= antal:
+        return [(r[0], r[1]) for r in rows]
+    out = []
+    midnatt = datetime.fromtimestamp(slut).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
+    # Före 06 pågår natten fortfarande: senaste avslutade natt är gårdagens.
+    dag_ts = midnatt - 86400 if datetime.fromtimestamp(slut).hour < 6 else midnatt
+    for i in range(antal):
+        s = dag_ts - i * 86400
+        out.append((s, s + 6 * 3600))
+    return out
+
+
+# ---------------------------------------------------------------- regler (alla tar periodens sluttid)
+
+def rule_fall(slut: float) -> Finding | None:
+    """Klockans egen falldetektering."""
+    pts = db.query_samples("fall_detected", slut - 5 * 60, slut)
+    if any(v >= 1 for _, v in pts):
+        return Finding("fall", "akut", "fall_detected", "Klockan registrerade ett fall",
+                       "Pixel Watch falldetektering slog till.", window=(pts[0][0], pts[-1][0]))
+    return None
+
+
+def rule_hr_rest_acute(slut: float) -> Finding | None:
+    hr = _window("hr", 10, slut)
+    if len(hr) < 5 or not _resting(10, slut):
         return None
     med = float(np.median(hr[:, 1]))
     if med >= 140:
         return Finding("hr_rest_acute", "akut", "hr", "Mycket hög puls i vila",
-                       f"Medianpuls {med:.0f} slag/min de senaste 10 minuterna utan rörelse.",
+                       f"Medianpuls {med:.0f} slag/min under 10 minuter utan rörelse.",
                        window=(hr[0, 0], hr[-1, 0]))
     return None
 
 
-def rule_hr_sudden_jump() -> Finding | None:
-    """Plötsligt hopp i puls utan rörelse, till exempel en hjärtrusning."""
-    hr = _window("hr", 5)
-    if len(hr) < 6 or not _resting(5):
+def rule_hr_sudden_jump(slut: float) -> Finding | None:
+    """Plötsligt hopp i puls utan rörelse, till exempel en hjärtrusning. Kräver att höjningen
+    håller i sig (minst 6 punkter) så att en enstaka felmätning inte larmar."""
+    hr = _window("hr", 5, slut)
+    if len(hr) < 6 or not _resting(5, slut):
         return None
-    first, last = np.median(hr[:3, 1]), np.median(hr[-3:, 1])
+    first, last = float(np.median(hr[:3, 1])), float(np.median(hr[-3:, 1]))
     if last - first >= 35 and last >= 110:
         return Finding("hr_sudden_jump", "akut", "hr", "Plötsligt pulshopp i vila",
-                       f"Pulsen steg från {first:.0f} till {last:.0f} på några minuter utan rörelse.",
+                       f"Pulsen steg från {first:.0f} till {last:.0f} slag/min på några minuter utan rörelse.",
                        window=(hr[0, 0], hr[-1, 0]))
     return None
 
 
-def rule_spo2_low() -> Finding | None:
-    sp = _window("spo2", 5)
+def rule_spo2_low(slut: float) -> Finding | None:
+    sp = _window("spo2", 10, slut)
     if len(sp) < 3:
         return None
     med = float(np.median(sp[:, 1]))
     if med < 88:
-        return Finding("spo2_low", "akut", "spo2", "Lågt syremättnad",
-                       f"SpO2 median {med:.0f} % de senaste 5 minuterna.", window=(sp[0, 0], sp[-1, 0]))
+        return Finding("spo2_low", "akut", "spo2", "Låg syremättnad",
+                       f"SpO2 median {med:.0f} % under 10 minuter.", window=(sp[0, 0], sp[-1, 0]))
     return None
 
 
-def rule_spo2_dips() -> Finding | None:
-    """Upprepade fall på minst 4 procentenheter under natten (som ODI i sömnapnéutredningar)."""
-    sp = _window("spo2", 60)
+def rule_spo2_dips(slut: float) -> Finding | None:
+    """Upprepade fall på minst 4 procentenheter under en timme (som ODI i sömnapnéutredningar)."""
+    sp = _window("spo2", 60, slut)
     if len(sp) < 30:
         return None
     vals = sp[:, 1]
-    baseline = np.percentile(vals, 90)
+    ref = float(np.percentile(vals, 90))
     dips, in_dip = 0, False
     for v in vals:
-        if not in_dip and v <= baseline - 4:
+        if not in_dip and v <= ref - 4:
             dips, in_dip = dips + 1, True
-        elif in_dip and v >= baseline - 1:
+        elif in_dip and v >= ref - 1:
             in_dip = False
     if dips >= 5:
         return Finding("spo2_dips", "avvikelse", "spo2", "Upprepade syrefall",
-                       f"{dips} fall på minst 4 procentenheter senaste timmen (baslinje {baseline:.0f} %).",
+                       f"{dips} fall på minst 4 procentenheter under en timme (referens {ref:.0f} %).",
                        window=(sp[0, 0], sp[-1, 0]))
     return None
 
 
-def rule_metric_vs_baseline(metric: str, minutes: int, z_limit: float, label: str) -> Callable[[], Finding | None]:
-    def rule() -> Finding | None:
-        w = _window(metric, minutes)
+def rule_metric_vs_baseline(metric: str, minutes: int, z_limit: float, label: str) -> Callable[[float], Finding | None]:
+    def rule(slut: float) -> Finding | None:
+        w = _window(metric, minutes, slut)
         if len(w) < 5:
             return None
-        if metric == "hr" and not _resting(minutes):
+        if metric == "hr" and not _resting(minutes, slut):
             return None
-        base = _baseline(metric, datetime.now().hour)
+        base = baslinje(metric, datetime.fromtimestamp(slut).hour)
         if base is None:
             return None
-        med, sd = base
+        med, sd, _ = base
         cur = float(np.median(w[:, 1]))
         z = (cur - med) / sd
         if abs(z) >= z_limit:
             riktning = "över" if z > 0 else "under"
             return Finding(f"baseline_{metric}", "avvikelse", metric, f"{label} avviker från din baslinje",
-                           f"{label} {cur:.1f} mot normalt {med:.1f} vid den här tiden ({abs(z):.1f} SD {riktning}).",
-                           z=z, window=(w[0, 0], w[-1, 0]))
+                           f"{label} {cur:.1f} mot normalt {med:.1f} vid den här tiden på dygnet "
+                           f"({abs(z):.1f} SD {riktning}).", z=round(z, 2), window=(w[0, 0], w[-1, 0]))
         return None
     rule.__name__ = f"baseline_{metric}"
     return rule
 
 
-def rule_hrv_trend() -> Finding | None:
-    """Nattlig HRV under baslinjen tre nätter i rad. Ofta det första tecknet på infektion eller överbelastning."""
-    now = time.time()
-    nights = []
-    for d in range(3):
-        end = now - d * 86400
-        pts = db.query_samples("hrv_rmssd", end - 86400, end)
-        night = [v for ts, v in pts if datetime.fromtimestamp(ts).hour in (0, 1, 2, 3, 4, 5)]
-        if len(night) < 10:
-            return None
-        nights.append(float(np.median(night)))
-    hist = db.query_samples("hrv_rmssd", now - BASELINE_DAYS * 86400, now - 3 * 86400)
-    hist_n = [v for ts, v in hist if datetime.fromtimestamp(ts).hour in (0, 1, 2, 3, 4, 5)]
-    if len(hist_n) < 100:
+def rule_skin_temp_delta(slut: float) -> Finding | None:
+    """Hudtemperaturens avvikelse mot klockans egen baslinje (Health Connect), över natten."""
+    w = _window("skin_temp_delta", 8 * 60, slut)
+    if len(w) < 3:
         return None
-    med = float(np.median(hist_n))
-    sd = float(np.median(np.abs(np.array(hist_n) - med))) * MAD_TO_SD
-    if all(n < med - 1.0 * sd for n in nights):
+    med = float(np.median(w[:, 1]))
+    if med >= 1.0:
+        return Finding("skin_temp_delta", "avvikelse", "skin_temp_delta", "Förhöjd hudtemperatur",
+                       f"Hudtemperaturen {med:+.1f} °C mot din baslinje.", window=(w[0, 0], w[-1, 0]))
+    return None
+
+
+def rule_hrv_trend(slut: float) -> Finding | None:
+    """Nattlig HRV under baslinjen tre nätter i rad. Ofta det första tecknet på infektion eller överbelastning."""
+    n3 = natter(3, slut)
+    meds = []
+    for a, b in n3:
+        vals = [v for _, v in db.query_samples("hrv_rmssd", a, b)]
+        if len(vals) < 3:
+            return None
+        meds.append(float(np.median(vals)))
+    hist = []
+    for a, b in natter(28, n3[-1][0] - 3600)[:25]:
+        vals = [v for _, v in db.query_samples("hrv_rmssd", a, b)]
+        if vals:
+            hist.append(float(np.median(vals)))
+    if len(hist) < 10:
+        return None
+    med = float(np.median(hist))
+    sd = max(float(np.median(np.abs(np.array(hist) - med))) * MAD_TO_SD, MIN_SD["hrv_rmssd"])
+    if all(m < med - sd for m in meds):
         return Finding("hrv_trend", "avvikelse", "hrv_rmssd", "HRV låg tre nätter i rad",
-                       f"Nattlig HRV {', '.join(f'{n:.0f}' for n in reversed(nights))} ms mot normalt {med:.0f} ms.")
+                       f"Nattlig HRV {', '.join(f'{m:.0f}' for m in reversed(meds))} ms mot normalt {med:.0f} ms "
+                       f"(median av {len(hist)} nätter).", window=(n3[-1][0], n3[0][1]))
     return None
 
 
-def rule_fall() -> Finding | None:
-    """Klockans egen falldetektering: larma direkt."""
-    pts = db.query_samples("fall_detected", time.time() - 5 * 60)
-    if any(v >= 1 for _, v in pts):
-        return Finding("fall", "akut", "fall_detected", "Klockan registrerade ett fall",
-                       "Pixel Watch falldetektering slog till de senaste minuterna.")
-    return None
-
-
-RULES: list[Callable[[], Finding | None]] = [
+RULES: list[Callable[[float], Finding | None]] = [
     rule_fall,
     rule_hr_rest_acute,
     rule_hr_sudden_jump,
@@ -194,33 +278,48 @@ RULES: list[Callable[[], Finding | None]] = [
     rule_metric_vs_baseline("hr", 20, 3.5, "Vilopulsen"),
     rule_metric_vs_baseline("resp_rate", 30, 3.5, "Andningsfrekvensen"),
     rule_metric_vs_baseline("skin_temp", 60, 3.0, "Hudtemperaturen"),
+    rule_skin_temp_delta,
     rule_hrv_trend,
 ]
 
-COOLDOWN = {"akut": 15 * 60, "avvikelse": 6 * 3600}
-_last_fired: dict[str, float] = {}
-_wake = threading.Event()
-_started = False
+
+# ---------------------------------------------------------------- utvärdering
+
+def _senast(rule: str) -> float:
+    r = db.conn().execute("SELECT senast FROM vakt_state WHERE rule=?", (rule,)).fetchone()
+    return r[0] if r else 0.0
 
 
-def evaluate() -> list[Finding]:
+def _satt_senast(rule: str, ts: float) -> None:
+    with db.tx() as c:
+        c.execute("INSERT OR REPLACE INTO vakt_state(rule, senast) VALUES (?,?)", (rule, ts))
+
+
+def evaluate(slut: float | None = None) -> list[Finding]:
     with matning.tid("Vakt, regelkoll"):
-        return _evaluate()
+        return _evaluate(slut or time.time())
 
 
-def _evaluate() -> list[Finding]:
+def _evaluate(slut: float) -> list[Finding]:
+    _schema()
     found = []
     for rule in RULES:
         try:
-            f = rule()
+            f = rule(slut)
         except Exception as e:  # en trasig regel får aldrig stoppa vakten
             log.exception("regel %s kraschade: %s", getattr(rule, "__name__", rule), e)
             continue
         if f is None:
             continue
-        if time.time() - _last_fired.get(f.rule, 0) < COOLDOWN[f.level]:
+        handelse_tid = f.window[1] if f.window else slut
+        # Nedkylning räknas på när det hände, och sparas i databasen så att den överlever omstart.
+        if abs(handelse_tid - _senast(f.rule)) < COOLDOWN[f.level]:
             continue
-        _last_fired[f.rule] = time.time()
+        _satt_senast(f.rule, handelse_tid)
+        if time.time() - handelse_tid > EFTERHAND_S:
+            f.level = "avvikelse"  # har redan hänt: aldrig akut, aldrig sms
+            f.title += " (upptäckt i efterhand)"
+            f.detail += f" Gäller {datetime.fromtimestamp(handelse_tid).strftime('%Y-%m-%d %H:%M')}."
         found.append(f)
     return found
 
@@ -236,15 +335,35 @@ def _handle(f: Finding) -> None:
                            "title": f.title, "detail": f.detail, "window": f.window})
 
 
+_wake = threading.Event()
+_sen_data: list[tuple[float, float]] = []
+_lock = threading.Lock()
+_started = False
+
+
 def _loop() -> None:
     while True:
         _wake.wait(TICK_SECONDS)
         _wake.clear()
-        for f in evaluate():
-            _handle(f)
+        with _lock:
+            perioder = list(_sen_data)
+            _sen_data.clear()
+        tider = {time.time()}
+        # Sent inkommande data: utvärdera var 10:e minut genom den period som fått ny data.
+        for a, b in perioder:
+            t = b
+            while t > a - 600 and len(tider) < 200:
+                tider.add(t)
+                t -= 600
+        for t in sorted(tider):
+            for f in evaluate(t):
+                _handle(f)
 
 
-def notify_new_data(metrics: list[str]) -> None:
+def notify_new_data(metrics: list[str], tmin: float | None = None, tmax: float | None = None) -> None:
+    if tmin is not None and tmax is not None and tmax < time.time() - 5 * 60:
+        with _lock:
+            _sen_data.append((tmin, tmax))
     _wake.set()
 
 
