@@ -163,7 +163,7 @@ class Sim:
         nt = r.normal(0, 0.12, natt_id.max() + 2)[natt_id]
 
         hr = np.where(self.sover, 56.0, 71.0) + _ar1(r, n, 0.85, 1.6) + r.normal(0, 1.2, n)
-        hr += gang * 30 + last * 98
+        hr += gang * 30 * np.clip(1 - last, 0, 1) + last * 98  # under pass styr intensiteten, inte stegen
         hr += np.where(self.dator == "spel", 3.0, 0.0)
         hr += self.hr_add
         hrv = np.where(self.sover, 56.0 * nf, 38.0) * np.exp(r.normal(0, 0.14, n))

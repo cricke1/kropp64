@@ -8,7 +8,7 @@ from typing import Any
 from scenarier import NIVAER, SCENARIO
 
 NEG = re.compile(r"\b(inte|ingen|inget|inga|utan|ej|knappast|osannolik\w*|uteslut\w*|varken|snarare än)\b", re.I)
-_NUM = re.compile(r"-?\d+(?:[.,]\d+)?")
+_NUM = re.compile(r"(?<![A-Za-zÅÄÖåäöµ\d])-?\d+(?:[.,]\d+)?")
 _BORT = re.compile(r"\b\d{1,2}[:.]\d{2}\b|\b\d{4}-\d{2}-\d{2}\b|[SBNJLUF]:[\w:.\-]+")
 
 
@@ -62,24 +62,38 @@ def overifierade_siffror(v: dict[str, Any] | None, refs: dict[str, Any], utlosar
 
 
 def baslinjefel(texter: list[str], refs: dict[str, Any]) -> list[str]:
-    """Meningar som kallar en siffra 'baslinje' fast siffran inte är ett baslinjevärde i någon källa."""
+    """Meningar där talet direkt efter ordet "baslinje" inte är ett baslinjevärde i någon källa
+    (t.ex. observerade 65 kallat baslinje när baslinjen var 73,4)."""
     bas: set[float] = set()
+
+    def samla(o: Any, i_bas: bool) -> None:
+        if isinstance(o, dict):
+            for k, v in o.items():
+                samla(v, i_bas or "baslinje" in k or "normalt" in k or k in ("median", "p10", "p90", "sd") and i_bas)
+        elif isinstance(o, list):
+            for v in o:
+                samla(v, i_bas)
+        elif i_bas and not isinstance(o, bool):
+            bas.update(_tal(o) if isinstance(o, str) else ({round(float(o), 1)} if isinstance(o, (int, float)) else set()))
+        if isinstance(o, str):
+            for mt in re.finditer(r"normalt\s+(-?\d+(?:[.,]\d+)?)", o):
+                bas.add(round(float(mt.group(1).replace(",", ".")), 1))
+
     for k, r in refs.items():
-        if not isinstance(r, dict):
-            continue
-        if k.startswith("B:"):
-            bas |= _tal({x: r.get(x) for x in ("median", "p10", "p90")})
-        for nyckel, val in r.items():
-            if "baslinje" in nyckel or "normalt" in nyckel:
-                bas |= _tal(val)
+        samla({x: r.get(x) for x in ("median", "p10", "p90", "sd")} if k.startswith("B:") and isinstance(r, dict) else {}, True)
+        samla(r, False)
     fel = []
     for t in texter:
         for men in _meningar(t):
-            if not re.search(r"baslinje", men, re.I):
-                continue
-            tal = [n for n in _tal(men) if abs(n) >= 3 and n not in {float(x) for x in _PERIOD.findall(men)}]
-            if tal and not any(_belagt(n, bas) for n in tal):
-                fel.append(men)
+            for mt in re.finditer(r"baslinje\w*", men, re.I):
+                seg = re.split(r"[.;](?!\d)", men[mt.end():mt.end() + 40])[0]
+                seg = re.sub(r"(?<=\d)[ \u00a0](?=\d{3}\b)", "", _BORT.sub(" ", seg))
+                seg = re.sub(r"\b\d+:e\b", " ", seg)
+                tal = [round(float(x.replace(",", ".")), 1) for x in _NUM.findall(seg)]
+                tal = [n for n in tal if n not in {float(x) for x in _PERIOD.findall(seg)}]
+                if tal and not _belagt(tal[0], bas):
+                    fel.append(men)
+                    break
     return fel
 
 

@@ -30,6 +30,7 @@ def main() -> None:
     ap.add_argument("--env", nargs="*", default=[])
     ap.add_argument("--beskrivning", default="")
     ap.add_argument("--holdout", action="store_true", help="kör holdout-scenarierna i stället")
+    ap.add_argument("--fortsatt", action="store_true", help="behåll redan körda scenarier i resultatfilen")
     a = ap.parse_args()
 
     alla = HOLDOUT if a.holdout else SCENARIER
@@ -41,7 +42,22 @@ def main() -> None:
     datum = time.strftime("%Y-%m-%d")
     ut = HIT / "resultat" / f"{datum}-{a.variant}.json"
     rader, korningar = [], []
+    if a.fortsatt and ut.exists():
+        gammal = json.loads(ut.read_text())
+        nya = {s.id for s in valda}
+        for r, k in zip(gammal["rader"], gammal["korningar"]):
+            if r["scenario"] not in nya:
+                rader.append(r)
+                korningar.append(k)
     for sc in valda:
+        # Lasta ur modellerna före varje scenario: annars växte Qwens minne under en lång körning
+        # (12 -> 15 GiB) och datorn swappade, vilket gjorde tiderna oberoende av det som mättes.
+        try:
+            import httpx
+            for mod in httpx.get("http://127.0.0.1:11434/api/ps", timeout=10).json().get("models", []):
+                httpx.post("http://127.0.0.1:11434/api/generate", json={"model": mod["name"], "keep_alive": 0}, timeout=60)
+        except Exception:
+            pass
         fil = HIT / "tmp" / f"{a.variant}-{sc.id}.json"
         t0 = time.time()
         p = subprocess.run([sys.executable, str(HIT / "kor_ett.py"), sc.id, str(fil), "--src", a.src,
@@ -50,7 +66,14 @@ def main() -> None:
             print(f"{sc.id}: PROCESSFEL\n{p.stderr[-2000:]}", flush=True)
             continue
         res = json.loads(fil.read_text())
+        try:
+            import httpx
+            res["ollama_minne_gib_efter"] = {m["name"]: round(m["size_vram"] / 2**30, 1) for m in
+                                             httpx.get("http://127.0.0.1:11434/api/ps", timeout=10).json().get("models", [])}
+        except Exception:
+            pass
         pg = poang(res)
+        pg["ollama_minne_gib_efter"] = res.get("ollama_minne_gib_efter")
         rader.append({"scenario": sc.id, **pg})
         korningar.append(res)
         print(f"{sc.id:20s} {pg['bradska'] or '-':18s} facit {pg['facit']:18s} "
