@@ -6,8 +6,8 @@ ett helt konsilium i realtid, cirka 3 minuter. Allt i filmerna är syntetiskt: k
 
 | Fil | Format |
 |---|---|
-| `konsiliet-demo-1920x1080.mp4` / `.webm` | 16:9, 30 bilder/s, H.264 respektive VP9 |
-| `konsiliet-demo-1080x1920.mp4` / `.webm` | 9:16 (mobilvyn), 30 bilder/s |
+| `kropp64-demo-1920x1080.mp4` / `.webm` | 16:9, 30 bilder/s, H.264 respektive VP9 |
+| `kropp64-demo-1080x1920.mp4` / `.webm` | 9:16 (mobilvyn), 30 bilder/s |
 
 Filmerna ligger inte i git (för stora). Så spelas de in igen:
 

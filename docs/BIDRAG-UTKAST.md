@@ -145,7 +145,7 @@ känner igen):
 
 1. 04-oversikt.png (sensorpanelen)
 2. 05-puls-vid-datorn.png
-3. 02-granskaren-stryker.png (moderatorn stryker ett påstående)
+3. 02-moderatorn-stryker.png (moderatorn stryker ett påstående)
 4. 01-kontoret-i-arbete.png
 5. 03-bedomningen.png
 6. 07-arkitektur.png
