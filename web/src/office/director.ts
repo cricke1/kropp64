@@ -386,13 +386,28 @@ function hoursOf(a: any): number | null {
   return typeof h === 'number' ? h : null
 }
 
+/** Bestämd form efter "senaste": dygnet, 3 dygnen, veckan, timmen, 12 timmarna. */
+function fmtSpan(h: number): string {
+  if (h === 168) return 'veckan'
+  if (h >= 24 && h % 24 === 0) return h === 24 ? 'dygnet' : `${h / 24} dygnen`
+  return h === 1 ? 'timmen' : `${String(h).replace('.', ',')} timmarna`
+}
+
+/** Etiketten med liten begynnelsebokstav, men förkortningar (HRV, SpO2) behålls. */
+function metricLabel(metric: string): string {
+  const l = metricMeta(metric).label
+  return l.replace(/^(\S+)/, (w) => (/[A-ZÅÄÖ]{2}/.test(w) ? w : w.toLowerCase()))
+}
+
 export function toolLabel(tool: string, args: any): string {
   const t = tool.toLowerCase()
   const a = args ?? {}
   const h = hoursOf(a)
-  const span = h ? ` ${h} h` : a.natter ? ` ${a.natter} nätter` : a.dagar ? ` ${a.dagar} d` : ''
-  if (/baslinje/.test(t)) return `Jämför ${metricMeta(String(a.metric ?? '')).label.toLowerCase()} med baslinjen`
-  if (a.metric) return `Slår upp ${metricMeta(String(a.metric)).label.toLowerCase()}${span}`
+  const span = h ? `, senaste ${fmtSpan(h)}`
+    : a.natter ? `, senaste ${Number(a.natter) === 1 ? 'natten' : `${a.natter} nätterna`}`
+    : a.dagar ? `, senaste ${fmtSpan(Number(a.dagar) * 24)}` : ''
+  if (/baslinje/.test(t)) return `Jämför ${metricLabel(String(a.metric ?? ''))} med baslinjen`
+  if (a.metric) return `Slår upp ${metricLabel(String(a.metric))}${span}`
   if (/journal|1177/.test(t)) return `Läser journalen${a.sokord ? `: ${a.sokord}` : a.query ? `: ${a.query}` : ''}`
   if (/lab|prov/.test(t)) return `Läser provsvar${a.analyt ? `: ${a.analyt}` : a.analyte ? `: ${a.analyte}` : ''}`
   if (/sleep|s(o|ö)mn/.test(t)) return `Läser sömndata${span}`

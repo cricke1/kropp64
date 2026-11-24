@@ -40,7 +40,7 @@ export const AGENTS: Record<string, AgentInfo> = {
     look: { skin: '#a8714f', hair: '#1d1a18', hairStyle: 'short', coat: '#2f7d57', shirt: '#e8ebe9', pants: '#2b3a33' },
   },
   stress: {
-    id: 'stress', name: 'Stressläkaren', role: 'Psykiatri och stressmedicin', color: '#c9a043',
+    id: 'stress', name: 'Stressläkaren', role: 'Stressmedicin', color: '#c9a043',
     look: { skin: '#e2ad88', hair: '#7a3f22', hairStyle: 'long', coat: '#c6a04a', shirt: '#efe6d2', pants: '#4a3f33' },
   },
   labb: {

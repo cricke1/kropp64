@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks'
 import { agentInfo } from '../agents'
 import { api, type Consult, type Ev } from '../api'
-import { cites, dateTime, hms, LEVELS, verdictParts } from '../format'
+import { bindUnits, cites, dateTime, hms, LEVELS, verdictParts } from '../format'
 import { toolLabel, type Entry } from '../office/director'
 import { demoEvents } from '../office/demo'
 import { director, go, useAsync, useDirector } from '../store'
@@ -170,6 +170,7 @@ export function Transcript({ entries, compact }: { entries: Entry[]; compact?: b
     <div class={`tr-list ${compact ? 'compact' : ''}`} ref={ref} onScroll={(e) => {
       const el = e.currentTarget as HTMLDivElement
       stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40
+      el.classList.toggle('fade', el.scrollTop > 4)
     }}>
       {entries.map((e) => <EntryRow key={e.n} e={e} />)}
     </div>
@@ -182,16 +183,16 @@ function Who({ id }: { id: string }) {
 }
 
 function struckText(text: string, struck?: { claim: string; reason: string }[]) {
-  if (!struck?.length) return text
+  if (!struck?.length) return bindUnits(text)
   const out: (string | preact.JSX.Element)[] = []
   let rest = text
   for (const s of struck) {
     const i = rest.toLowerCase().indexOf(s.claim.toLowerCase())
     if (i < 0) return <span class="strike-anim">{text}</span>
-    out.push(rest.slice(0, i), <span class="strike-anim" title={s.reason}>{rest.slice(i, i + s.claim.length)}</span>)
+    out.push(bindUnits(rest.slice(0, i)), <span class="strike-anim" title={s.reason}>{bindUnits(rest.slice(i, i + s.claim.length))}</span>)
     rest = rest.slice(i + s.claim.length)
   }
-  out.push(rest)
+  out.push(bindUnits(rest))
   return out
 }
 
@@ -238,7 +239,7 @@ function EntryRow({ e }: { e: Entry }) {
       return (
         <div class="tr-verdict">
           <div class="row"><b>Bedömning</b>{lvl && <span class={`tag ${lvl.cls}`}>{lvl.label}</span>}{time}</div>
-          {v.summary && <p>{v.summary}</p>}
+          {v.summary && <p>{bindUnits(v.summary)}</p>}
           {v.points.length > 0 && <ul>{v.points.map((p) => <li>{p}</li>)}</ul>}
           {v.questions.length > 0 && <><div class="faint qs-h">Att ta med till vården</div><ol>{v.questions.map((q) => <li>{q}</li>)}</ol></>}
           <div class="faint disclaimer">Underlag, inte diagnos. Kontakta vården vid oro.</div>

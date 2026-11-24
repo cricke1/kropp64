@@ -2,7 +2,7 @@
 // Scenen har en egen klocka. Uppspelningshastighet och paus påverkar allt, även väntan i regissören.
 
 import { agentInfo, DEFAULT_ORDER, type AgentInfo } from '../agents'
-import { cites as toCites, metricMeta, type Cite } from '../format'
+import { bindUnits, cites as toCites, metricMeta, type Cite } from '../format'
 import {
   analyzerScreen, buildGrid, deskMonitor, DESKS, deskSeat, drawBackground, MAP_H, MAP_W, staticDrawables, TABLE_SEATS,
   terminalScreen, ZONES, type Drawable, type Spot,
@@ -292,7 +292,7 @@ export class Scene {
     b.innerHTML = `<div class="who"><b>${esc(a.info.name)}</b>${toName ? `<span>${esc(toName)}</span>` : ''}</div><div class="txt"></div><div class="cites"></div><i class="tail"></i>`
     a.els.bubble = b
     const txt = b.querySelector('.txt') as HTMLElement
-    const chunks = splitChunks(text, 170)
+    const chunks = splitChunks(text, 170).map(bindUnits)
     for (let ci = 0; ci < chunks.length; ci++) {
       const chunk = chunks[ci]
       // skriv ut ordvis i takt med scenklockan
@@ -302,7 +302,8 @@ export class Scene {
       while (true) {
         if (gen !== this.gen) return
         const n = Math.min(chunk.length, Math.floor((this.t - start) * cps))
-        txt.textContent = chunk.slice(0, n)
+        // ordvis: visa aldrig ett halvt ord
+        txt.textContent = n >= chunk.length ? chunk : chunk.slice(0, Math.max(0, chunk.lastIndexOf(' ', n)))
         a.mouthUntil = this.t + 0.12
         if (n >= chunk.length) break
         await this.wait(0.03)
@@ -638,7 +639,9 @@ export class Scene {
       if (b) {
         const bw = b.offsetWidth
         const left = clamp(p.x - bw / 2, 4, Math.max(4, W - bw - 4))
-        b.style.transform = `translate(${left}px, ${p.y - 6}px) translateY(-100%)`
+        // håll bubblan inom scenen även när figuren står högt upp
+        const top = Math.max(4, p.y - 6 - b.offsetHeight)
+        b.style.transform = `translate(${left}px, ${top}px)`
         ;(b.querySelector('.tail') as HTMLElement).style.left = `${clamp(p.x - left, 10, bw - 10)}px`
       }
       if (a.els.think) a.els.think.style.transform = `translate(${p.x}px, ${p.y - 4}px) translate(-50%, -100%)`

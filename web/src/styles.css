@@ -202,7 +202,7 @@ a.btn { text-decoration: none; }
 .chip {
   display: inline-flex; align-items: center; gap: 5px; height: 19px; padding: 0 6px;
   border-radius: 3px; background: var(--surface-2); border: 1px solid var(--line);
-  font: 500 11px/1 var(--mono); color: var(--text-2); white-space: nowrap; vertical-align: middle;
+  font: 500 11.5px/1 var(--font); font-variant-numeric: tabular-nums; color: var(--text-2); white-space: nowrap; vertical-align: middle;
 }
 .chip i { width: 6px; height: 6px; border-radius: 1px; background: var(--text-3); display: inline-block; font-style: normal; }
 .chip.k-series i { background: var(--text-2); }

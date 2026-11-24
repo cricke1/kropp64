@@ -46,8 +46,8 @@ export function duration(sec: number) {
   if (sec <= 0) return '0 min'
   if (sec < 60) return `${fmtNum(sec, sec < 10 ? 1 : 0)} s`
   const m = Math.floor(sec / 60), s = Math.round(sec % 60)
-  if (m < 60) return `${m} min ${pad(s)} s`
-  return `${Math.floor(m / 60)} h ${pad(m % 60)} min`
+  if (m < 60) return s ? `${m} min ${s} s` : `${m} min`
+  return m % 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${Math.floor(m / 60)} h`
 }
 export function fmtNum(v: number | null | undefined, digits = 0) {
   if (v == null || !isFinite(v)) return '-'
@@ -133,7 +133,7 @@ export function cite(c: any): Cite {
     return { kind: 'sleep', label, title: label }
   }
   const label = String(c.title ?? c.name ?? c.ref ?? c.url ?? c.id ?? 'Källa')
-  return { kind: 'source', label: label.length > 34 ? label.slice(0, 32) + '..' : label, title: String(c.url ?? c.title ?? label) }
+  return { kind: 'source', label: label.length > 34 ? label.slice(0, Math.max(10, label.lastIndexOf(' ', 32))).trimEnd() + '…' : label, title: String(c.url ?? c.title ?? label) }
 }
 
 function normKind(k: string): CiteKind {
@@ -173,4 +173,10 @@ export const LEVELS: Record<string, { label: string; cls: string }> = {
   bevaka: { label: 'Bevaka', cls: 'warn' },
   ingen: { label: 'Ingen åtgärd', cls: '' },
   info: { label: 'Information', cls: '' },
+}
+
+/** Hårt mellanslag mellan tal och enhet (och mellan tal i följd), så att "7 h 10 min" aldrig bryts mitt i. */
+export function bindUnits(s: string): string {
+  return s.replace(/(\d) (?=(h|min|s|ms|%|d|dygn|nätter|natt|slag|steg|kcal|°C|\d)\b)/g, '$1\u00a0')
+    .replace(/\b(h|min) (?=\d)/g, '$1\u00a0')
 }
