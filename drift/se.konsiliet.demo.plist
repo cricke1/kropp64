@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Publika demon demo.kropp64.se: drift/publik-demo.sh på 127.0.0.1:8795 med engångsdatabas och syntetisk data.
+     KONSILIET_HOSTAR släpper igenom tunnelns värdnamn. Nås utifrån först när tunneln pekar demo.kropp64.se hit. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>se.konsiliet.demo</string>
+  <key>ProgramArguments</key>
+  <array><string>/bin/bash</string><string>/Users/sture/konsiliet/drift/publik-demo.sh</string></array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>/opt/homebrew/bin:/Users/sture/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    <key>KONSILIET_HOSTAR</key><string>demo.kropp64.se</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/Users/sture/.konsiliet/demo.log</string>
+  <key>StandardErrorPath</key><string>/Users/sture/.konsiliet/demo.log</string>
+</dict>
+</plist>

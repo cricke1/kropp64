@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kropp64 - sensorpanelen för kroppen</title>
+<meta name="description" content="Som AIDA64 och HWiNFO64, fast för kroppen, och med ett lokalt läkarteam av AI-agenter som läser sensorerna. Allt körs på en Mac mini med 16 GB.">
+<meta property="og:title" content="Kropp64">
+<meta property="og:description" content="Sensorpanelen för din viktigaste rigg: dig själv. Lokalt läkarteam av AI-agenter på en Mac mini med 16 GB.">
+<meta property="og:image" content="bilder/hjalte.jpg">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./">
+      <img src="favicon.svg" width="22" height="22" alt="">
+      <span>Kropp64</span>
+    </a>
+    <nav aria-label="Länkar">
+      <a class="hide-s" href="#sensorpanelen">Sensorpanelen</a>
+      <a class="hide-s" href="#uppmatt">Uppmätt</a>
+      <a href="https://demo.kropp64.se">Demo</a>
+      <a href="https://github.com/cricke1/kropp64">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <h1>Sensorpanelen för din viktigaste rigg: dig själv.</h1>
+    <p class="lead">Som AIDA64 och HWiNFO64, fast för kroppen, och med ett lokalt läkarteam av AI-agenter som läser
+      sensorerna. Allt körs på en Mac mini M4 med 16 GB. Ingen hälsodata lämnar huset.</p>
+    <div class="actions">
+      <a class="btn primary" href="https://demo.kropp64.se">Öppna demon</a>
+      <a class="btn" href="https://github.com/cricke1/kropp64">Källkoden på GitHub</a>
+    </div>
+    <figure>
+      <img src="bilder/hjalte.jpg" width="1920" height="1080" alt="Mac mini, Pixel Watch och en Pixel-telefon på ett bord">
+      <figcaption>Rendering i Blender. Skärmarna på klockan och telefonen visar exempelvärden, inte uppmätt data.</figcaption>
+    </figure>
+  </div>
+
+  <section id="sensorpanelen">
+    <div class="wrap split">
+      <div>
+        <h2>Klockans sensorer, som en hårdvarumonitor</h2>
+        <p>Pixel Watch, mobilen och Mac minin samlar puls, HRV, syremättnad, andning, hudtemperatur, sömn och steg.
+          Översikten visar dem som en sensorpanel: Aktuellt, Min, Max och Medel per sensor, grupperat som hårdvara.
+          Hjärta, Andning, Kylning, Last.</p>
+        <p>Pulsen heter Klockfrekvens, vilopulsen Idle-klock och återhämtningen Headroom, men enheten står alltid
+          bredvid: BPM, ms, procent. Skämten står i rubrikerna, inte i siffrorna.</p>
+      </div>
+      <figure>
+        <a href="bilder/sensorpanelen.png"><img src="bilder/sensorpanelen.png" width="1920" height="1080" loading="lazy" alt="Översikten med mätartavlor och sensortabellen"></a>
+        <figcaption>Demoläget med syntetisk testdata, märkt i bilden.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="datorn">
+    <div class="wrap split rev">
+      <figure>
+        <a href="bilder/puls-vid-datorn.png"><img src="bilder/puls-vid-datorn.png" width="1920" height="1080" loading="lazy" alt="Pulsen under dygnet med datortiden som band, sömn och uptime vid datorn"></a>
+        <figcaption>Demoläget med syntetisk testdata, märkt i bilden.</figcaption>
+      </figure>
+      <div>
+        <h2>Pulsen under kodpasset</h2>
+        <p>Mac minin loggar varje minut vilken sorts program som är i fokus: kod, spel, chatt eller webb. Bredvid
+          pulsen blir det tydligt vad en spelkväll eller ett sent kodpass gör med kroppen.</p>
+        <p>Bara kategorin sparas, aldrig fönstertitlar eller innehåll.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="traden">
+    <div class="wrap split">
+      <div>
+        <h2>Läkarteamet är en supporttråd</h2>
+        <p>När något avviker från din egen baslinje startar en tråd. Lokala agenter (qwen3.5:9b i Ollama) svarar,
+          och varje påstående måste peka på en mätpunkt, en journalrad eller ett provsvar.</p>
+        <ol class="steps">
+          <li><b>Faktablad</b> räknas fram i kod innan tråden startar.</li>
+          <li><b>Trådstartaren</b> kallar in 2-4 specialister.</li>
+          <li><b>Specialisterna</b> svarar med källor som är låsta till det tråden hämtat.</li>
+          <li><b>Moderatorn</b>, vanlig Python, stryker allt som inte finns i datan.</li>
+          <li><b>Trollet</b> frågar om du har testat att dra åt armbandet.</li>
+          <li><b>Lösningen</b> granskas igen. Brådskan sätts av ett regelverk, inte av modellen.</li>
+        </ol>
+      </div>
+      <figure>
+        <video src="bilder/kontoret.webm" poster="bilder/kontoret.jpg" width="1280" height="720" autoplay muted loop playsinline preload="metadata" aria-label="Pixelkontoret där läkarteamet svarar i tråden"></video>
+        <img class="poster-only" src="bilder/kontoret.jpg" width="1280" height="720" alt="Pixelkontoret där moderatorn stryker ett påstående" style="display:none">
+        <figcaption>Pixelkontoret i demoläget: ett manus, inga uppmätta värden.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Akut är aldrig en språkmodell</h2>
+      <p>Akuta larm, som puls över 140 i vila, syremättnad under 88 % eller klockans fall-larm, är vanliga regler som
+        larmar mobilen på millisekunder. Bara de reglerna kan leda till sms till en anhörig, och det är avstängt tills du
+        själv slår på det. Läkarteamet ger underlag och frågor att ta med till vården, aldrig en diagnos.</p>
+    </div>
+  </section>
+
+  <section id="uppmatt">
+    <div class="wrap">
+      <h2>Uppmätt</h2>
+      <p>Bara siffror som finns i en fil i repot.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Vad</th><th>Värde</th><th>Källa</th></tr></thead>
+          <tbody>
+            <tr><td>qwen3.5:9b på Mac mini M4, generering / promptläsning</td><td class="v">17,4 / 75,4 tokens/s</td><td class="src"><a href="https://github.com/cricke1/kropp64/blob/main/bench/resultat/qwen3.5_9b.json">bench/resultat</a></td></tr>
+            <tr><td>Rätt verktyg valt på 10 testfrågor</td><td class="v">9 av 10</td><td class="src"><a href="https://github.com/cricke1/kropp64/blob/main/bench/resultat/qwen3.5_9b.json">bench/resultat</a></td></tr>
+            <tr><td>Minne för modellen, före och efter 8k kontext, KV-cache q8_0 och en förfrågan åt gången</td><td class="v">14,7 → 9,1 GB</td><td class="src"><a href="https://github.com/cricke1/kropp64/blob/main/RESAN.md">RESAN.md</a></td></tr>
+            <tr><td>Utvärdering mot 15 scenarier med syntetisk data, godtagbar brådska</td><td class="v">40 % → 100 %</td><td class="src"><a href="https://github.com/cricke1/kropp64/blob/main/eval/RESULTAT.md">eval/RESULTAT.md</a></td></tr>
+            <tr><td>Samma utvärdering, mediantid för en tråd</td><td class="v">300 → 117 s</td><td class="src"><a href="https://github.com/cricke1/kropp64/blob/main/eval/RESULTAT.md">eval/RESULTAT.md</a></td></tr>
+            <tr><td>Nätavbrott i kedjan klocka, mobil, server (emulatorer)</td><td class="v">1 215 av 1 215 punkter, 0 dubbletter</td><td class="src"><a href="https://github.com/cricke1/kropp64/blob/main/RESAN.md">RESAN.md</a></td></tr>
+            <tr><td>Sms efter akut larm, avvikelse från fristen</td><td class="v">39 ms</td><td class="src"><a href="https://github.com/cricke1/kropp64/blob/main/RESAN.md">RESAN.md</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note" style="margin-top:18px">Utvärderingens fixar gjordes mot samma 15 scenarier, och brådskan styrs nu av ett regelverk.
+        Siffran är därför optimistisk tills holdout-scenarierna har körts.</p>
+    </div>
+  </section>
+
+  <section id="status">
+    <div class="wrap">
+      <h2>Status</h2>
+      <ul class="status">
+        <li>Hela kedjan klocka, mobil, server, vakt och läkarteam fungerar och är testad på emulatorer och syntetisk data.</li>
+        <li>Den har ännu inte gått länge på riktig data, så det finns inga resultat från verklig användning att visa än.</li>
+        <li>Alla bilder och filmer här är märkta som demo, syntetisk testdata eller emulator.</li>
+        <li>Koden är skriven av Claude Code-agenter som ägaren styrt. Allt som gick fel står i
+          <a href="https://github.com/cricke1/kropp64/blob/main/RESAN.md">RESAN.md</a>.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Kropp64 är inte en medicinteknisk produkt och ställer inga diagnoser. Vid akuta besvär, ring 112. Vid frågor om vård, ring 1177.</p>
+    <p>Bidrag i SweClockers AI-tävling 2026. <a href="https://github.com/cricke1/kropp64">github.com/cricke1/kropp64</a></p>
+  </div>
+</footer>
+</body>
+</html>

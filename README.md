@@ -179,6 +179,15 @@ Tester: `cd server && uv run pytest`.
 vakten, rutinerna, datorkopplingen, 1177-hämtningen och WebSocket avstängda, och utifrån går bara läsande
 anrop. Databasen raderas när skriptet avslutas. Skriptet startar ingen tunnel.
 
+Som tjänst: [drift/se.konsiliet.demo.plist](drift/se.konsiliet.demo.plist) (värdnamnet demo.kropp64.se släpps
+igenom med `KONSILIET_HOSTAR`).
+
+### Landningssidan
+
+[site/](site/) är landningssidan för kropp64.se: statisk HTML och CSS utan ramverk. `site/bygg.sh` bygger den till
+`site/dist` (kopierar renderingen, två bidragsbilder och klipper en kort kontorsloop ur demofilmen), och
+[drift/se.konsiliet.sajt.plist](drift/se.konsiliet.sajt.plist) serverar den på 127.0.0.1:8796.
+
 ## Integritet
 
 - All data ligger i en SQLite-fil på Mac minin. Språkmodellerna körs i Ollama på samma dator.
@@ -221,7 +230,8 @@ minuter. Inget av det är provat.
 | [android/](android/) | Mobilappen: brygga, Health Connect, larm, sms |
 | [bench/](bench/) | Mätningar av lokala modeller |
 | [eval/](eval/) | Utvärdering av läkarteamet mot scenarier med facit |
-| [drift/](drift/) | launchd-tjänster och den publika demon |
+| [drift/](drift/) | launchd-tjänster: server, Ollama, tunnel, publik demo, landningssida |
+| [site/](site/) | Landningssidan för kropp64.se |
 | [tools/](tools/) | Tokenredovisning och bildmärkning |
 | [docs/](docs/) | Arkitektur, stilguide, mobil och klocka, märkta skärmbilder, bidragsbilder |
 
