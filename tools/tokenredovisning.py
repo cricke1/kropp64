@@ -421,13 +421,19 @@ def main() -> None:
         print("Resultatfilerna innehåller inga tokenräkningar (bench mäter bara hastighet och träffsäkerhet).")
     print("\n## Till tävlingsformuläret\n")
     b = per_kat["bygge"]
+    med = sum(b.values())
+    utan = b["input"] + b["output"]
+    print("Två sätt att räkna molnet. Claude Code skickar hela samtalet som indata vid varje svar; det mesta "
+          "läses ur cachen. Tävlingens egen inlämningsprompt räknar det som indata, alltså med cache. "
+          "Därför står talet med cache i fältet, och talet utan cache bredvid som jämförelse.\n")
     print("| | Tokens |")
     print("|---|--:|")
-    print(f"| Moln (Claude Code, bygget), utan cache: input + output | {n(b['input'] + b['output'])} |")
-    print(f"| Moln (bygget), cache-skrivning | {n(b['cache_skriv'])} |")
-    print(f"| Moln (bygget), cache-läsning | {n(b['cache_las'])} |")
-    print(f"| Lokalt (Ollama), prompt + output, källa: {kalla} och resultatfiler | {n(lok_p + lok_o)} |")
-
+    print(f"| **Moln (Claude Code, bygget), med cache: input + cache-skriv + cache-läs + output (står i fältet)** | **{n(med)}** |")
+    print(f"| Moln (bygget), utan cache: input + output | {n(utan)} |")
+    print(f"| varav input {n(b['input'])}, cache-skriv {n(b['cache_skriv'])}, cache-läs {n(b['cache_las'])}, output {n(b['output'])} | |")
+    print(f"| Lokalt (Ollama på Mac minin), prompt + output, källa: {kalla} och resultatfiler | {n(lok_p + lok_o)} |")
+    print("\nSystemet skickar ingen hälsodata till molnet: mätdata, journal och trådar bearbetas bara av de lokala "
+          "modellerna på Mac minin. Claude Code användes för att skriva koden, och testades mot databaser med syntetisk data.")
 
 if __name__ == "__main__":
     sys.exit(main())
