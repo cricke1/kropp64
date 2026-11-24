@@ -9,6 +9,7 @@ GET  /api/consults          konsiliemöten
 GET  /api/consults/{id}     ett möte med hela samtalet
 POST /api/consult           starta ett konsilium manuellt (fråga från användaren)
 GET  /api/journal           journal och provsvar
+GET  /api/rost              en replik uppläst (mp3), ?agent=..&text=.. eller ?event=<id>
 POST /api/sync/1177         starta journalhämtning (kräver BankID i mobilen)
 WS   /ws                    live-ström av alla händelser (se bus.py för typer)
 
@@ -371,6 +372,28 @@ def besoksunderlag() -> Response:
 
     return Response(underlag.pdf(), media_type="application/pdf",
                     headers={"Content-Disposition": 'inline; filename="besoksunderlag.pdf"'})
+
+
+@app.get("/api/rost", dependencies=[Depends(auth)])
+def rost_ljud(agent: str = "", text: str = "", event: int | None = None) -> Response:
+    """Repliken som ljud med läkarens egen röst. Genereras lokalt första gången och cachas (rost.py)."""
+    from . import rost
+
+    if event is not None:
+        r = db.conn().execute("SELECT kind, payload FROM events WHERE id=?", (event,)).fetchone()
+        if not r or r["kind"] != "agent.say":
+            raise HTTPException(404)
+        p = json.loads(r["payload"])
+        agent, text = str(p.get("agent", "")), str(p.get("text", ""))
+    if not re.fullmatch(r"[a-z_]{1,40}", agent) or not text.strip() or len(text) > 4000:
+        raise HTTPException(400, "agent och text krävs")
+    try:
+        fil = rost.ljud(agent, text)
+    except FileNotFoundError as e:
+        raise HTTPException(503, str(e))
+    if fil is None:
+        return Response(status_code=204)
+    return FileResponse(fil, media_type="audio/mpeg", headers={"Cache-Control": "private, max-age=31536000, immutable"})
 
 
 def _mac_minne() -> dict[str, Any]:
