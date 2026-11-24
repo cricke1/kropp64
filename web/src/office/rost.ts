@@ -1,6 +1,8 @@
-// Röster i kontoret. Varje replik kan läsas upp med läkarens egen röst, genererad lokalt på Mac minin
+// Röster i kontoret. Varje replik kan läsas upp med läkarens egen röst, genererad lokalt i hemnätet
 // (server/src/konsiliet/rost.py). Av som standard. Slås på med knappen i kontoret eller ?ljud=1 i adressen.
-// I demoläget spelas förgenererade filer från public/rost-demo/ (byggs med web/dev/rost-demo.mjs).
+// Servern läser bara upp repliker som finns i händelseloggen (GET /api/rost/{id}), aldrig fri text.
+// I demoläget spelas förgenererade filer från public/demo-rost/ (byggs med web/dev/rost-demo.mjs), och den
+// publika demon har ingen talsyntes alls.
 
 const KEY = 'kropp64.ljud'
 const base = new URL('.', location.href).pathname.replace(/\/$/, '')
@@ -15,8 +17,16 @@ function stored(): boolean {
   try { return localStorage.getItem(KEY) === '1' } catch { return false }
 }
 
-export interface SpeakOpts {
+export interface Line {
+  id: number | null        // händelsens id i serverns logg
+  agent: string
+  text: string
   demo: boolean
+}
+
+interface DemoRad { nr: number; agent: string; text: string; fil: string }
+
+export interface SpeakOpts {
   rate: number                 // uppspelningshastighet, följer scenens hastighet
   onFrame?: () => void         // anropas medan rösten hörs (munrörelser)
 }
@@ -26,7 +36,7 @@ class Rost {
   volume = 0.9
   private audio: HTMLAudioElement | null = null
   private finish: (() => void) | null = null
-  private manifest: Promise<Record<string, string>> | null = null
+  private manifest: Promise<DemoRad[]> | null = null
   private listeners = new Set<() => void>()
 
   subscribe(l: () => void) { this.listeners.add(l); return () => { this.listeners.delete(l) } }
@@ -40,33 +50,31 @@ class Rost {
     this.listeners.forEach((l) => l())
   }
 
-  private async demoFile(agent: string, text: string): Promise<string | null> {
-    this.manifest ??= fetch(`${base}/rost-demo/index.json`).then((r) => (r.ok ? r.json() : {})).catch(() => ({}))
-    const f = (await this.manifest)[`${agent}|${text}`]
-    return f ? `${base}/rost-demo/${f}` : null
+  /** Demons fil spelas bara om agent och text stämmer exakt med manuset (annars är filen inaktuell). */
+  private async demoFile(l: Line): Promise<string | null> {
+    this.manifest ??= fetch(`${base}/demo-rost/index.json`).then((r) => (r.ok ? r.json() : [])).catch(() => [])
+    const rad = (await this.manifest).find((r) => r.agent === l.agent && r.text === l.text)
+    return rad ? `${base}/demo-rost/${rad.fil}` : null
   }
 
-  async url(agent: string, text: string, demo: boolean): Promise<string | null> {
-    if (demo) {
-      const f = await this.demoFile(agent, text)
-      if (f || __PUBLIK_DEMO__) return f
-    }
-    if (__PUBLIK_DEMO__) return null
-    return `${base}/api/rost?agent=${encodeURIComponent(agent)}&text=${encodeURIComponent(text)}`
+  async url(l: Line): Promise<string | null> {
+    if (l.demo) return this.demoFile(l)
+    if (__PUBLIK_DEMO__ || l.id == null || l.id < 0) return null
+    return `${base}/api/rost/${l.id}`
   }
 
   /** Be servern generera i förväg, så att nästa replik är klar när den behövs. */
-  async prefetch(agent: string, text: string, demo: boolean) {
+  async prefetch(l: Line) {
     if (!this.on) return
-    const u = await this.url(agent, text, demo)
+    const u = await this.url(l)
     if (u) fetch(u).catch(() => {})
   }
 
-  /** Spelar repliken. Löser när den är slut, avbruten, eller om ljudet inte hunnit börja inom 4 s. */
-  async speak(agent: string, text: string, o: SpeakOpts): Promise<void> {
+  /** Spelar repliken. Löser när den är slut, avbruten, eller om ljudet inte hunnit börja inom 8 s. */
+  async speak(l: Line, o: SpeakOpts): Promise<void> {
     if (!this.on) return
     this.stop()
-    const u = await this.url(agent, text, o.demo)
+    const u = await this.url(l)
     if (!u || !this.on) return
     const a = new Audio(u)
     a.volume = this.volume
@@ -81,7 +89,7 @@ class Rost {
         resolve()
       }
       this.finish = () => { a.pause(); done() }
-      const slow = setTimeout(() => { if (a.currentTime === 0) this.finish?.() }, 4000)
+      const slow = setTimeout(() => { if (a.currentTime === 0) this.finish?.() }, 8000)
       a.addEventListener('ended', done)
       a.addEventListener('error', done)
       a.addEventListener('playing', () => { if (o.onFrame && !tick) tick = window.setInterval(() => { if (!a.paused) o.onFrame!() }, 80) })

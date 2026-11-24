@@ -5,7 +5,7 @@ import { agentInfo } from '../agents'
 import type { Ev } from '../api'
 import { verdictParts, LEVELS, metricMeta } from '../format'
 import { Scene, esc, type ScreenData } from './scene'
-import { rost } from './rost'
+import { rost, type Line } from './rost'
 
 export type EntryKind = 'start' | 'say' | 'tool' | 'handoff' | 'strike' | 'verdict' | 'think' | 'move'
 export interface Entry {
@@ -286,7 +286,7 @@ export class Director {
         const text = String(p.text ?? '')
         this.add({ kind: 'say', ts: ev.ts, agent: id, to: p.to, text, cites: p.cites })
         if (instant) { await s.say(id, text, p.cites, p.to, true); return }
-        const voice = this.voice(id, text)
+        const voice = this.voice({ id: ev.id, agent: id, text, demo: this.state.mode === 'demo' })
         await s.say(id, text, p.cites, p.to)
         // nästa replik väntar tills rösten är klar, så att två läkare aldrig pratar i munnen på varandra
         if (voice && s.gen === gen0) await voice
@@ -340,14 +340,13 @@ export class Director {
   }
 
   /** Rösten till en replik, eller null om ljudet är av eller uppspelningen ligger efter. */
-  private voice(id: string, text: string): Promise<void> | null {
+  private voice(line: Line): Promise<void> | null {
     if (!rost.on) return null
     const live = this.state.mode === 'live'
     if (live && this.queue.length >= 3) return null   // live och efter: hoppa över hellre än att släpa
     if (!live && this.state.speed > 2) return null
-    const a = this.scene.ensure(id)
-    return rost.speak(id, text, {
-      demo: this.state.mode === 'demo',
+    const a = this.scene.ensure(line.agent)
+    return rost.speak(line, {
       rate: live ? 1 : this.state.speed,
       onFrame: () => { a.mouthUntil = this.scene.t + 0.15 },
     })
@@ -356,7 +355,8 @@ export class Director {
   private prefetchVoice() {
     if (!rost.on) return
     const next = this.queue.find((e) => e.kind === 'agent.say')
-    if (next?.payload?.agent && next.payload.text) rost.prefetch(String(next.payload.agent), String(next.payload.text), this.state.mode === 'demo')
+    if (next?.payload?.agent && next.payload.text)
+      rost.prefetch({ id: next.id, agent: String(next.payload.agent), text: String(next.payload.text), demo: this.state.mode === 'demo' })
   }
 
   private async endConsult(quick: boolean) {
