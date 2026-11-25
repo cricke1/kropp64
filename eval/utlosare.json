@@ -288,5 +288,23 @@
   },
   "fran_vakt": false,
   "nu": 1795534200
+ },
+ "h3_syrefall_forra_natten": {
+  "utlosare": {
+   "kind": "question",
+   "question": "För två nätter sedan visade appen att syret gick ner till 87. Är det sömnapné?",
+   "hours": 72
+  },
+  "fran_vakt": false,
+  "nu": 1795514400
+ },
+ "h3_en_kort_natt": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Jag sov bara fyra timmar i natt. Behöver jag oroa mig?",
+   "hours": 48
+  },
+  "fran_vakt": false,
+  "nu": 1795518000
  }
 }

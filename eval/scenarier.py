@@ -703,3 +703,40 @@ HOLDOUT2: list[Scenario] = [
         "påverkas inte märkbart, ingen oro.")),
 ]
 SCENARIO.update({s.id: s for s in HOLDOUT2})
+
+
+# ------------------------------------------------------------------ HOLDOUT 3
+# Skrivna efter holdout 1, när ett fel hittades där (enstaka syrefall förklarades inte som troligt mätfel).
+# Orsaken rättades generellt i faktabladet; de här scenarierna mäter om rättningen håller på nya fall.
+
+def h3_syrefall_forra_natten(s: Sim) -> dict[str, Any]:
+    s.standard()
+    s.standardprover()
+    k = s.idx(s.ts(2, 130))
+    s.spo2_add[k:k + 3] -= 9
+    return _fraga("För två nätter sedan visade appen att syret gick ner till 87. Är det sömnapné?", 72)
+
+
+def h3_en_kort_natt(s: Sim) -> dict[str, Any]:
+    s.standard(till_dag=1)
+    s.natt(0, 200, 440)  # 03:20-07:20, en kort natt efter en fest
+    s.standardprover()
+    return _fraga("Jag sov bara fyra timmar i natt. Behöver jag oroa mig?", 48)
+
+
+HOLDOUT3: list[Scenario] = [
+    Scenario("h3_syrefall_forra_natten", "Holdout 3: ett syrefall för två nätter sedan", "11:00", h3_syrefall_forra_natten, Facit(
+        "ingen", ("ingen", "bevaka"),
+        [("enstaka", r"enstaka|ett (enda )?fall|en gång|en natt|isolerad|kortvarig|enda"),
+         ("mätfel eller sovställning", r"mätfel|sovställ|klockan|sensor|artefakt|tryck")],
+        [("sömnapné som fakta", r"(har|tyder på) sömnapn"), ("akut", r"ring 112")],
+        "Ett enda kort fall till cirka 87 % en natt, övriga nätter normala utan upprepade fall. Rätt: inte sömnapné; "
+        "troligen mätfel eller sovställning, bevaka om det upprepas.")),
+    Scenario("h3_en_kort_natt", "Holdout 3: en enstaka kort natt", "12:00", h3_en_kort_natt, Facit(
+        "ingen", ("ingen", "bevaka"),
+        [("kort natt med siffra", r"\b4\b|\b4[,.]\d|fyra|kort"), ("annars normal sömn", r"normal|vanlig|andra nätter|övriga|tidigare|baslinje|enstaka")],
+        [("vårdkontakt", r"kontakta vården|boka tid")],
+        "En natt med cirka 4 timmars sömn efter normala nätter på cirka 8 timmar. Rätt: en enstaka kort natt är ofarlig, "
+        "sov ikapp och undvik hård träning i dag.")),
+]
+SCENARIO.update({s.id: s for s in HOLDOUT3})

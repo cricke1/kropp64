@@ -165,6 +165,9 @@ def _natt(a: float, b: float, sid: str | None) -> dict[str, Any]:
     if o:
         n["spo2_fall_antal"], n["spo2_fall_per_timme"] = o[0], _r(o[1], 1)
         n["spo2_lagsta"] = _r(sp[:, 1].min(), 0)
+        if 1 <= o[0] <= 2 and o[1] < 5:
+            n["spo2_tolkning"] = ("enstaka fall en natt: vanligen mätfel (tryck mot klockan, sovställning) "
+                                  "snarare än andningsuppehåll; ett mönster kräver upprepade fall flera nätter")
     return n
 
 
