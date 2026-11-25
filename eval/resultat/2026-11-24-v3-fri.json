@@ -16,7 +16,7 @@
   "forbjudna": 1,
   "strykandel": 0.141,
   "belagda_medel": 5.3,
-  "overifierade_siffror": 2,
+  "overifierade_siffror": 0,
   "baslinjefel": 2,
   "sek_median": 120.9,
   "sek_max": 142.1,
@@ -456,9 +456,7 @@
    "strykningar": 0,
    "strykandel": 0.0,
    "belagda": 6,
-   "overifierade_siffror": [
-    3.7
-   ],
+   "overifierade_siffror": [],
    "baslinjefel": [],
    "sekunder": 126.8,
    "prompt_tokens": 20871,
@@ -489,9 +487,7 @@
    "strykningar": 0,
    "strykandel": 0.0,
    "belagda": 6,
-   "overifierade_siffror": [
-    10.3
-   ],
+   "overifierade_siffror": [],
    "baslinjefel": [],
    "sekunder": 112.1,
    "prompt_tokens": 18462,

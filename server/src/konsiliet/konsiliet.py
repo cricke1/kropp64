@@ -619,9 +619,13 @@ def _ordforande_val(m: Mote) -> list[tuple[str, str]]:
         std = {"hr": ["kardiolog", "stress"], "hrv_rmssd": ["stress", "kardiolog", "idrott"],
                "spo2": ["somn", "kardiolog"], "resp_rate": ["somn", "kardiolog"]}.get(metric, ["kardiolog", "somn", "idrott"])
         val = [(s, "Utred utlösaren utifrån ditt område.") for s in std]
-    if "F:prover" in m.fakta and any(p["bedomning_mot_referens"] != "inom" for p in m.fakta["F:prover"]["prover"]) \
-            and "labb" not in [v[0] for v in val]:
-        val.append(("labb", "Bedöm provsvaren som ligger utanför referensintervallet."))
+    valda = [v[0] for v in val]
+    if "F:prover" in m.fakta and "labb" not in valda:
+        if any(p["bedomning_mot_referens"] != "inom" for p in m.fakta["F:prover"]["prover"]):
+            val.append(("labb", "Bedöm provsvaren som ligger utanför referensintervallet."))
+        elif re.search(r"trött|orkar|orkeslös|energi|yr\b|andfådd|hjärtklapp", str(m.trigger.get("question", "")), re.I):
+            # vid trötthet och liknande hör provsvaren till utredningen, även när de är normala
+            val.append(("labb", "Finns det något i provsvaren som kan förklara besvären, eller är de normala?"))
     return val[:max(mx, 2) + 1]
 
 

@@ -1,0 +1,4202 @@
+{
+ "variant": "holdout-baslinje",
+ "datum": "2026-11-25",
+ "beskrivning": "Holdout (5 scenarier skrivna efter regelverket), gamla pipelinen",
+ "env": {},
+ "src": "/Users/sture/konsiliet-eval-bas/server/src",
+ "sammanfattning": {
+  "n": 5,
+  "bradska_godtagbar": 0.6,
+  "bradska_exakt": 0.4,
+  "overtriage": 0,
+  "undertriage": 2,
+  "tackning": 0.7,
+  "forbjudna": 0,
+  "strykandel": 0.273,
+  "belagda_medel": 4.8,
+  "overifierade_siffror": 2,
+  "baslinjefel": 0,
+  "sek_median": 233.1,
+  "sek_max": 395.1,
+  "sek_medel": 269.6,
+  "prompt_tokens_medel": 25329,
+  "ut_tokens_medel": 4332,
+  "fel": 0
+ },
+ "rader": [
+  {
+   "scenario": "h_natt_takykardi",
+   "bradska": "ingen",
+   "facit": "kontakta_vard_nu",
+   "exakt": false,
+   "godtagbar": false,
+   "overtriage": false,
+   "undertriage": true,
+   "tackning": 1.0,
+   "maste": {
+    "hög puls med siffra": true,
+    "i vila": true
+   },
+   "forbjudna": [],
+   "pastaenden": 6,
+   "strykningar": 1,
+   "strykandel": 0.167,
+   "belagda": 5,
+   "overifierade_siffror": [],
+   "baslinjefel": [],
+   "sekunder": 175.0,
+   "prompt_tokens": 16117,
+   "ut_tokens": 3152,
+   "anrop": 9,
+   "medgemma_anrop": 0,
+   "fel": false,
+   "ollama_minne_gib_efter": {
+    "qwen3.5:9b": 8.7
+   }
+  },
+  {
+   "scenario": "h_cykling",
+   "bradska": "ingen",
+   "facit": "ingen",
+   "exakt": true,
+   "godtagbar": true,
+   "overtriage": false,
+   "undertriage": false,
+   "tackning": 0.0,
+   "maste": {
+    "kopplar till cykelpasset": false
+   },
+   "forbjudna": [],
+   "pastaenden": 6,
+   "strykningar": 2,
+   "strykandel": 0.333,
+   "belagda": 4,
+   "overifierade_siffror": [
+    150.0
+   ],
+   "baslinjefel": [],
+   "sekunder": 194.6,
+   "prompt_tokens": 16926,
+   "ut_tokens": 3449,
+   "anrop": 8,
+   "medgemma_anrop": 0,
+   "fel": false,
+   "ollama_minne_gib_efter": {
+    "qwen3.5:9b": 8.7
+   }
+  },
+  {
+   "scenario": "h_anemi",
+   "bradska": "bevaka",
+   "facit": "ta_upp_med_varden",
+   "exakt": false,
+   "godtagbar": false,
+   "overtriage": false,
+   "undertriage": true,
+   "tackning": 1.0,
+   "maste": {
+    "Hb lågt": true,
+    "ferritin/järn": true,
+    "siffra": true
+   },
+   "forbjudna": [],
+   "pastaenden": 10,
+   "strykningar": 3,
+   "strykandel": 0.3,
+   "belagda": 7,
+   "overifierade_siffror": [
+    18.0
+   ],
+   "baslinjefel": [],
+   "sekunder": 350.2,
+   "prompt_tokens": 31252,
+   "ut_tokens": 5598,
+   "anrop": 11,
+   "medgemma_anrop": 0,
+   "fel": false,
+   "ollama_minne_gib_efter": {
+    "qwen3.5:9b": 9.6
+   }
+  },
+  {
+   "scenario": "h_lag_nattpuls",
+   "bradska": "ingen",
+   "facit": "ingen",
+   "exakt": true,
+   "godtagbar": true,
+   "overtriage": false,
+   "undertriage": false,
+   "tackning": 1.0,
+   "maste": {
+    "nattpulsen med siffra": true,
+    "normalt": true
+   },
+   "forbjudna": [],
+   "pastaenden": 6,
+   "strykningar": 2,
+   "strykandel": 0.333,
+   "belagda": 4,
+   "overifierade_siffror": [],
+   "baslinjefel": [],
+   "sekunder": 395.1,
+   "prompt_tokens": 38461,
+   "ut_tokens": 6312,
+   "anrop": 12,
+   "medgemma_anrop": 0,
+   "fel": false,
+   "ollama_minne_gib_efter": {
+    "qwen3.5:9b": 9.9
+   }
+  },
+  {
+   "scenario": "h_enstaka_syrefall",
+   "bradska": "bevaka",
+   "facit": "ingen",
+   "exakt": false,
+   "godtagbar": true,
+   "overtriage": false,
+   "undertriage": false,
+   "tackning": 0.5,
+   "maste": {
+    "enstaka": false,
+    "mätfel eller sovställning": true
+   },
+   "forbjudna": [],
+   "pastaenden": 5,
+   "strykningar": 1,
+   "strykandel": 0.2,
+   "belagda": 4,
+   "overifierade_siffror": [],
+   "baslinjefel": [],
+   "sekunder": 233.1,
+   "prompt_tokens": 23888,
+   "ut_tokens": 3151,
+   "anrop": 9,
+   "medgemma_anrop": 0,
+   "fel": false,
+   "ollama_minne_gib_efter": {
+    "qwen3.5:9b": 9.0
+   }
+  }
+ ],
+ "korningar": [
+  {
+   "scenario": "h_natt_takykardi",
+   "titel": "Holdout: pulsrusning sent på kvällen",
+   "klocka": "02:10",
+   "forskjutning_s": -81353,
+   "utlosare": {
+    "kind": "anomaly",
+    "rule": "hr_rest_acute",
+    "level": "akut",
+    "metric": "hr",
+    "title": "Mycket hög puls i vila",
+    "detail": "Medianpuls 151 slag/min under 10 minuter utan rörelse.",
+    "window": [
+     1795482000.0,
+     1795482600.0
+    ]
+   },
+   "utlosare_fran_vakt": true,
+   "dataantal": {
+    "hr": 10368,
+    "hrv_rmssd": 3101,
+    "spo2": 3743,
+    "skin_temp": 2656,
+    "resp_rate": 2656,
+    "steps": 1567,
+    "dator_kod": 0,
+    "dator_spel": 6956,
+    "dator_chatt": 0,
+    "dator_webb": 0,
+    "dator_annat": 0,
+    "resting_hr": 27,
+    "natter": 27,
+    "pass": 0,
+    "journal": 1,
+    "labb": 4
+   },
+   "verdict": {
+    "sammanfattning": "Datan från Pixel Watch visar en akut ökning av medianpuls från 57,0 slag/min till 151,0 slag/min vid klockan 02:04 under en period på 10 minuter. Enligt granskningen bekräftas att den normala vilopulsen ligger mellan 53,0 och 62,0 slag/min baserat på data från de senaste 28 dagarna. Det finns inga giltiga källor som verifierar orsaken till pulsförsämringen (t.ex. stress eller sömnstörning), och det finns heller ingen bekräftad uppgift om att personen var helt stillasittande under hela larmperioden, trots att systemet rapporterade 'utan rörelse'.",
+    "bradska": "ingen",
+    "rad": [
+     "Personens normala medianpuls vid klockan 2 är 57,0 slag/min under de senaste 28 dagarna enligt B:hr:h2.",
+     "Under larmperioden var medianpuls 151,0 slag/min med ett maximum på 156,0 slag/min enligt S:hr:1795475414-1795482614 och U:utlosare.",
+     "Din normala vilopuls vid klockan 02:00 ligger mellan 53,0 och 62,0 slag/min baserat på din baslinje enligt B:hr:h2.",
+     "Du fick ett akut larm med en medianpuls på 151 slag/min under 10 minuter vid klockan 02:04 enligt U:utlosare och S:hr:1795475414-1795482614."
+    ],
+    "fragor_till_varden": [
+     "Varför uppstod en plötslig ökning av pulsen från 57,0 till 151,0 slag/min vid klockan 02:04?",
+     "Hur kan vi verifiera att personen inte var i rörelse under larmperioden trots sensorernas rapportering?"
+    ],
+    "belagda_pastaenden": [
+     {
+      "text": "Personens normala medianpuls vid klockan 2 är 57,0 slag/min under de senaste 28 dagarna enligt B:hr:h2.",
+      "kallor": [
+       "B:hr:h2"
+      ],
+      "av": "kardiolog"
+     },
+     {
+      "text": "Under larmperioden var medianpuls 151,0 slag/min med ett maximum på 156,0 slag/min utan registrerad rörelse enligt S:hr:1795475414-1795482614 och U:utlosare.",
+      "kallor": [
+       "S:hr:1795475414-1795482614",
+       "U:utlosare"
+      ],
+      "av": "kardiolog"
+     },
+     {
+      "text": "Din normala vilopuls vid klockan 02:00 ligger mellan 53,0 och 62,0 slag/min baserat på din baslinje.",
+      "kallor": [
+       "B:hr:h2"
+      ],
+      "av": "stress"
+     },
+     {
+      "text": "Du fick ett akut larm med en medianpuls på 151 slag/min under 10 minuter utan rörelse vid klockan 02:04.",
+      "kallor": [
+       "U:utlosare",
+       "S:hr:1795475414-1795482614"
+      ],
+      "av": "stress"
+     },
+     {
+      "text": "Ingen datoranvändning registrerades under de senaste 24 timmarna, vilket gör skärmtid osannolik som orsak till den höga pulsen.",
+      "kallor": [
+       "S:dator_kod:1795396289-1795482689"
+      ],
+      "av": "stress"
+     }
+    ]
+   },
+   "strykningar": [
+    {
+     "agent": "kardiolog",
+     "claim": "Detta utgör en kraftig avvikelse från baslinjen som indikerar akut kardiologisk risk och kräver omedelbar vård.",
+     "reason": "saknar källa"
+    }
+   ],
+   "pastaenden": [
+    {
+     "agent": "kardiolog",
+     "text": "Personens normala medianpuls vid klockan 2 är 57,0 slag/min under de senaste 28 dagarna enligt B:hr:h2.",
+     "kallor": [
+      "B:hr:h2"
+     ]
+    },
+    {
+     "agent": "kardiolog",
+     "text": "Under larmperioden var medianpuls 151,0 slag/min med ett maximum på 156,0 slag/min utan registrerad rörelse enligt S:hr:1795475414-1795482614 och U:utlosare.",
+     "kallor": [
+      "S:hr:1795475414-1795482614",
+      "U:utlosare"
+     ]
+    },
+    {
+     "agent": "kardiolog",
+     "text": "Detta utgör en kraftig avvikelse från baslinjen som indikerar akut kardiologisk risk och kräver omedelbar vård.",
+     "kallor": []
+    },
+    {
+     "agent": "stress",
+     "text": "Din normala vilopuls vid klockan 02:00 ligger mellan 53,0 och 62,0 slag/min baserat på din baslinje.",
+     "kallor": [
+      "B:hr:h2"
+     ]
+    },
+    {
+     "agent": "stress",
+     "text": "Du fick ett akut larm med en medianpuls på 151 slag/min under 10 minuter utan rörelse vid klockan 02:04.",
+     "kallor": [
+      "U:utlosare",
+      "S:hr:1795475414-1795482614"
+     ]
+    },
+    {
+     "agent": "stress",
+     "text": "Ingen datoranvändning registrerades under de senaste 24 timmarna, vilket gör skärmtid osannolik som orsak till den höga pulsen.",
+     "kallor": [
+      "S:dator_kod:1795396289-1795482689"
+     ]
+    }
+   ],
+   "yttranden": [
+    {
+     "agent": "ordforande",
+     "text": "Kardiolog: Granska medianpuls 151 slag/min i vila och bedöma om detta utgör en akut kardiologisk risk eller kräver omedelbar vård."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Stressmedicin: Analysera vilopuls-trenden över dygnet för att se om höga värden är isolerade eller ett mönster, samt koppla till stressbelastning och skärmtid."
+    },
+    {
+     "agent": "kardiolog",
+     "text": "Personens vilopuls steg från en normal median på 57,0 slag/min till 151,0 slag/min under en period utan rörelse. Detta representerar en akut och kraftig ökning som kräver omedelbar medicinsk utredning."
+    },
+    {
+     "agent": "stress",
+     "text": "Din vilopuls är normalt låg på morgonen (median 57,0 slag/min) men du fick ett akut larm med mycket hög puls (151 slag/min) vid 02:04. Detta extrema värde verkar vara en isolerad händelse kopplad till stress eller sömnstörning snarare än skärmtid, då ingen datoranvändning registrerades under perioden."
+    },
+    {
+     "agent": "advokat",
+     "text": "*   Kardiologens påstående om att pulsen steg från 57,0 till 151,0 slag/min utan rörelse är felaktigt eftersom inga verktyg har returnerat data som bekräftar denna specifika tidsperiod eller den angivna medianpulsen av 57,0 slag/min.\n*   Stressmedicinens slutsats om att händelsen var kopplad till stress eller sömnstörning är spekulativ eftersom inga verktyg har returnerat data om sömnkvalitet eller stressnivåer vid klockan 02:04 för att verifiera orsaken.\n*   Det finns ingen giltig källa som bekräftar att personen inte var i rörelse under perioden då pulsen mättes till 151,0 slag/min, vilket gör bedömningen om \"utan rörelse\" osäker."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Datan från Pixel Watch visar en akut ökning av medianpuls från 57,0 slag/min till 151,0 slag/min vid klockan 02:04 under en period på 10 minuter. Enligt granskningen bekräftas att den normala vilopulsen ligger mellan 53,0 och 62,0 slag/min baserat på data från de senaste 28 dagarna. Det finns inga giltiga källor som verifierar orsaken till pulsförsämringen (t.ex. stress eller sömnstörning), och det finns heller ingen bekräftad uppgift om att personen var helt stillasittande under hela larmperioden, trots att systemet rapporterade 'utan rörelse'."
+    }
+   ],
+   "verktygsanrop": [
+    {
+     "agent": "kardiolog",
+     "tool": "jamfor_baslinje",
+     "args": {
+      "metric": "hr",
+      "timme": 2
+     }
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "sok_journal",
+     "args": {
+      "sokord": "hög puls"
+     }
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_labb",
+     "args": {
+      "analyt": "troponin"
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "hr",
+      "timmar_bakat": 24,
+      "slut_timmar_bakat": 0
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "jamfor_baslinje",
+     "args": {
+      "metric": "hr",
+      "timme": 2
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "dator_kod",
+      "timmar_bakat": 24,
+      "slut_timmar_bakat": 0
+     }
+    }
+   ],
+   "medlemmar": [
+    "ordforande",
+    "kardiolog",
+    "stress",
+    "advokat",
+    "granskare"
+   ],
+   "refs": {
+    "U:utlosare": {
+     "ref": "U:utlosare",
+     "titel": "Mycket hög puls i vila",
+     "detalj": "Medianpuls 151 slag/min under 10 minuter utan rörelse."
+    },
+    "S:hr:1795475414-1795482614": {
+     "ref": "S:hr:1795475414-1795482614",
+     "metric": "hr",
+     "enhet": "puls (slag/min)",
+     "period": [
+      "2026-11-24 00:10",
+      "2026-11-24 02:10"
+     ],
+     "antal": 120,
+     "median": 74.0,
+     "min": [
+      66.0,
+      "2026-11-24 00:54"
+     ],
+     "max": [
+      156.0,
+      "2026-11-24 02:09"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-24 00:11",
+       73.0
+      ],
+      [
+       "2026-11-24 00:19",
+       74.0
+      ],
+      [
+       "2026-11-24 00:27",
+       75.0
+      ],
+      [
+       "2026-11-24 00:35",
+       73.5
+      ],
+      [
+       "2026-11-24 00:43",
+       72.5
+      ],
+      [
+       "2026-11-24 00:51",
+       69.5
+      ],
+      [
+       "2026-11-24 00:59",
+       74.0
+      ],
+      [
+       "2026-11-24 01:07",
+       77.5
+      ],
+      [
+       "2026-11-24 01:15",
+       76.0
+      ],
+      [
+       "2026-11-24 01:22",
+       74.0
+      ],
+      [
+       "2026-11-24 01:29",
+       74.0
+      ],
+      [
+       "2026-11-24 01:36",
+       75.0
+      ],
+      [
+       "2026-11-24 01:43",
+       69.0
+      ],
+      [
+       "2026-11-24 01:50",
+       71.0
+      ],
+      [
+       "2026-11-24 01:57",
+       150.0
+      ],
+      [
+       "2026-11-24 02:04",
+       153.0
+      ]
+     ]
+    },
+    "B:hr:h2": {
+     "ref": "B:hr:h2",
+     "metric": "hr",
+     "timme": 2,
+     "dagar": 28,
+     "antal": 431,
+     "median": 57.0,
+     "p10": 53.0,
+     "p90": 62.0
+    },
+    "S:steps:1795475414-1795482614": {
+     "ref": "S:steps:1795475414-1795482614",
+     "metric": "steps",
+     "antal": 0,
+     "kommentar": "ingen data i perioden"
+    },
+    "S:hr:1795396289-1795482689": {
+     "ref": "S:hr:1795396289-1795482689",
+     "metric": "hr",
+     "enhet": "puls (slag/min)",
+     "period": [
+      "2026-11-23 02:11",
+      "2026-11-24 02:11"
+     ],
+     "antal": 1439,
+     "median": 71.0,
+     "min": [
+      47.0,
+      "2026-11-23 04:12"
+     ],
+     "max": [
+      156.0,
+      "2026-11-24 02:09"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-23 02:12",
+       56.0
+      ],
+      [
+       "2026-11-23 03:42",
+       57.0
+      ],
+      [
+       "2026-11-23 05:12",
+       55.0
+      ],
+      [
+       "2026-11-23 06:42",
+       57.0
+      ],
+      [
+       "2026-11-23 08:12",
+       73.0
+      ],
+      [
+       "2026-11-23 09:42",
+       69.0
+      ],
+      [
+       "2026-11-23 11:12",
+       71.0
+      ],
+      [
+       "2026-11-23 12:42",
+       71.5
+      ],
+      [
+       "2026-11-23 14:12",
+       68.0
+      ],
+      [
+       "2026-11-23 15:42",
+       71.0
+      ],
+      [
+       "2026-11-23 17:12",
+       74.0
+      ],
+      [
+       "2026-11-23 18:42",
+       75.0
+      ],
+      [
+       "2026-11-23 20:12",
+       76.0
+      ],
+      [
+       "2026-11-23 21:42",
+       73.5
+      ],
+      [
+       "2026-11-23 23:12",
+       76.0
+      ],
+      [
+       "2026-11-24 00:42",
+       74.0
+      ]
+     ]
+    },
+    "S:dator_kod:1795396289-1795482689": {
+     "ref": "S:dator_kod:1795396289-1795482689",
+     "metric": "dator_kod",
+     "antal": 0,
+     "kommentar": "ingen data i perioden"
+    }
+   },
+   "sekunder": 175.0,
+   "tokens": {
+    "prompt": 16117,
+    "ut": 3152,
+    "anrop": 9,
+    "per_modell": {
+     "qwen3.5:9b": {
+      "calls": 9,
+      "prompt_tokens": 16117,
+      "output_tokens": 3152,
+      "seconds": 174.87255215644836,
+      "prompt_eval_s": 51.329596875,
+      "eval_s": 118.198162415,
+      "gen_tokens_per_s": 26.7,
+      "prompt_tokens_per_s": 314.0
+     }
+    }
+   },
+   "llm_anrop": [
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 778,
+     "ut": 135,
+     "s": 13.92,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 1896,
+     "ut": 251,
+     "s": 17.26,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 2263,
+     "ut": 352,
+     "s": 15.52,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 1975,
+     "ut": 322,
+     "s": 19.08,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 1907,
+     "ut": 414,
+     "s": 24.02,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 3023,
+     "ut": 573,
+     "s": 25.78,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 3005,
+     "ut": 382,
+     "s": 26.84,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 437,
+     "ut": 203,
+     "s": 9.89,
+     "think": false,
+     "verktyg": false,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 833,
+     "ut": 520,
+     "s": 22.58,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    }
+   ],
+   "fel": null,
+   "ollama_minne_gib_efter": {
+    "qwen3.5:9b": 8.7
+   }
+  },
+  {
+   "scenario": "h_cykling",
+   "titel": "Holdout: hög puls under cykelpass utan steg",
+   "klocka": "18:00",
+   "forskjutning_s": -24528,
+   "utlosare": {
+    "kind": "question",
+    "question": "Varför låg min puls på över 150 i nästan en timme i eftermiddags?",
+    "hours": 8
+   },
+   "utlosare_fran_vakt": false,
+   "dataantal": {
+    "hr": 10368,
+    "hrv_rmssd": 3232,
+    "spo2": 3983,
+    "skin_temp": 2794,
+    "resp_rate": 2794,
+    "steps": 1599,
+    "dator_kod": 0,
+    "dator_spel": 6824,
+    "dator_chatt": 0,
+    "dator_webb": 0,
+    "dator_annat": 0,
+    "resting_hr": 28,
+    "natter": 28,
+    "pass": 1,
+    "journal": 1,
+    "labb": 4
+   },
+   "verdict": {
+    "sammanfattning": "Datan visar en konflikt mellan HRV-mätningar (9,3 ms vs 15,3 ms) under samma tidsperiod och saknar data om aktivitet eller skärmtid som kan förklara pulsen över 150.",
+    "bradska": "ingen",
+    "rad": [
+     "HRV-mätningen visade ett extremt lågt värde på 9,3 ms vid 15:01, vilket är mycket lägre än dagens median på 35,9 ms. [S:hrv_rmssd:1795510813-1795539613]",
+     "Stegantalet var stabilt mellan 100 och 112 under pulshöjden, vilket utesluter en långvarig intensiv rörelse. [S:steps:1795510813-1795539613]",
+     "HRV-värdet sjönk till 15.3 ms klockan 16:01, vilket indikerar hög fysisk belastning snarare än viloläge. [S:hrv_rmssd:1795528911-1795532511]",
+     "Ingen skärmtid för kodning eller spel registrerades under perioden 15:00–16:00. [S:dator_kod:1795528911-1795532511, S:dator_spel:1795528911-1795532511]"
+    ],
+    "fragor_till_varden": [
+     "Varför finns det en diskrepans mellan HRV-värdet 9,3 ms vid 15:01 och 15,3 ms vid 16:01 enligt olika mätningar?",
+     "Finns det data om kaffeintag, måltider eller andra stressfaktorer som kan förklara pulsen över 150 utan att registreras i stegantalet?"
+    ],
+    "belagda_pastaenden": [
+     {
+      "text": "HRV-mätningen visade ett extremt lågt värde på 9,3 ms vid 15:01, vilket är mycket lägre än dagens median på 35,9 ms.",
+      "kallor": [
+       "S:hrv_rmssd:1795510813-1795539613"
+      ],
+      "av": "kardiolog"
+     },
+     {
+      "text": "Stegantalet var stabilt mellan 100 och 112 under pulshöjden, vilket utesluter en långvarig intensiv rörelse.",
+      "kallor": [
+       "S:steps:1795510813-1795539613"
+      ],
+      "av": "kardiolog"
+     },
+     {
+      "text": "HRV-värdet sjönk till 15.3 ms klockan 16:01, vilket indikerar hög fysisk belastning snarare än viloläge.",
+      "kallor": [
+       "S:hrv_rmssd:1795528911-1795532511"
+      ],
+      "av": "stress"
+     },
+     {
+      "text": "Ingen skärmtid för kodning eller spel registrerades under perioden 15:00–16:00.",
+      "kallor": [
+       "S:dator_kod:1795528911-1795532511",
+       "S:dator_spel:1795528911-1795532511"
+      ],
+      "av": "stress"
+     }
+    ]
+   },
+   "strykningar": [
+    {
+     "agent": "kardiolog",
+     "claim": "Maxpulsen uppmättes till 161,0 slag/min vid 15:49 och pulsen låg över 150 mellan 15:01 och 15:31.",
+     "reason": "siffran 150 finns inte i källdatan"
+    },
+    {
+     "agent": "stress",
+     "claim": "Pulsen nådde ett maximum på 161.0 slag/minut vid 15:49 och var över 150 slag/minut mellan 15:01 och 15:31.",
+     "reason": "siffran 150 finns inte i källdatan"
+    }
+   ],
+   "pastaenden": [
+    {
+     "agent": "kardiolog",
+     "text": "Maxpulsen uppmättes till 161,0 slag/min vid 15:49 och pulsen låg över 150 mellan 15:01 och 15:31.",
+     "kallor": [
+      "S:hr:1795510813-1795539613"
+     ]
+    },
+    {
+     "agent": "kardiolog",
+     "text": "HRV-mätningen visade ett extremt lågt värde på 9,3 ms vid 15:01, vilket är mycket lägre än dagens median på 35,9 ms.",
+     "kallor": [
+      "S:hrv_rmssd:1795510813-1795539613"
+     ]
+    },
+    {
+     "agent": "kardiolog",
+     "text": "Stegantalet var stabilt mellan 100 och 112 under pulshöjden, vilket utesluter en långvarig intensiv rörelse.",
+     "kallor": [
+      "S:steps:1795510813-1795539613"
+     ]
+    },
+    {
+     "agent": "stress",
+     "text": "Pulsen nådde ett maximum på 161.0 slag/minut vid 15:49 och var över 150 slag/minut mellan 15:01 och 15:31.",
+     "kallor": [
+      "S:hr:1795510813-1795539613"
+     ]
+    },
+    {
+     "agent": "stress",
+     "text": "HRV-värdet sjönk till 15.3 ms klockan 16:01, vilket indikerar hög fysisk belastning snarare än viloläge.",
+     "kallor": [
+      "S:hrv_rmssd:1795528911-1795532511"
+     ]
+    },
+    {
+     "agent": "stress",
+     "text": "Ingen skärmtid för kodning eller spel registrerades under perioden 15:00–16:00.",
+     "kallor": [
+      "S:dator_kod:1795528911-1795532511",
+      "S:dator_spel:1795528911-1795532511"
+     ]
+    }
+   ],
+   "yttranden": [
+    {
+     "agent": "ordforande",
+     "text": "Kardiolog: Granska pulsdatan för att identifiera orsaken till högt pulsintervall (>150 bpm) under en timme i eftermiddags, kontrollera om det var ansträngning eller vila."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Stressmedicin: Analysera stressbelastning och HRV-mönster runt den specifika tidsperioden för att utesluta stressrelaterad ökad puls."
+    },
+    {
+     "agent": "kardiolog",
+     "text": "Pulsen låg över 150 slag/min mellan 15:01 och 15:31 samtidigt som HRV sjönk till 9,3 ms, vilket indikerar ansträngning snarare än vila. Stegantalet var stabilt runt 100–112 under denna tid utan markant ökning."
+    },
+    {
+     "agent": "stress",
+     "text": "Pulsen ökade till 151.0 slag/minut klockan 15:01 och var över 149 slag/minut fram till 15:31, medan HRV-värdet sjönk kraftigt till 15.3 ms under samma tid. Ingen skärmtid för kodning eller spel registrerades under denna period, vilket talar emot att stress från digital aktivitet var orsaken."
+    },
+    {
+     "agent": "advokat",
+     "text": "*   Kardiologens påstående om att HRV-värdet \"sjönk till 9,3 ms\" motsäger Stressmedicins data som anger ett värde på \"15,3 ms\" under samma tidsperiod (15:01–15:31), vilket gör slutsatsen om ansträngning osäker utan att klargöra vilka mätvärden som är korrekta.\n*   Ingen källa anger en specifik aktivitet eller händelse under perioden 15:01–15:31, så vi kan inte bekräfta om det var fysisk ansträngning, stress från kodning (som inte registrerades på skärmen men kanske i kroppen), eller en teknisk felkälla.\n*   Vi vet inte om personen hade ätit, druckit kaffe eller upplevt någon annan fysiologisk reaktion som kan förklara pulsen över 150 utan att det finns data om dessa faktorer."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Datan visar en konflikt mellan HRV-mätningar (9,3 ms vs 15,3 ms) under samma tidsperiod och saknar data om aktivitet eller skärmtid som kan förklara pulsen över 150."
+    }
+   ],
+   "verktygsanrop": [
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "hrv_rmssd",
+      "timmar_bakat": 1,
+      "slut_timmar_bakat": 2
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "dator_kod",
+      "timmar_bakat": 1,
+      "slut_timmar_bakat": 2
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "dator_spel",
+      "timmar_bakat": 1,
+      "slut_timmar_bakat": 2
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "sok_journal",
+     "args": {
+      "sokord": "pulshöjning eller hjärtklappning"
+     }
+    }
+   ],
+   "medlemmar": [
+    "ordforande",
+    "kardiolog",
+    "stress",
+    "advokat",
+    "granskare"
+   ],
+   "refs": {
+    "S:hr:1795510813-1795539613": {
+     "ref": "S:hr:1795510813-1795539613",
+     "metric": "hr",
+     "enhet": "puls (slag/min)",
+     "period": [
+      "2026-11-24 10:00",
+      "2026-11-24 18:00"
+     ],
+     "antal": 480,
+     "median": 72.0,
+     "min": [
+      61.0,
+      "2026-11-24 16:43"
+     ],
+     "max": [
+      161.0,
+      "2026-11-24 15:49"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-24 10:01",
+       72.0
+      ],
+      [
+       "2026-11-24 10:31",
+       69.0
+      ],
+      [
+       "2026-11-24 11:01",
+       69.5
+      ],
+      [
+       "2026-11-24 11:31",
+       72.0
+      ],
+      [
+       "2026-11-24 12:01",
+       76.5
+      ],
+      [
+       "2026-11-24 12:31",
+       72.0
+      ],
+      [
+       "2026-11-24 13:01",
+       72.0
+      ],
+      [
+       "2026-11-24 13:31",
+       70.0
+      ],
+      [
+       "2026-11-24 14:01",
+       70.0
+      ],
+      [
+       "2026-11-24 14:31",
+       73.0
+      ],
+      [
+       "2026-11-24 15:01",
+       151.0
+      ],
+      [
+       "2026-11-24 15:31",
+       149.0
+      ],
+      [
+       "2026-11-24 16:01",
+       93.5
+      ],
+      [
+       "2026-11-24 16:31",
+       69.0
+      ],
+      [
+       "2026-11-24 17:01",
+       73.0
+      ],
+      [
+       "2026-11-24 17:31",
+       69.5
+      ]
+     ]
+    },
+    "S:hrv_rmssd:1795510813-1795539613": {
+     "ref": "S:hrv_rmssd:1795510813-1795539613",
+     "metric": "hrv_rmssd",
+     "enhet": "HRV RMSSD (ms)",
+     "period": [
+      "2026-11-24 10:00",
+      "2026-11-24 18:00"
+     ],
+     "antal": 8,
+     "median": 35.9,
+     "min": [
+      9.3,
+      "2026-11-24 15:01"
+     ],
+     "max": [
+      45.2,
+      "2026-11-24 10:01"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-24 10:01",
+       45.2
+      ],
+      [
+       "2026-11-24 11:01",
+       39.8
+      ],
+      [
+       "2026-11-24 12:01",
+       22.1
+      ],
+      [
+       "2026-11-24 13:01",
+       35.6
+      ],
+      [
+       "2026-11-24 14:01",
+       44.0
+      ],
+      [
+       "2026-11-24 15:01",
+       9.3
+      ],
+      [
+       "2026-11-24 16:01",
+       15.3
+      ],
+      [
+       "2026-11-24 17:01",
+       36.1
+      ]
+     ]
+    },
+    "S:steps:1795510813-1795539613": {
+     "ref": "S:steps:1795510813-1795539613",
+     "metric": "steps",
+     "enhet": "steg",
+     "period": [
+      "2026-11-24 10:00",
+      "2026-11-24 18:00"
+     ],
+     "antal": 42,
+     "median": 105.5,
+     "min": [
+      90.0,
+      "2026-11-24 15:58"
+     ],
+     "max": [
+      124.0,
+      "2026-11-24 12:10"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-24 12:01",
+       104.0
+      ],
+      [
+       "2026-11-24 12:04",
+       101.0
+      ],
+      [
+       "2026-11-24 12:07",
+       99.0
+      ],
+      [
+       "2026-11-24 12:10",
+       113.0
+      ],
+      [
+       "2026-11-24 15:11",
+       111.0
+      ],
+      [
+       "2026-11-24 15:14",
+       100.0
+      ],
+      [
+       "2026-11-24 15:17",
+       112.0
+      ],
+      [
+       "2026-11-24 15:20",
+       109.0
+      ],
+      [
+       "2026-11-24 15:58",
+       101.0
+      ],
+      [
+       "2026-11-24 16:01",
+       106.0
+      ],
+      [
+       "2026-11-24 16:04",
+       101.0
+      ],
+      [
+       "2026-11-24 16:06",
+       103.5
+      ],
+      [
+       "2026-11-24 16:08",
+       108.5
+      ],
+      [
+       "2026-11-24 16:10",
+       103.5
+      ],
+      [
+       "2026-11-24 16:12",
+       107.0
+      ],
+      [
+       "2026-11-24 16:14",
+       97.0
+      ]
+     ]
+    },
+    "S:hrv_rmssd:1795528911-1795532511": {
+     "ref": "S:hrv_rmssd:1795528911-1795532511",
+     "metric": "hrv_rmssd",
+     "enhet": "HRV RMSSD (ms)",
+     "period": [
+      "2026-11-24 15:01",
+      "2026-11-24 16:01"
+     ],
+     "antal": 1,
+     "median": 15.3,
+     "min": [
+      15.3,
+      "2026-11-24 16:01"
+     ],
+     "max": [
+      15.3,
+      "2026-11-24 16:01"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-24 16:01",
+       15.3
+      ]
+     ]
+    },
+    "S:dator_kod:1795528911-1795532511": {
+     "ref": "S:dator_kod:1795528911-1795532511",
+     "metric": "dator_kod",
+     "antal": 0,
+     "kommentar": "ingen data i perioden"
+    },
+    "S:dator_spel:1795528911-1795532511": {
+     "ref": "S:dator_spel:1795528911-1795532511",
+     "metric": "dator_spel",
+     "antal": 0,
+     "kommentar": "ingen data i perioden"
+    }
+   },
+   "sekunder": 194.6,
+   "tokens": {
+    "prompt": 16926,
+    "ut": 3449,
+    "anrop": 8,
+    "per_modell": {
+     "qwen3.5:9b": {
+      "calls": 8,
+      "prompt_tokens": 16926,
+      "output_tokens": 3449,
+      "seconds": 194.49691319465637,
+      "prompt_eval_s": 60.167437251,
+      "eval_s": 129.18317437500002,
+      "gen_tokens_per_s": 26.7,
+      "prompt_tokens_per_s": 281.3
+     }
+    }
+   },
+   "llm_anrop": [
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 769,
+     "ut": 133,
+     "s": 13.2,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 2641,
+     "ut": 888,
+     "s": 44.78,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 2906,
+     "ut": 393,
+     "s": 27.26,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 2636,
+     "ut": 414,
+     "s": 26.27,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 3404,
+     "ut": 446,
+     "s": 22.62,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 3308,
+     "ut": 436,
+     "s": 29.01,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 448,
+     "ut": 223,
+     "s": 10.45,
+     "think": false,
+     "verktyg": false,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 814,
+     "ut": 516,
+     "s": 20.9,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    }
+   ],
+   "fel": null,
+   "ollama_minne_gib_efter": {
+    "qwen3.5:9b": 8.7
+   }
+  },
+  {
+   "scenario": "h_anemi",
+   "titel": "Holdout: blodbrist i provsvaren",
+   "klocka": "11:00",
+   "forskjutning_s": -49923,
+   "utlosare": {
+    "kind": "question",
+    "question": "Jag blir andfådd i trappor och är trött. Vad säger mina värden?",
+    "hours": 168
+   },
+   "utlosare_fran_vakt": false,
+   "dataantal": {
+    "hr": 10368,
+    "hrv_rmssd": 3207,
+    "spo2": 3943,
+    "skin_temp": 2765,
+    "resp_rate": 2765,
+    "steps": 1491,
+    "dator_kod": 0,
+    "dator_spel": 6668,
+    "dator_chatt": 0,
+    "dator_webb": 0,
+    "dator_annat": 0,
+    "resting_hr": 28,
+    "natter": 28,
+    "pass": 0,
+    "journal": 1,
+    "labb": 8
+   },
+   "verdict": {
+    "sammanfattning": "Datan visar tydliga tecken på järnbrist, men saklar bekräftelse på anemi-diagnos och kardiologisk bedömning av utmattning.",
+    "bradska": "bevaka",
+    "rad": [
+     "Stegmängden var låg: genomsnitt 105,0 steg per mätning under perioden. [S:steps:1794909632-1795514432]",
+     "Sömnkvantiteten var tillräcklig men kvaliteten okänd: sömnlängden varierade mellan 458 och 499 minuter de senaste sju natterna. [N:natt-1794955539, N:natt-1795039790, N:natt-1795126456, N:natt-1795214627, N:natt-1795299451, N:natt-1795385022, N:natt-1795472555]",
+     "Nattlig syremättnad var stabil: median 96 % och minimum 94 %. [S:spo2:1795428128-1795485728]",
+     "Nattlig andningsfrekvens var normal: median 14,2 andetag/min och minimum 13,3. [S:resp_rate:1795428128-1795485728]"
+    ],
+    "fragor_till_varden": [
+     "Är MCV-värdet på 74 fL och ferritin på 6 µg/L justerade för en 18-årig individ?",
+     "Har laboratoriet ställt diagnosen mikrocytär anemi baserat på dessa värden?"
+    ],
+    "belagda_pastaenden": [
+     {
+      "text": "Din genomsnittliga stegmängd var endast 105,0 steg per mätning under perioden.",
+      "kallor": [
+       "S:steps:1794909632-1795514432"
+      ],
+      "av": "kardiolog"
+     },
+     {
+      "text": "Sömnlängden de senaste sju natterna varierade mellan 458 minuter och 499 minuter.",
+      "kallor": [
+       "N:natt-1794955539",
+       "N:natt-1795039790",
+       "N:natt-1795126456",
+       "N:natt-1795214627",
+       "N:natt-1795299451",
+       "N:natt-1795385022",
+       "N:natt-1795472555"
+      ],
+      "av": "somn"
+     },
+     {
+      "text": "Nattlig syremättnad var stabil med en median på 96 % och ett minimum på 94 %.",
+      "kallor": [
+       "S:spo2:1795428128-1795485728"
+      ],
+      "av": "somn"
+     },
+     {
+      "text": "Nattlig andningsfrekvens var normal med en median på 14,2 andetag/min och ett minimum på 13,3.",
+      "kallor": [
+       "S:resp_rate:1795428128-1795485728"
+      ],
+      "av": "somn"
+     },
+     {
+      "text": "Hemoglobinet har sjunkit från 148 g/L till 112 g/L under perioden mellan januari och november.",
+      "kallor": [
+       "L:aa2a431fa0",
+       "L:f3e2d5f7d5"
+      ],
+      "av": "labb"
+     },
+     {
+      "text": "Ferritin är lågt på 6 µg/L, vilket indikerar uttömda järnreserver jämfört med tidigare värde på 72 µg/L.",
+      "kallor": [
+       "L:1fe2b415c9",
+       "L:a21ac28b98"
+      ],
+      "av": "labb"
+     },
+     {
+      "text": "MCV-värdet på 74 fL ligger under referensintervallet och tyder på mikrocytär anemi.",
+      "kallor": [
+       "L:9a2b8c0ed1"
+      ],
+      "av": "labb"
+     }
+    ]
+   },
+   "strykningar": [
+    {
+     "agent": "kardiolog",
+     "claim": "Din genomsnittspuls under mätperioden var 76,0 slag/min med en maximal registrerad puls på 115,0 slag/min vid 11:16 den 21 november.",
+     "reason": "siffran 21 finns inte i källdatan"
+    },
+    {
+     "agent": "kardiolog",
+     "claim": "Din lägsta registrerade puls var 49,0 slag/min vid 01:03 den 24 november, vilket indikerar en låg vilopuls.",
+     "reason": "siffran 24 finns inte i källdatan"
+    },
+    {
+     "agent": "kardiolog",
+     "claim": "Din HRV var 55,2 ms i genomsnitt men sänktes till 16,2 ms vid 12:01 den 17 november.",
+     "reason": "siffran 17 finns inte i källdatan"
+    }
+   ],
+   "pastaenden": [
+    {
+     "agent": "kardiolog",
+     "text": "Din genomsnittspuls under mätperioden var 76,0 slag/min med en maximal registrerad puls på 115,0 slag/min vid 11:16 den 21 november.",
+     "kallor": [
+      "S:hr:1794909632-1795514432"
+     ]
+    },
+    {
+     "agent": "kardiolog",
+     "text": "Din lägsta registrerade puls var 49,0 slag/min vid 01:03 den 24 november, vilket indikerar en låg vilopuls.",
+     "kallor": [
+      "S:hr:1794909632-1795514432"
+     ]
+    },
+    {
+     "agent": "kardiolog",
+     "text": "Din HRV var 55,2 ms i genomsnitt men sänktes till 16,2 ms vid 12:01 den 17 november.",
+     "kallor": [
+      "S:hrv_rmssd:1794909632-1795514432"
+     ]
+    },
+    {
+     "agent": "kardiolog",
+     "text": "Din genomsnittliga stegmängd var endast 105,0 steg per mätning under perioden.",
+     "kallor": [
+      "S:steps:1794909632-1795514432"
+     ]
+    },
+    {
+     "agent": "somn",
+     "text": "Sömnlängden de senaste sju natterna varierade mellan 458 minuter och 499 minuter.",
+     "kallor": [
+      "N:natt-1794955539",
+      "N:natt-1795039790",
+      "N:natt-1795126456",
+      "N:natt-1795214627",
+      "N:natt-1795299451",
+      "N:natt-1795385022",
+      "N:natt-1795472555"
+     ]
+    },
+    {
+     "agent": "somn",
+     "text": "Nattlig syremättnad var stabil med en median på 96 % och ett minimum på 94 %.",
+     "kallor": [
+      "S:spo2:1795428128-1795485728"
+     ]
+    },
+    {
+     "agent": "somn",
+     "text": "Nattlig andningsfrekvens var normal med en median på 14,2 andetag/min och ett minimum på 13,3.",
+     "kallor": [
+      "S:resp_rate:1795428128-1795485728"
+     ]
+    },
+    {
+     "agent": "labb",
+     "text": "Hemoglobinet har sjunkit från 148 g/L till 112 g/L under perioden mellan januari och november.",
+     "kallor": [
+      "L:aa2a431fa0",
+      "L:f3e2d5f7d5"
+     ]
+    },
+    {
+     "agent": "labb",
+     "text": "Ferritin är lågt på 6 µg/L, vilket indikerar uttömda järnreserver jämfört med tidigare värde på 72 µg/L.",
+     "kallor": [
+      "L:1fe2b415c9",
+      "L:a21ac28b98"
+     ]
+    },
+    {
+     "agent": "labb",
+     "text": "MCV-värdet på 74 fL ligger under referensintervallet och tyder på mikrocytär anemi.",
+     "kallor": [
+      "L:9a2b8c0ed1"
+     ]
+    }
+   ],
+   "yttranden": [
+    {
+     "agent": "ordforande",
+     "text": "Kardiolog: Granska pulsmätningar (vilopuls och under ansträngning) för att se om det finns tecken på ovanliga pulshopp eller bristande återhämtning som kan kopplas till andfåddhet i trappor."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Sömnläkare: Granska sömnrapporten för att se om du har tillräcklig sömnlängd, regelbundna faser och god nattlig syremättnad, då brist på sömn ofta ger trötthet."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Klinisk kemist: Granska labbresultat i journalen för att se om det finns avvikelser från referensintervallet som kan orsaka andfåddhet eller trötthet (t.ex. anemi, sköldkörtelproblem)."
+    },
+    {
+     "agent": "kardiolog",
+     "text": "Dina pulsvärden visar en låg vilopuls på 49,0 slag/min men ett toppvärde på 115,0 slag/min under perioden. Din HRV var mycket låg vid 16,2 ms vid vissa tillfällen, vilket kan tyda på stress eller utmattning."
+    },
+    {
+     "agent": "somn",
+     "text": "Din sömn är tillräcklig med mellan 7,6 och 8,3 timmar per natt (N:natt-1794955539, N:natt-1795039790, N:natt-1795126456, N:natt-1795214627, N:natt-1795299451, N:natt-1795385022, N:natt-1795472555) och syremättnaden under natten var normal med ett minimum på 94 % (S:spo2:1795428128-1795485728). Dina data visar inga tecken på sömnbrist som orsak till trötthet, så andfåddheten vid ansträngning beror troligen på kondition. Rekommenderas kontakt med vården för utredning av andfåddhet."
+    },
+    {
+     "agent": "labb",
+     "text": "Dina nya blodvärden visar anemi med hemoglobin på 112 g/L och lågt ferritin på 6 µg/L, vilket kan förklara din trötthet och andfåddhet. Dina tidigare värden från januari var normala, men nu har du utvecklat en mikrocytär anemi med MCV på 74 fL."
+    },
+    {
+     "agent": "advokat",
+     "text": "*   Kardiologens slutsats om att låg HRV (16,2 ms) tyder på stress eller utmattning är spekulativ; verktyget returnerade endast ett enskilt HRV-värde utan tidskontext eller jämförelse med tidigare baslinjer för att bekräfta en trend av \"utmattning\".\n*   Sömnläkarens påstående om att sömnbrist utesluts är felaktigt eftersom data visar totalt sömntid (7,6–8,3 timmar) men saknar uppgift om sömnkvalitet eller andningsstörningar som kan orsaka trötthet trots tillräcklig tid.\n*   Klinisk kemistens diagnos av mikrocytär anemi bygger på en tolkning av MCV (74 fL) och ferritin (6 µg/L), men teamet har inte verifierat om dessa värden är referensområdejusterade för en 18-årig individ eller om laboratoriet själv ställt diagnosen i sin rapport."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Datan visar tydliga tecken på järnbrist, men saklar bekräftelse på anemi-diagnos och kardiologisk bedömning av utmattning."
+    }
+   ],
+   "verktygsanrop": [
+    {
+     "agent": "somn",
+     "tool": "hamta_somn",
+     "args": {
+      "natter": 7
+     }
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "spo2",
+      "timmar_bakat": 16,
+      "slut_timmar_bakat": 8
+     }
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "resp_rate",
+      "timmar_bakat": 16,
+      "slut_timmar_bakat": 8
+     }
+    },
+    {
+     "agent": "labb",
+     "tool": "hamta_labb",
+     "args": {}
+    }
+   ],
+   "medlemmar": [
+    "ordforande",
+    "kardiolog",
+    "somn",
+    "labb",
+    "advokat",
+    "granskare"
+   ],
+   "refs": {
+    "S:hr:1794909632-1795514432": {
+     "ref": "S:hr:1794909632-1795514432",
+     "metric": "hr",
+     "enhet": "puls (slag/min)",
+     "period": [
+      "2026-11-17 11:00",
+      "2026-11-24 11:00"
+     ],
+     "antal": 4320,
+     "median": 76.0,
+     "min": [
+      49.0,
+      "2026-11-24 01:03"
+     ],
+     "max": [
+      115.0,
+      "2026-11-21 11:16"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-17 11:01",
+       75.0
+      ],
+      [
+       "2026-11-18 09:31",
+       75.0
+      ],
+      [
+       "2026-11-19 08:01",
+       76.0
+      ],
+      [
+       "2026-11-20 06:31",
+       77.0
+      ],
+      [
+       "2026-11-21 05:01",
+       76.0
+      ],
+      [
+       "2026-11-22 03:31",
+       77.0
+      ],
+      [
+       "2026-11-22 14:01",
+       79.0
+      ],
+      [
+       "2026-11-22 18:31",
+       80.0
+      ],
+      [
+       "2026-11-22 23:01",
+       62.0
+      ],
+      [
+       "2026-11-23 03:31",
+       62.0
+      ],
+      [
+       "2026-11-23 08:01",
+       78.0
+      ],
+      [
+       "2026-11-23 12:31",
+       77.0
+      ],
+      [
+       "2026-11-23 17:01",
+       79.0
+      ],
+      [
+       "2026-11-23 21:31",
+       64.0
+      ],
+      [
+       "2026-11-24 02:01",
+       62.0
+      ],
+      [
+       "2026-11-24 06:31",
+       76.0
+      ]
+     ]
+    },
+    "S:hrv_rmssd:1794909632-1795514432": {
+     "ref": "S:hrv_rmssd:1794909632-1795514432",
+     "metric": "hrv_rmssd",
+     "enhet": "HRV RMSSD (ms)",
+     "period": [
+      "2026-11-17 11:00",
+      "2026-11-24 11:00"
+     ],
+     "antal": 791,
+     "median": 55.2,
+     "min": [
+      16.2,
+      "2026-11-17 12:01"
+     ],
+     "max": [
+      83.3,
+      "2026-11-19 03:56"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-17 11:01",
+       49.7
+      ],
+      [
+       "2026-11-18 02:51",
+       53.6
+      ],
+      [
+       "2026-11-18 07:01",
+       51.9
+      ],
+      [
+       "2026-11-19 01:11",
+       60.0
+      ],
+      [
+       "2026-11-19 05:21",
+       54.8
+      ],
+      [
+       "2026-11-20 00:06",
+       57.1
+      ],
+      [
+       "2026-11-20 04:16",
+       56.5
+      ],
+      [
+       "2026-11-20 18:01",
+       57.2
+      ],
+      [
+       "2026-11-21 03:21",
+       57.3
+      ],
+      [
+       "2026-11-21 09:01",
+       51.6
+      ],
+      [
+       "2026-11-22 02:11",
+       56.4
+      ],
+      [
+       "2026-11-22 06:16",
+       55.4
+      ],
+      [
+       "2026-11-23 00:36",
+       55.8
+      ],
+      [
+       "2026-11-23 04:41",
+       56.2
+      ],
+      [
+       "2026-11-23 23:31",
+       56.6
+      ],
+      [
+       "2026-11-24 03:36",
+       53.2
+      ]
+     ]
+    },
+    "S:steps:1794909632-1795514432": {
+     "ref": "S:steps:1794909632-1795514432",
+     "metric": "steps",
+     "enhet": "steg",
+     "period": [
+      "2026-11-17 11:00",
+      "2026-11-24 11:00"
+     ],
+     "antal": 363,
+     "median": 105.0,
+     "min": [
+      80.0,
+      "2026-11-20 16:10"
+     ],
+     "max": [
+      125.0,
+      "2026-11-21 08:00"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-17 11:54",
+       104.0
+      ],
+      [
+       "2026-11-17 15:56",
+       104.0
+      ],
+      [
+       "2026-11-18 07:59",
+       102.0
+      ],
+      [
+       "2026-11-18 16:04",
+       105.0
+      ],
+      [
+       "2026-11-19 08:04",
+       107.0
+      ],
+      [
+       "2026-11-19 15:58",
+       109.0
+      ],
+      [
+       "2026-11-20 08:01",
+       105.0
+      ],
+      [
+       "2026-11-20 12:25",
+       102.0
+      ],
+      [
+       "2026-11-20 16:13",
+       106.0
+      ],
+      [
+       "2026-11-21 11:17",
+       106.0
+      ],
+      [
+       "2026-11-21 16:17",
+       104.0
+      ],
+      [
+       "2026-11-22 08:03",
+       106.5
+      ],
+      [
+       "2026-11-22 16:08",
+       102.5
+      ],
+      [
+       "2026-11-23 07:47",
+       104.0
+      ],
+      [
+       "2026-11-23 12:15",
+       106.0
+      ],
+      [
+       "2026-11-23 16:31",
+       108.0
+      ]
+     ]
+    },
+    "N:natt-1795472555": {
+     "ref": "N:natt-1795472555",
+     "start": "2026-11-23 23:22",
+     "slut": "2026-11-24 07:26",
+     "total_min": 484,
+     "faser_min": {
+      "light": 234,
+      "deep": 102,
+      "rem": 140,
+      "awake": 8
+     }
+    },
+    "N:natt-1795385022": {
+     "ref": "N:natt-1795385022",
+     "start": "2026-11-22 23:03",
+     "slut": "2026-11-23 07:20",
+     "total_min": 497,
+     "faser_min": {
+      "light": 235,
+      "deep": 102,
+      "rem": 152,
+      "awake": 8
+     }
+    },
+    "N:natt-1795299451": {
+     "ref": "N:natt-1795299451",
+     "start": "2026-11-21 23:17",
+     "slut": "2026-11-22 07:27",
+     "total_min": 490,
+     "faser_min": {
+      "light": 234,
+      "deep": 102,
+      "rem": 150,
+      "awake": 4
+     }
+    },
+    "N:natt-1795214627": {
+     "ref": "N:natt-1795214627",
+     "start": "2026-11-20 23:43",
+     "slut": "2026-11-21 07:21",
+     "total_min": 458,
+     "faser_min": {
+      "light": 231,
+      "deep": 102,
+      "rem": 117,
+      "awake": 8
+     }
+    },
+    "N:natt-1795126456": {
+     "ref": "N:natt-1795126456",
+     "start": "2026-11-19 23:14",
+     "slut": "2026-11-20 07:33",
+     "total_min": 499,
+     "faser_min": {
+      "light": 234,
+      "deep": 102,
+      "rem": 151,
+      "awake": 12
+     }
+    },
+    "N:natt-1795039790": {
+     "ref": "N:natt-1795039790",
+     "start": "2026-11-18 23:09",
+     "slut": "2026-11-19 07:21",
+     "total_min": 492,
+     "faser_min": {
+      "light": 234,
+      "deep": 102,
+      "rem": 144,
+      "awake": 12
+     }
+    },
+    "N:natt-1794955539": {
+     "ref": "N:natt-1794955539",
+     "start": "2026-11-17 23:45",
+     "slut": "2026-11-18 07:47",
+     "total_min": 482,
+     "faser_min": {
+      "light": 234,
+      "deep": 102,
+      "rem": 130,
+      "awake": 16
+     }
+    },
+    "S:spo2:1795428128-1795485728": {
+     "ref": "S:spo2:1795428128-1795485728",
+     "metric": "spo2",
+     "enhet": "syremättnad (%)",
+     "period": [
+      "2026-11-23 11:02",
+      "2026-11-24 03:02"
+     ],
+     "antal": 221,
+     "median": 96.0,
+     "min": [
+      94.0,
+      "2026-11-24 02:35"
+     ],
+     "max": [
+      99.0,
+      "2026-11-24 00:45"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-23 23:22",
+       96.0
+      ],
+      [
+       "2026-11-23 23:36",
+       96.0
+      ],
+      [
+       "2026-11-23 23:50",
+       96.0
+      ],
+      [
+       "2026-11-24 00:04",
+       96.0
+      ],
+      [
+       "2026-11-24 00:18",
+       96.0
+      ],
+      [
+       "2026-11-24 00:32",
+       96.0
+      ],
+      [
+       "2026-11-24 00:46",
+       96.0
+      ],
+      [
+       "2026-11-24 01:00",
+       96.5
+      ],
+      [
+       "2026-11-24 01:14",
+       97.0
+      ],
+      [
+       "2026-11-24 01:28",
+       97.0
+      ],
+      [
+       "2026-11-24 01:42",
+       97.0
+      ],
+      [
+       "2026-11-24 01:56",
+       96.0
+      ],
+      [
+       "2026-11-24 02:10",
+       96.5
+      ],
+      [
+       "2026-11-24 02:24",
+       97.0
+      ],
+      [
+       "2026-11-24 02:37",
+       97.0
+      ],
+      [
+       "2026-11-24 02:50",
+       96.0
+      ]
+     ]
+    },
+    "S:resp_rate:1795428128-1795485728": {
+     "ref": "S:resp_rate:1795428128-1795485728",
+     "metric": "resp_rate",
+     "enhet": "andningsfrekvens (andetag/min)",
+     "period": [
+      "2026-11-23 11:02",
+      "2026-11-24 03:02"
+     ],
+     "antal": 44,
+     "median": 14.2,
+     "min": [
+      12.7,
+      "2026-11-24 00:41"
+     ],
+     "max": [
+      15.1,
+      "2026-11-24 00:01"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-23 23:26",
+       14.5
+      ],
+      [
+       "2026-11-23 23:41",
+       14.6
+      ],
+      [
+       "2026-11-23 23:56",
+       14.2
+      ],
+      [
+       "2026-11-24 00:11",
+       14.2
+      ],
+      [
+       "2026-11-24 00:26",
+       14.0
+      ],
+      [
+       "2026-11-24 00:41",
+       13.3
+      ],
+      [
+       "2026-11-24 00:56",
+       13.3
+      ],
+      [
+       "2026-11-24 01:11",
+       14.5
+      ],
+      [
+       "2026-11-24 01:26",
+       14.1
+      ],
+      [
+       "2026-11-24 01:41",
+       14.3
+      ],
+      [
+       "2026-11-24 01:56",
+       14.4
+      ],
+      [
+       "2026-11-24 02:11",
+       13.9
+      ],
+      [
+       "2026-11-24 02:26",
+       13.8
+      ],
+      [
+       "2026-11-24 02:36",
+       13.8
+      ],
+      [
+       "2026-11-24 02:46",
+       14.6
+      ],
+      [
+       "2026-11-24 02:56",
+       13.9
+      ]
+     ]
+    },
+    "L:f3e2d5f7d5": {
+     "ref": "L:f3e2d5f7d5",
+     "date": "2026-11-12",
+     "analyte": "Hb",
+     "value_raw": "112",
+     "unit": "g/L",
+     "ref_low": 134.0,
+     "ref_high": 170.0,
+     "flag": "L"
+    },
+    "L:1fe2b415c9": {
+     "ref": "L:1fe2b415c9",
+     "date": "2026-11-12",
+     "analyte": "Ferritin",
+     "value_raw": "6",
+     "unit": "µg/L",
+     "ref_low": 15.0,
+     "ref_high": 150.0,
+     "flag": "L"
+    },
+    "L:9a2b8c0ed1": {
+     "ref": "L:9a2b8c0ed1",
+     "date": "2026-11-12",
+     "analyte": "MCV",
+     "value_raw": "74",
+     "unit": "fL",
+     "ref_low": 82.0,
+     "ref_high": 98.0,
+     "flag": "L"
+    },
+    "L:f16cbdc71b": {
+     "ref": "L:f16cbdc71b",
+     "date": "2026-11-12",
+     "analyte": "TSH",
+     "value_raw": "1,9",
+     "unit": "mIE/L",
+     "ref_low": 0.4,
+     "ref_high": 4.0,
+     "flag": null
+    },
+    "L:aa2a431fa0": {
+     "ref": "L:aa2a431fa0",
+     "date": "2026-01-28",
+     "analyte": "Hb",
+     "value_raw": "148",
+     "unit": "g/L",
+     "ref_low": 134.0,
+     "ref_high": 170.0,
+     "flag": null
+    },
+    "L:a21ac28b98": {
+     "ref": "L:a21ac28b98",
+     "date": "2026-01-28",
+     "analyte": "Ferritin",
+     "value_raw": "72",
+     "unit": "µg/L",
+     "ref_low": 15.0,
+     "ref_high": 150.0,
+     "flag": null
+    },
+    "L:5fbfa0c077": {
+     "ref": "L:5fbfa0c077",
+     "date": "2026-01-28",
+     "analyte": "TSH",
+     "value_raw": "1,6",
+     "unit": "mIE/L",
+     "ref_low": 0.4,
+     "ref_high": 4.0,
+     "flag": null
+    },
+    "L:d158901fae": {
+     "ref": "L:d158901fae",
+     "date": "2026-01-28",
+     "analyte": "CRP",
+     "value_raw": "<1",
+     "unit": "mg/L",
+     "ref_low": null,
+     "ref_high": 5.0,
+     "flag": null
+    }
+   },
+   "sekunder": 350.2,
+   "tokens": {
+    "prompt": 31252,
+    "ut": 5598,
+    "anrop": 11,
+    "per_modell": {
+     "qwen3.5:9b": {
+      "calls": 11,
+      "prompt_tokens": 31252,
+      "output_tokens": 5598,
+      "seconds": 350.0687222480774,
+      "prompt_eval_s": 113.62612987699998,
+      "eval_s": 231.10468237400002,
+      "gen_tokens_per_s": 24.2,
+      "prompt_tokens_per_s": 275.0
+     }
+    }
+   },
+   "llm_anrop": [
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 767,
+     "ut": 657,
+     "s": 32.02,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 2846,
+     "ut": 900,
+     "s": 46.24,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 3124,
+     "ut": 462,
+     "s": 28.35,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 2782,
+     "ut": 262,
+     "s": 21.93,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 4934,
+     "ut": 651,
+     "s": 41.05,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 5176,
+     "ut": 607,
+     "s": 47.9,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 2446,
+     "ut": 309,
+     "s": 25.36,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 3410,
+     "ut": 686,
+     "s": 34.2,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 4099,
+     "ut": 348,
+     "s": 32.16,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 670,
+     "ut": 239,
+     "s": 15.46,
+     "think": false,
+     "verktyg": false,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 998,
+     "ut": 477,
+     "s": 25.39,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    }
+   ],
+   "fel": null,
+   "ollama_minne_gib_efter": {
+    "qwen3.5:9b": 9.6
+   }
+  },
+  {
+   "scenario": "h_lag_nattpuls",
+   "titel": "Holdout: låg nattpuls som är normal",
+   "klocka": "12:00",
+   "forskjutning_s": -46674,
+   "utlosare": {
+    "kind": "question",
+    "question": "Min puls är under 50 på natten. Är det farligt?",
+    "hours": 168
+   },
+   "utlosare_fran_vakt": false,
+   "dataantal": {
+    "hr": 10368,
+    "hrv_rmssd": 3189,
+    "spo2": 3924,
+    "skin_temp": 2742,
+    "resp_rate": 2742,
+    "steps": 2412,
+    "dator_kod": 0,
+    "dator_spel": 6870,
+    "dator_chatt": 0,
+    "dator_webb": 0,
+    "dator_annat": 0,
+    "resting_hr": 28,
+    "natter": 28,
+    "pass": 0,
+    "journal": 1,
+    "labb": 4
+   },
+   "verdict": {
+    "sammanfattning": "Datan visar att din lägsta nattliga puls var 44,0 slag/min (ref: S:hr:1794913219-1795518019), vilket är lägre än din normala nivå vid klockan 3 på 56,0 slag/min (ref: B:hr:h3). Din vilopuls har mätts till 48,0 slag/min (ref: S:resting_hr:1795431642-1795518042). Dina nätter visar bra sömnkvalitet med totalt 531 minuter (N:natt-1795471253) och stabil HRV runt 50 ms (S:hrv_rmssd:1795431857-1795518257).",
+    "bradska": "ingen",
+    "rad": [
+     "Din lägsta nattliga puls var 44,0 slag/min (ref: S:hr:1794913219-1795518019), vilket är lägre än din normala nivå vid klockan 3 på 56,0 slag/min (ref: B:hr:h3).",
+     "Din vilopuls har mätts till 48,0 slag/min (ref: S:resting_hr:1795431642-1795518042)."
+    ],
+    "fragor_till_varden": [
+     "Finns det symtom som yrsel, svimning eller andnöd?",
+     "Har du nyligen börjat träna mycket?"
+    ],
+    "belagda_pastaenden": [
+     {
+      "text": "Din lägsta nattliga puls var 44,0 slag/min (ref: S:hr:1794913219-1795518019), vilket är lägre än din normala nivå vid klockan 3 på 56,0 slag/min (ref: B:hr:h3).",
+      "kallor": [
+       "S:hr:1794913219-1795518019",
+       "B:hr:h3"
+      ],
+      "av": "kardiolog"
+     },
+     {
+      "text": "Din vilopuls har mätts till 48,0 slag/min (ref: S:resting_hr:1795431642-1795518042), vilket indikerar en normal fysiologisk sänkning under sömn för din ålder.",
+      "kallor": [
+       "S:resting_hr:1795431642-1795518042"
+      ],
+      "av": "kardiolog"
+     },
+     {
+      "text": "Din lägsta nattliga puls var 46 slag/min (S:hr:1795431857-1795518257), vilket är lågt men ofta ett tecken på god kondition snarare än stress.",
+      "kallor": [
+       "S:hr:1795431857-1795518257"
+      ],
+      "av": "stress"
+     },
+     {
+      "text": "Dina nätter visar bra sömnkvalitet med totalt 531 minuter (N:natt-1795471253) och stabil HRV runt 50 ms (S:hrv_rmssd:1795431857-1795518257), vilket tyder på god återhämtning.",
+      "kallor": [
+       "N:natt-1795471253",
+       "S:hrv_rmssd:1795431857-1795518257"
+      ],
+      "av": "stress"
+     }
+    ]
+   },
+   "strykningar": [
+    {
+     "agent": "kardiolog",
+     "claim": "Denna data visar inga tecken på farlig bradykardi utan snarare god autonomic funktion.",
+     "reason": "saknar källa"
+    },
+    {
+     "agent": "stress",
+     "claim": "Det finns inga tecken i datan som indikerar att låg puls är farlig just nu, men en läkare kan utesluta andra orsaker om du känner dig trött.",
+     "reason": "saknar källa"
+    }
+   ],
+   "pastaenden": [
+    {
+     "agent": "kardiolog",
+     "text": "Din lägsta nattliga puls var 44,0 slag/min (ref: S:hr:1794913219-1795518019), vilket är lägre än din normala nivå vid klockan 3 på 56,0 slag/min (ref: B:hr:h3).",
+     "kallor": [
+      "S:hr:1794913219-1795518019",
+      "B:hr:h3"
+     ]
+    },
+    {
+     "agent": "kardiolog",
+     "text": "Din vilopuls har mätts till 48,0 slag/min (ref: S:resting_hr:1795431642-1795518042), vilket indikerar en normal fysiologisk sänkning under sömn för din ålder.",
+     "kallor": [
+      "S:resting_hr:1795431642-1795518042"
+     ]
+    },
+    {
+     "agent": "kardiolog",
+     "text": "Denna data visar inga tecken på farlig bradykardi utan snarare god autonomic funktion.",
+     "kallor": []
+    },
+    {
+     "agent": "stress",
+     "text": "Din lägsta nattliga puls var 46 slag/min (S:hr:1795431857-1795518257), vilket är lågt men ofta ett tecken på god kondition snarare än stress.",
+     "kallor": [
+      "S:hr:1795431857-1795518257"
+     ]
+    },
+    {
+     "agent": "stress",
+     "text": "Dina nätter visar bra sömnkvalitet med totalt 531 minuter (N:natt-1795471253) och stabil HRV runt 50 ms (S:hrv_rmssd:1795431857-1795518257), vilket tyder på god återhämtning.",
+     "kallor": [
+      "N:natt-1795471253",
+      "S:hrv_rmssd:1795431857-1795518257"
+     ]
+    },
+    {
+     "agent": "stress",
+     "text": "Det finns inga tecken i datan som indikerar att låg puls är farlig just nu, men en läkare kan utesluta andra orsaker om du känner dig trött.",
+     "kallor": []
+    }
+   ],
+   "yttranden": [
+    {
+     "agent": "ordforande",
+     "text": "Kardiolog: Granska nattlig pulsdata för att verifiera om vilopulsen är under 50 slag/minut och bedöma om detta är normalt för en 18-årig person som sitter mycket inne, samt se om det finns tecken på bradykardi eller andra ovanligheter."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Sömnläkare: Analysera sömnprofilen (sömnlängd, faser, syremättnad) för att utesluta sömnapné som orsak till låg nattlig puls och kontrollera om andningen är regelbunden."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Stressmedicin: Granska stressbelastning via HRV och vilopuls över dygnet samt skärmtid/sen kvällar för att se om låg nattlig puls kan bero på hög stress eller dålig återhämtning."
+    },
+    {
+     "agent": "kardiolog",
+     "text": "Din lägsta nattliga puls var 44,0 slag/min (ref: S:hr:1794913219-1795518019), vilket är lägre än din normala nivå vid klockan 3 på 56,0 slag/min (ref: B:hr:h3). Din vilopuls har mätts till 48,0 slag/min (ref: S:resting_hr:1795431642-1795518042), vilket indikerar en normal fysiologisk sänkning under sömn för din ålder. Denna data visar inga tecken på farlig bradykardi utan snarare god autonomic funktion."
+    },
+    {
+     "agent": "somn",
+     "text": "{\n  \"sammanfattning\": \"Din lägsta nattliga puls var 44,0 slag/minut under djup sömn (ref: S:hr:1794913219-1795518019), medan din syremättnad var stabil på 96,0 % utan minskningar (ref: S:spo2:1794913334-1795518134). Dina sömnfaser är balanserade med en genomsnittlig sömlängd på 7,7 timmar över de senaste sju nätterna (ref: N:natt-1794953149, ref: N:natt-1795040235, ref: N:natt-1795127368, ref: N:natt-1795213182, ref: N:natt-1795299978, ref: N:natt-1795387684, ref: N:natt-1795471253). Andningsfre"
+    },
+    {
+     "agent": "stress",
+     "text": "Din lägsta nattliga puls var 46 slag/min (S:hr:1795431857-1795518257), vilket är lågt men ofta ett tecken på god kondition snarare än stress. Dina nätter visar bra sömnkvalitet med totalt 531 minuter (N:natt-1795471253) och stabil HRV runt 50 ms (S:hrv_rmssd:1795431857-1795518257), vilket tyder på god återhämtning. Det finns inga tecken i datan som indikerar att låg puls är farlig just nu, men en läkare kan utesluta andra orsaker om du känner dig trött."
+    },
+    {
+     "agent": "advokat",
+     "text": "*   Kardiologens påstående att \"44,0 slag/min\" är ett bevis på \"god autonomic funktion\" utan vidare förklaring är tekniskt felaktigt; en puls under 50 kan vara både fysiologisk (som vid träning) och patologi (t.ex. block eller hypotyreos), vilket kräver klinisk bedömning snarare än att data automatiskt tolkas som \"god funktion\" baserat på vilopulsens nivå.\n*   Sömnläkaren hänvisar till en genomsnittlig sömlängd på 7,7 timmar (ref: N:natt-1794953149, ref: N:natt-1795040235, ref: N:natt-1795127368, ref: N:natt-1795213182, ref: N:natt-1795299978, ref: N:natt-1795387684, ref: N:natt-1795471253) för att dra slutsats om pulsen, men detta visar endast sömnvaraktighet och inte kausalitet mellan låg puls under djup sömn och syremättnadens stabilitet (96,0 %, ref: S:spo2:1794913334-1795518134); låg puls kan förekomma vid apné även om syret är stabilt i korta intervall.\n*   Stressmedicinens HRV-värde på 50 ms (ref: S:hrv_rmssd:1795431857-1795518257) används som bevis för \"god återhämtning\", men detta är en enda datapunkt från ett specifikt intervall och säger inget om långsiktig trend eller om låg puls orsakas av underliggande sjukdom istället för kondition."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Datan visar att din lägsta nattliga puls var 44,0 slag/min (ref: S:hr:1794913219-1795518019), vilket är lägre än din normala nivå vid klockan 3 på 56,0 slag/min (ref: B:hr:h3). Din vilopuls har mätts till 48,0 slag/min (ref: S:resting_hr:1795431642-1795518042). Dina nätter visar bra sömnkvalitet med totalt 531 minuter (N:natt-1795471253) och stabil HRV runt 50 ms (S:hrv_rmssd:1795431857-1795518257)."
+    }
+   ],
+   "verktygsanrop": [
+    {
+     "agent": "kardiolog",
+     "tool": "jamfor_baslinje",
+     "args": {
+      "metric": "hr",
+      "timme": 3
+     }
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "resting_hr",
+      "timmar_bakat": 24,
+      "slut_timmar_bakat": 0
+     }
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "spo2",
+      "timmar_bakat": 168,
+      "slut_timmar_bakat": 0
+     }
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "resp_rate",
+      "timmar_bakat": 168,
+      "slut_timmar_bakat": 0
+     }
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_somn",
+     "args": {
+      "natter": 7
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "hr",
+      "timmar_bakat": 24,
+      "slut_timmar_bakat": 0
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "jamfor_baslinje",
+     "args": {
+      "metric": "resting_hr"
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_somn",
+     "args": {
+      "natter": 3
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "hrv_rmssd",
+      "timmar_bakat": 24,
+      "slut_timmar_bakat": 0
+     }
+    }
+   ],
+   "medlemmar": [
+    "ordforande",
+    "kardiolog",
+    "somn",
+    "stress",
+    "advokat",
+    "granskare"
+   ],
+   "refs": {
+    "S:hr:1794913219-1795518019": {
+     "ref": "S:hr:1794913219-1795518019",
+     "metric": "hr",
+     "enhet": "puls (slag/min)",
+     "period": [
+      "2026-11-17 12:00",
+      "2026-11-24 12:00"
+     ],
+     "antal": 4320,
+     "median": 70.0,
+     "min": [
+      44.0,
+      "2026-11-20 03:51"
+     ],
+     "max": [
+      109.0,
+      "2026-11-22 16:45"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-17 12:01",
+       70.0
+      ],
+      [
+       "2026-11-18 10:31",
+       70.0
+      ],
+      [
+       "2026-11-19 09:01",
+       71.0
+      ],
+      [
+       "2026-11-20 07:31",
+       70.0
+      ],
+      [
+       "2026-11-21 06:01",
+       71.0
+      ],
+      [
+       "2026-11-22 04:31",
+       71.0
+      ],
+      [
+       "2026-11-22 15:01",
+       73.0
+      ],
+      [
+       "2026-11-22 19:31",
+       73.0
+      ],
+      [
+       "2026-11-23 00:01",
+       56.0
+      ],
+      [
+       "2026-11-23 04:31",
+       60.0
+      ],
+      [
+       "2026-11-23 09:01",
+       71.0
+      ],
+      [
+       "2026-11-23 13:31",
+       72.0
+      ],
+      [
+       "2026-11-23 18:01",
+       74.0
+      ],
+      [
+       "2026-11-23 22:31",
+       59.0
+      ],
+      [
+       "2026-11-24 03:01",
+       56.0
+      ],
+      [
+       "2026-11-24 07:31",
+       71.0
+      ]
+     ]
+    },
+    "S:hrv_rmssd:1794913219-1795518019": {
+     "ref": "S:hrv_rmssd:1794913219-1795518019",
+     "metric": "hrv_rmssd",
+     "enhet": "HRV RMSSD (ms)",
+     "period": [
+      "2026-11-17 12:00",
+      "2026-11-24 12:00"
+     ],
+     "antal": 801,
+     "median": 52.5,
+     "min": [
+      16.6,
+      "2026-11-20 08:01"
+     ],
+     "max": [
+      86.4,
+      "2026-11-22 06:26"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-17 12:01",
+       58.7
+      ],
+      [
+       "2026-11-18 02:21",
+       59.4
+      ],
+      [
+       "2026-11-18 06:31",
+       49.5
+      ],
+      [
+       "2026-11-19 01:11",
+       54.0
+      ],
+      [
+       "2026-11-19 05:21",
+       47.8
+      ],
+      [
+       "2026-11-20 00:16",
+       52.5
+      ],
+      [
+       "2026-11-20 04:26",
+       49.9
+      ],
+      [
+       "2026-11-20 21:01",
+       48.8
+      ],
+      [
+       "2026-11-21 03:16",
+       49.7
+      ],
+      [
+       "2026-11-21 07:26",
+       53.1
+      ],
+      [
+       "2026-11-22 02:01",
+       59.8
+      ],
+      [
+       "2026-11-22 06:11",
+       56.0
+      ],
+      [
+       "2026-11-23 01:21",
+       60.5
+      ],
+      [
+       "2026-11-23 05:31",
+       52.3
+      ],
+      [
+       "2026-11-23 23:56",
+       49.5
+      ],
+      [
+       "2026-11-24 04:06",
+       51.2
+      ]
+     ]
+    },
+    "S:steps:1794913219-1795518019": {
+     "ref": "S:steps:1794913219-1795518019",
+     "metric": "steps",
+     "enhet": "steg",
+     "period": [
+      "2026-11-17 12:00",
+      "2026-11-24 12:00"
+     ],
+     "antal": 587,
+     "median": 105.0,
+     "min": [
+      81.0,
+      "2026-11-23 16:11"
+     ],
+     "max": [
+      130.0,
+      "2026-11-23 08:05"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-17 12:01",
+       102.0
+      ],
+      [
+       "2026-11-17 16:31",
+       106.0
+      ],
+      [
+       "2026-11-18 11:58",
+       107.0
+      ],
+      [
+       "2026-11-18 16:16",
+       108.0
+      ],
+      [
+       "2026-11-19 08:28",
+       103.0
+      ],
+      [
+       "2026-11-19 12:28",
+       107.0
+      ],
+      [
+       "2026-11-20 07:49",
+       106.0
+      ],
+      [
+       "2026-11-20 14:47",
+       105.0
+      ],
+      [
+       "2026-11-20 16:08",
+       106.0
+      ],
+      [
+       "2026-11-21 12:12",
+       104.0
+      ],
+      [
+       "2026-11-21 16:05",
+       106.0
+      ],
+      [
+       "2026-11-22 07:56",
+       105.0
+      ],
+      [
+       "2026-11-22 15:02",
+       103.5
+      ],
+      [
+       "2026-11-22 16:48",
+       104.5
+      ],
+      [
+       "2026-11-23 12:20",
+       102.5
+      ],
+      [
+       "2026-11-23 17:44",
+       104.5
+      ]
+     ]
+    },
+    "B:hr:h3": {
+     "ref": "B:hr:h3",
+     "metric": "hr",
+     "timme": 3,
+     "dagar": 28,
+     "antal": 432,
+     "median": 56.0,
+     "p10": 52.0,
+     "p90": 60.0
+    },
+    "S:resting_hr:1795431642-1795518042": {
+     "ref": "S:resting_hr:1795431642-1795518042",
+     "metric": "resting_hr",
+     "enhet": "vilopuls (slag/min)",
+     "period": [
+      "2026-11-23 12:00",
+      "2026-11-24 12:00"
+     ],
+     "antal": 1,
+     "median": 48.0,
+     "min": [
+      48.0,
+      "2026-11-24 07:52"
+     ],
+     "max": [
+      48.0,
+      "2026-11-24 07:52"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-24 07:52",
+       48.0
+      ]
+     ]
+    },
+    "S:spo2:1794913334-1795518134": {
+     "ref": "S:spo2:1794913334-1795518134",
+     "metric": "spo2",
+     "enhet": "syremättnad (%)",
+     "period": [
+      "2026-11-17 12:02",
+      "2026-11-24 12:02"
+     ],
+     "antal": 1872,
+     "median": 96.0,
+     "min": [
+      94.0,
+      "2026-11-20 00:01"
+     ],
+     "max": [
+      99.0,
+      "2026-11-24 06:00"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-17 23:06",
+       96.0
+      ],
+      [
+       "2026-11-19 00:41",
+       96.0
+      ],
+      [
+       "2026-11-20 02:31",
+       96.0
+      ],
+      [
+       "2026-11-21 04:06",
+       96.0
+      ],
+      [
+       "2026-11-22 00:40",
+       96.0
+      ],
+      [
+       "2026-11-22 02:37",
+       96.0
+      ],
+      [
+       "2026-11-22 04:34",
+       96.0
+      ],
+      [
+       "2026-11-22 06:31",
+       96.0
+      ],
+      [
+       "2026-11-23 00:45",
+       96.0
+      ],
+      [
+       "2026-11-23 02:42",
+       96.0
+      ],
+      [
+       "2026-11-23 04:39",
+       96.0
+      ],
+      [
+       "2026-11-23 06:36",
+       96.0
+      ],
+      [
+       "2026-11-24 00:04",
+       96.0
+      ],
+      [
+       "2026-11-24 02:01",
+       96.0
+      ],
+      [
+       "2026-11-24 03:58",
+       96.0
+      ],
+      [
+       "2026-11-24 05:55",
+       96.0
+      ]
+     ]
+    },
+    "S:resp_rate:1794913334-1795518134": {
+     "ref": "S:resp_rate:1794913334-1795518134",
+     "metric": "resp_rate",
+     "enhet": "andningsfrekvens (andetag/min)",
+     "period": [
+      "2026-11-17 12:02",
+      "2026-11-24 12:02"
+     ],
+     "antal": 690,
+     "median": 14.2,
+     "min": [
+      12.4,
+      "2026-11-24 03:26"
+     ],
+     "max": [
+      17.0,
+      "2026-11-21 06:41"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-17 23:06",
+       14.5
+      ],
+      [
+       "2026-11-18 02:46",
+       14.2
+      ],
+      [
+       "2026-11-18 06:26",
+       14.0
+      ],
+      [
+       "2026-11-19 01:51",
+       14.1
+      ],
+      [
+       "2026-11-19 05:26",
+       14.4
+      ],
+      [
+       "2026-11-20 01:06",
+       14.3
+      ],
+      [
+       "2026-11-20 04:41",
+       14.2
+      ],
+      [
+       "2026-11-21 00:06",
+       14.2
+      ],
+      [
+       "2026-11-21 03:41",
+       14.1
+      ],
+      [
+       "2026-11-21 07:16",
+       14.3
+      ],
+      [
+       "2026-11-22 02:36",
+       14.0
+      ],
+      [
+       "2026-11-22 06:11",
+       14.4
+      ],
+      [
+       "2026-11-23 02:06",
+       14.1
+      ],
+      [
+       "2026-11-23 05:41",
+       14.3
+      ],
+      [
+       "2026-11-24 00:46",
+       14.3
+      ],
+      [
+       "2026-11-24 04:21",
+       14.4
+      ]
+     ]
+    },
+    "N:natt-1795471253": {
+     "ref": "N:natt-1795471253",
+     "start": "2026-11-23 23:00",
+     "slut": "2026-11-24 07:52",
+     "total_min": 531,
+     "faser_min": {
+      "light": 269,
+      "deep": 110,
+      "rem": 152
+     }
+    },
+    "N:natt-1795387684": {
+     "ref": "N:natt-1795387684",
+     "start": "2026-11-22 23:48",
+     "slut": "2026-11-23 07:29",
+     "total_min": 461,
+     "faser_min": {
+      "light": 226,
+      "deep": 102,
+      "rem": 117,
+      "awake": 16
+     }
+    },
+    "N:natt-1795299978": {
+     "ref": "N:natt-1795299978",
+     "start": "2026-11-21 23:26",
+     "slut": "2026-11-22 07:31",
+     "total_min": 485,
+     "faser_min": {
+      "light": 234,
+      "deep": 102,
+      "rem": 133,
+      "awake": 16
+     }
+    },
+    "N:natt-1795213182": {
+     "ref": "N:natt-1795213182",
+     "start": "2026-11-20 23:19",
+     "slut": "2026-11-21 07:37",
+     "total_min": 498,
+     "faser_min": {
+      "light": 236,
+      "deep": 102,
+      "rem": 152,
+      "awake": 8
+     }
+    },
+    "N:natt-1795127368": {
+     "ref": "N:natt-1795127368",
+     "start": "2026-11-19 23:29",
+     "slut": "2026-11-20 07:28",
+     "total_min": 479,
+     "faser_min": {
+      "light": 234,
+      "deep": 102,
+      "rem": 135,
+      "awake": 8
+     }
+    },
+    "N:natt-1795040235": {
+     "ref": "N:natt-1795040235",
+     "start": "2026-11-18 23:17",
+     "slut": "2026-11-19 07:23",
+     "total_min": 486,
+     "faser_min": {
+      "light": 234,
+      "deep": 102,
+      "rem": 142,
+      "awake": 8
+     }
+    },
+    "N:natt-1794953149": {
+     "ref": "N:natt-1794953149",
+     "start": "2026-11-17 23:05",
+     "slut": "2026-11-18 07:30",
+     "total_min": 505,
+     "faser_min": {
+      "light": 247,
+      "deep": 102,
+      "rem": 152,
+      "awake": 4
+     }
+    },
+    "S:hr:1795431857-1795518257": {
+     "ref": "S:hr:1795431857-1795518257",
+     "metric": "hr",
+     "enhet": "puls (slag/min)",
+     "period": [
+      "2026-11-23 12:04",
+      "2026-11-24 12:04"
+     ],
+     "antal": 1436,
+     "median": 69.0,
+     "min": [
+      46.0,
+      "2026-11-24 01:40"
+     ],
+     "max": [
+      108.0,
+      "2026-11-23 12:21"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-23 12:05",
+       75.0
+      ],
+      [
+       "2026-11-23 13:35",
+       72.0
+      ],
+      [
+       "2026-11-23 15:05",
+       73.0
+      ],
+      [
+       "2026-11-23 16:35",
+       72.0
+      ],
+      [
+       "2026-11-23 18:05",
+       72.0
+      ],
+      [
+       "2026-11-23 19:35",
+       73.5
+      ],
+      [
+       "2026-11-23 21:05",
+       76.0
+      ],
+      [
+       "2026-11-23 22:35",
+       58.0
+      ],
+      [
+       "2026-11-24 00:05",
+       59.0
+      ],
+      [
+       "2026-11-24 01:35",
+       58.0
+      ],
+      [
+       "2026-11-24 03:05",
+       56.0
+      ],
+      [
+       "2026-11-24 04:35",
+       57.0
+      ],
+      [
+       "2026-11-24 06:05",
+       55.0
+      ],
+      [
+       "2026-11-24 07:34",
+       71.0
+      ],
+      [
+       "2026-11-24 09:03",
+       72.0
+      ],
+      [
+       "2026-11-24 10:32",
+       71.0
+      ]
+     ]
+    },
+    "B:resting_hr:h12": {
+     "ref": "B:resting_hr:h12",
+     "kommentar": "för lite historik (0 punkter) för baslinje"
+    },
+    "S:hrv_rmssd:1795431857-1795518257": {
+     "ref": "S:hrv_rmssd:1795431857-1795518257",
+     "metric": "hrv_rmssd",
+     "enhet": "HRV RMSSD (ms)",
+     "period": [
+      "2026-11-23 12:04",
+      "2026-11-24 12:04"
+     ],
+     "antal": 121,
+     "median": 49.4,
+     "min": [
+      22.6,
+      "2026-11-23 16:01"
+     ],
+     "max": [
+      77.0,
+      "2026-11-24 00:01"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-23 13:01",
+       33.0
+      ],
+      [
+       "2026-11-23 21:01",
+       52.3
+      ],
+      [
+       "2026-11-23 23:31",
+       50.5
+      ],
+      [
+       "2026-11-24 00:11",
+       48.8
+      ],
+      [
+       "2026-11-24 00:51",
+       44.5
+      ],
+      [
+       "2026-11-24 01:31",
+       49.8
+      ],
+      [
+       "2026-11-24 02:11",
+       51.0
+      ],
+      [
+       "2026-11-24 02:51",
+       49.6
+      ],
+      [
+       "2026-11-24 03:31",
+       51.0
+      ],
+      [
+       "2026-11-24 04:11",
+       47.9
+      ],
+      [
+       "2026-11-24 04:46",
+       56.1
+      ],
+      [
+       "2026-11-24 05:21",
+       54.0
+      ],
+      [
+       "2026-11-24 05:56",
+       49.0
+      ],
+      [
+       "2026-11-24 06:31",
+       48.2
+      ],
+      [
+       "2026-11-24 07:06",
+       54.2
+      ],
+      [
+       "2026-11-24 07:41",
+       42.0
+      ]
+     ]
+    }
+   },
+   "sekunder": 395.1,
+   "tokens": {
+    "prompt": 38461,
+    "ut": 6312,
+    "anrop": 12,
+    "per_modell": {
+     "qwen3.5:9b": {
+      "calls": 12,
+      "prompt_tokens": 38461,
+      "output_tokens": 6312,
+      "seconds": 394.9552664756775,
+      "prompt_eval_s": 130.191576586,
+      "eval_s": 258.99910516799997,
+      "gen_tokens_per_s": 24.4,
+      "prompt_tokens_per_s": 295.4
+     }
+    }
+   },
+   "llm_anrop": [
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 762,
+     "ut": 232,
+     "s": 19.18,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 2850,
+     "ut": 235,
+     "s": 23.38,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 3364,
+     "ut": 532,
+     "s": 28.07,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 3308,
+     "ut": 496,
+     "s": 32.05,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 2781,
+     "ut": 434,
+     "s": 31.41,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 5098,
+     "ut": 900,
+     "s": 46.62,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 5623,
+     "ut": 900,
+     "s": 52.78,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 2841,
+     "ut": 317,
+     "s": 23.8,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 4653,
+     "ut": 837,
+     "s": 45.06,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 5120,
+     "ut": 549,
+     "s": 40.05,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 896,
+     "ut": 459,
+     "s": 28.57,
+     "think": false,
+     "verktyg": false,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 1165,
+     "ut": 421,
+     "s": 23.99,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    }
+   ],
+   "fel": null,
+   "ollama_minne_gib_efter": {
+    "qwen3.5:9b": 9.9
+   }
+  },
+  {
+   "scenario": "h_enstaka_syrefall",
+   "titel": "Holdout: ett enda syrefall en natt",
+   "klocka": "09:30",
+   "forskjutning_s": -56069,
+   "utlosare": {
+    "kind": "question",
+    "question": "Klockan visade 85 procent syre i natt. Ska jag vara orolig?",
+    "hours": 24
+   },
+   "utlosare_fran_vakt": false,
+   "dataantal": {
+    "hr": 10368,
+    "hrv_rmssd": 3173,
+    "spo2": 3851,
+    "skin_temp": 2728,
+    "resp_rate": 2728,
+    "steps": 1596,
+    "dator_kod": 0,
+    "dator_spel": 6800,
+    "dator_chatt": 0,
+    "dator_webb": 0,
+    "dator_annat": 0,
+    "resting_hr": 28,
+    "natter": 28,
+    "pass": 0,
+    "journal": 1,
+    "labb": 4
+   },
+   "verdict": {
+    "sammanfattning": "Datan visar en enskild mätning på 85,0% vid 03:20 med snabb återhämtning till medianen 96,0%, men källorna bekräftar inte orsak, varaktighet eller klinisk betydelse. Sensorfel och rörelse under sömn är möjliga förklaringar som inte kan uteslutas av den tillgängliga datan.",
+    "bradska": "bevaka",
+    "rad": [
+     "Din lägsta nattliga syremättnad var 85,0% vid 03:20, men den återhämtade sig snabbt till medianen 96,0%. [S:spo2:1795422637-1795509037]",
+     "Din nattliga syremättnad var normalt med medianen 96,0% men visade en tillfällig dip till lägsta värdet 85,0% vid 03:20. [S:spo2:1795458718-1795509118, S:spo2:1795458718-1795509118]",
+     "Denna dip är lägre än din baslinje som ligger mellan 95,0% och 97,0% under klockan 03. [B:spo2:h3]",
+     "Du hade en bra sömn med totalt 450 minuter, varav 16 minuter vaken tid under natten. [N:natt-1795474741]"
+    ],
+    "fragor_till_varden": [
+     "Varför uppkom dippen vid 03:20?",
+     "Fanns det rörelse eller andra störningar under den perioden?"
+    ],
+    "belagda_pastaenden": [
+     {
+      "text": "Din lägsta nattliga syremättnad var 85.0% vid 03:20, men den återhämtade sig snabbt till medianen 96.0%.",
+      "kallor": [
+       "S:spo2:1795422637-1795509037"
+      ],
+      "av": "somn"
+     },
+     {
+      "text": "Din nattliga syremättnad var normalt med medianen 96.0% men visade en tillfällig dip till lägsta värdet 85.0% vid 03:20.",
+      "kallor": [
+       "S:spo2:1795458718-1795509118",
+       "S:spo2:1795458718-1795509118"
+      ],
+      "av": "stress"
+     },
+     {
+      "text": "Denna dip är lägre än din baslinje som ligger mellan 95.0% och 97.0% under klockan 03.",
+      "kallor": [
+       "B:spo2:h3"
+      ],
+      "av": "stress"
+     },
+     {
+      "text": "Du hade en bra sömn med totalt 450 minuter, varav 16 minuter vaken tid under natten.",
+      "kallor": [
+       "N:natt-1795474741"
+      ],
+      "av": "stress"
+     }
+    ]
+   },
+   "strykningar": [
+    {
+     "agent": "somn",
+     "claim": "Denna enskilda händelse utan tecken på kronisk hypoxi indikerar att du inte behöver vara orolig.",
+     "reason": "saknar källa"
+    }
+   ],
+   "pastaenden": [
+    {
+     "agent": "somn",
+     "text": "Din lägsta nattliga syremättnad var 85.0% vid 03:20, men den återhämtade sig snabbt till medianen 96.0%.",
+     "kallor": [
+      "S:spo2:1795422637-1795509037"
+     ]
+    },
+    {
+     "agent": "somn",
+     "text": "Denna enskilda händelse utan tecken på kronisk hypoxi indikerar att du inte behöver vara orolig.",
+     "kallor": []
+    },
+    {
+     "agent": "stress",
+     "text": "Din nattliga syremättnad var normalt med medianen 96.0% men visade en tillfällig dip till lägsta värdet 85.0% vid 03:20.",
+     "kallor": [
+      "S:spo2:1795458718-1795509118",
+      "S:spo2:1795458718-1795509118"
+     ]
+    },
+    {
+     "agent": "stress",
+     "text": "Denna dip är lägre än din baslinje som ligger mellan 95.0% och 97.0% under klockan 03.",
+     "kallor": [
+      "B:spo2:h3"
+     ]
+    },
+    {
+     "agent": "stress",
+     "text": "Du hade en bra sömn med totalt 450 minuter, varav 16 minuter vaken tid under natten.",
+     "kallor": [
+      "N:natt-1795474741"
+     ]
+    }
+   ],
+   "yttranden": [
+    {
+     "agent": "ordforande",
+     "text": "Sömnläkare: Granska nattlig syremättnad och andning för att verifiera om 85% är en isolerad händelse eller ett mönster."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Stressmedicin: Analysera stressbelastning via HRV och vilopuls över dygnet samt skärmtid/sena kvällar som kan påverka sömnen."
+    },
+    {
+     "agent": "somn",
+     "text": "Din lägsta nattliga syremättnad var 85.0% vid 03:20, men den återhämtade sig snabbt till medianen 96.0%. Denna enskilda händelse utan tecken på kronisk hypoxi indikerar att du inte behöver vara orolig."
+    },
+    {
+     "agent": "stress",
+     "text": "Din nattliga syremättnad var normalt med medianen 96.0% men visade en tillfällig dip till lägsta värdet 85.0% vid 03:20. Denna dip är lägre än din baslinje som ligger mellan 95.0% och 97.0% under klockan 03."
+    },
+    {
+     "agent": "advokat",
+     "text": "*   Källan anger endast en enskild datapunkt (85,0%) vid 03:20 utan att förklara orsaken till dippen eller koppla det till sömnstörningar; en enskild mätning kan vara felaktig på grund av sensorfel eller rörelse.\n*   Teamet använder begreppet \"hypoxi\" och \"baslinje\" som om dessa är diagnostiska, men källan ger ingen medicinsk bedömning eller referensvärden för att avgöra om 85% är kliniskt farligt.\n*   Klockans sensorer på handleden har en känd begränsad noggrannhet jämfört med pulsoximeter i örat, vilket gör att en dip till 85% inte nödvändigtvis speglar kroppens faktiska syrenivå."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Datan visar en enskild mätning på 85,0% vid 03:20 med snabb återhämtning till medianen 96,0%, men källorna bekräftar inte orsak, varaktighet eller klinisk betydelse. Sensorfel och rörelse under sömn är möjliga förklaringar som inte kan uteslutas av den tillgängliga datan."
+    }
+   ],
+   "verktygsanrop": [
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "spo2",
+      "timmar_bakat": 24,
+      "slut_timmar_bakat": 0
+     }
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "resp_rate",
+      "timmar_bakat": 24,
+      "slut_timmar_bakat": 0
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "spo2",
+      "timmar_bakat": 14,
+      "slut_timmar_bakat": 0
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "jamfor_baslinje",
+     "args": {
+      "metric": "spo2",
+      "timme": 3
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_somn",
+     "args": {
+      "natter": 2
+     }
+    }
+   ],
+   "medlemmar": [
+    "ordforande",
+    "somn",
+    "stress",
+    "advokat",
+    "granskare"
+   ],
+   "refs": {
+    "S:hr:1795422614-1795509014": {
+     "ref": "S:hr:1795422614-1795509014",
+     "metric": "hr",
+     "enhet": "puls (slag/min)",
+     "period": [
+      "2026-11-23 09:30",
+      "2026-11-24 09:30"
+     ],
+     "antal": 1440,
+     "median": 70.0,
+     "min": [
+      44.0,
+      "2026-11-24 07:23"
+     ],
+     "max": [
+      108.0,
+      "2026-11-23 16:03"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-23 09:31",
+       72.0
+      ],
+      [
+       "2026-11-23 11:01",
+       72.0
+      ],
+      [
+       "2026-11-23 12:31",
+       71.0
+      ],
+      [
+       "2026-11-23 14:01",
+       72.0
+      ],
+      [
+       "2026-11-23 15:31",
+       74.0
+      ],
+      [
+       "2026-11-23 17:01",
+       73.0
+      ],
+      [
+       "2026-11-23 18:31",
+       72.0
+      ],
+      [
+       "2026-11-23 20:01",
+       72.0
+      ],
+      [
+       "2026-11-23 21:31",
+       73.0
+      ],
+      [
+       "2026-11-23 23:01",
+       68.0
+      ],
+      [
+       "2026-11-24 00:31",
+       56.0
+      ],
+      [
+       "2026-11-24 02:01",
+       54.0
+      ],
+      [
+       "2026-11-24 03:31",
+       57.0
+      ],
+      [
+       "2026-11-24 05:01",
+       57.0
+      ],
+      [
+       "2026-11-24 06:31",
+       57.0
+      ],
+      [
+       "2026-11-24 08:01",
+       69.5
+      ]
+     ]
+    },
+    "S:hrv_rmssd:1795422614-1795509014": {
+     "ref": "S:hrv_rmssd:1795422614-1795509014",
+     "metric": "hrv_rmssd",
+     "enhet": "HRV RMSSD (ms)",
+     "period": [
+      "2026-11-23 09:30",
+      "2026-11-24 09:30"
+     ],
+     "antal": 107,
+     "median": 59.6,
+     "min": [
+      30.7,
+      "2026-11-23 18:31"
+     ],
+     "max": [
+      82.3,
+      "2026-11-24 01:11"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-23 09:31",
+       38.7
+      ],
+      [
+       "2026-11-23 16:31",
+       37.0
+      ],
+      [
+       "2026-11-23 23:31",
+       53.5
+      ],
+      [
+       "2026-11-24 00:31",
+       55.3
+      ],
+      [
+       "2026-11-24 01:06",
+       64.5
+      ],
+      [
+       "2026-11-24 01:41",
+       66.8
+      ],
+      [
+       "2026-11-24 02:16",
+       64.2
+      ],
+      [
+       "2026-11-24 02:51",
+       66.6
+      ],
+      [
+       "2026-11-24 03:26",
+       67.9
+      ],
+      [
+       "2026-11-24 04:01",
+       63.6
+      ],
+      [
+       "2026-11-24 04:36",
+       56.4
+      ],
+      [
+       "2026-11-24 05:11",
+       61.0
+      ],
+      [
+       "2026-11-24 05:41",
+       64.2
+      ],
+      [
+       "2026-11-24 06:11",
+       61.5
+      ],
+      [
+       "2026-11-24 06:41",
+       57.2
+      ],
+      [
+       "2026-11-24 07:11",
+       52.8
+      ]
+     ]
+    },
+    "S:steps:1795422614-1795509014": {
+     "ref": "S:steps:1795422614-1795509014",
+     "metric": "steps",
+     "enhet": "steg",
+     "period": [
+      "2026-11-23 09:30",
+      "2026-11-24 09:30"
+     ],
+     "antal": 56,
+     "median": 104.5,
+     "min": [
+      91.0,
+      "2026-11-23 15:58"
+     ],
+     "max": [
+      123.0,
+      "2026-11-23 16:03"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-23 11:59",
+       104.5
+      ],
+      [
+       "2026-11-23 12:03",
+       103.0
+      ],
+      [
+       "2026-11-23 12:07",
+       104.0
+      ],
+      [
+       "2026-11-23 15:57",
+       97.0
+      ],
+      [
+       "2026-11-23 16:01",
+       110.5
+      ],
+      [
+       "2026-11-23 16:05",
+       109.0
+      ],
+      [
+       "2026-11-23 16:09",
+       103.0
+      ],
+      [
+       "2026-11-23 17:01",
+       103.5
+      ],
+      [
+       "2026-11-23 17:05",
+       97.0
+      ],
+      [
+       "2026-11-23 17:08",
+       101.0
+      ],
+      [
+       "2026-11-23 17:11",
+       113.0
+      ],
+      [
+       "2026-11-24 08:08",
+       113.0
+      ],
+      [
+       "2026-11-24 08:11",
+       112.0
+      ],
+      [
+       "2026-11-24 08:14",
+       110.0
+      ],
+      [
+       "2026-11-24 08:17",
+       113.0
+      ],
+      [
+       "2026-11-24 08:20",
+       108.0
+      ]
+     ]
+    },
+    "S:spo2:1795422637-1795509037": {
+     "ref": "S:spo2:1795422637-1795509037",
+     "metric": "spo2",
+     "enhet": "syremättnad (%)",
+     "period": [
+      "2026-11-23 09:30",
+      "2026-11-24 09:30"
+     ],
+     "antal": 450,
+     "median": 96.0,
+     "min": [
+      85.0,
+      "2026-11-24 03:20"
+     ],
+     "max": [
+      98.0,
+      "2026-11-24 00:00"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-23 23:59",
+       96.0
+      ],
+      [
+       "2026-11-24 00:28",
+       96.0
+      ],
+      [
+       "2026-11-24 00:57",
+       96.0
+      ],
+      [
+       "2026-11-24 01:25",
+       96.0
+      ],
+      [
+       "2026-11-24 01:53",
+       96.0
+      ],
+      [
+       "2026-11-24 02:21",
+       96.0
+      ],
+      [
+       "2026-11-24 02:49",
+       96.0
+      ],
+      [
+       "2026-11-24 03:17",
+       96.5
+      ],
+      [
+       "2026-11-24 03:45",
+       96.0
+      ],
+      [
+       "2026-11-24 04:13",
+       97.0
+      ],
+      [
+       "2026-11-24 04:41",
+       96.0
+      ],
+      [
+       "2026-11-24 05:09",
+       96.0
+      ],
+      [
+       "2026-11-24 05:37",
+       96.0
+      ],
+      [
+       "2026-11-24 06:05",
+       97.0
+      ],
+      [
+       "2026-11-24 06:33",
+       96.5
+      ],
+      [
+       "2026-11-24 07:01",
+       96.0
+      ]
+     ]
+    },
+    "S:resp_rate:1795422637-1795509037": {
+     "ref": "S:resp_rate:1795422637-1795509037",
+     "metric": "resp_rate",
+     "enhet": "andningsfrekvens (andetag/min)",
+     "period": [
+      "2026-11-23 09:30",
+      "2026-11-24 09:30"
+     ],
+     "antal": 90,
+     "median": 14.1,
+     "min": [
+      12.6,
+      "2026-11-24 07:21"
+     ],
+     "max": [
+      16.3,
+      "2026-11-24 00:31"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-24 00:01",
+       14.1
+      ],
+      [
+       "2026-11-24 00:31",
+       14.6
+      ],
+      [
+       "2026-11-24 01:01",
+       14.0
+      ],
+      [
+       "2026-11-24 01:31",
+       13.9
+      ],
+      [
+       "2026-11-24 02:01",
+       14.1
+      ],
+      [
+       "2026-11-24 02:31",
+       14.2
+      ],
+      [
+       "2026-11-24 03:01",
+       13.8
+      ],
+      [
+       "2026-11-24 03:31",
+       14.4
+      ],
+      [
+       "2026-11-24 04:01",
+       14.1
+      ],
+      [
+       "2026-11-24 04:31",
+       14.2
+      ],
+      [
+       "2026-11-24 05:01",
+       14.2
+      ],
+      [
+       "2026-11-24 05:26",
+       14.4
+      ],
+      [
+       "2026-11-24 05:51",
+       13.8
+      ],
+      [
+       "2026-11-24 06:16",
+       13.9
+      ],
+      [
+       "2026-11-24 06:41",
+       14.5
+      ],
+      [
+       "2026-11-24 07:06",
+       14.2
+      ]
+     ]
+    },
+    "S:spo2:1795458718-1795509118": {
+     "ref": "S:spo2:1795458718-1795509118",
+     "metric": "spo2",
+     "enhet": "syremättnad (%)",
+     "period": [
+      "2026-11-23 19:31",
+      "2026-11-24 09:31"
+     ],
+     "antal": 450,
+     "median": 96.0,
+     "min": [
+      85.0,
+      "2026-11-24 03:20"
+     ],
+     "max": [
+      98.0,
+      "2026-11-24 00:00"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-23 23:59",
+       96.0
+      ],
+      [
+       "2026-11-24 00:28",
+       96.0
+      ],
+      [
+       "2026-11-24 00:57",
+       96.0
+      ],
+      [
+       "2026-11-24 01:25",
+       96.0
+      ],
+      [
+       "2026-11-24 01:53",
+       96.0
+      ],
+      [
+       "2026-11-24 02:21",
+       96.0
+      ],
+      [
+       "2026-11-24 02:49",
+       96.0
+      ],
+      [
+       "2026-11-24 03:17",
+       96.5
+      ],
+      [
+       "2026-11-24 03:45",
+       96.0
+      ],
+      [
+       "2026-11-24 04:13",
+       97.0
+      ],
+      [
+       "2026-11-24 04:41",
+       96.0
+      ],
+      [
+       "2026-11-24 05:09",
+       96.0
+      ],
+      [
+       "2026-11-24 05:37",
+       96.0
+      ],
+      [
+       "2026-11-24 06:05",
+       97.0
+      ],
+      [
+       "2026-11-24 06:33",
+       96.5
+      ],
+      [
+       "2026-11-24 07:01",
+       96.0
+      ]
+     ]
+    },
+    "B:spo2:h3": {
+     "ref": "B:spo2:h3",
+     "metric": "spo2",
+     "timme": 3,
+     "dagar": 28,
+     "antal": 480,
+     "median": 96.0,
+     "p10": 95.0,
+     "p90": 97.0
+    },
+    "N:natt-1795474741": {
+     "ref": "N:natt-1795474741",
+     "start": "2026-11-23 23:59",
+     "slut": "2026-11-24 07:29",
+     "total_min": 450,
+     "faser_min": {
+      "light": 222,
+      "deep": 95,
+      "rem": 117,
+      "awake": 16
+     }
+    },
+    "N:natt-1795387643": {
+     "ref": "N:natt-1795387643",
+     "start": "2026-11-22 23:47",
+     "slut": "2026-11-23 07:24",
+     "total_min": 457,
+     "faser_min": {
+      "light": 234,
+      "deep": 102,
+      "rem": 117,
+      "awake": 4
+     }
+    }
+   },
+   "sekunder": 233.1,
+   "tokens": {
+    "prompt": 23888,
+    "ut": 3151,
+    "anrop": 9,
+    "per_modell": {
+     "qwen3.5:9b": {
+      "calls": 9,
+      "prompt_tokens": 23888,
+      "output_tokens": 3151,
+      "seconds": 232.95897889137268,
+      "prompt_eval_s": 81.71561937599999,
+      "eval_s": 145.158258124,
+      "gen_tokens_per_s": 21.7,
+      "prompt_tokens_per_s": 292.3
+     }
+    }
+   },
+   "llm_anrop": [
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 768,
+     "ut": 121,
+     "s": 14.43,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 2764,
+     "ut": 202,
+     "s": 22.73,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 4087,
+     "ut": 465,
+     "s": 27.83,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 4038,
+     "ut": 243,
+     "s": 29.26,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 2831,
+     "ut": 238,
+     "s": 24.39,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 3940,
+     "ut": 859,
+     "s": 49.98,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 4288,
+     "ut": 376,
+     "s": 35.13,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 429,
+     "ut": 191,
+     "s": 9.27,
+     "think": false,
+     "verktyg": false,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 743,
+     "ut": 456,
+     "s": 19.95,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    }
+   ],
+   "fel": null,
+   "ollama_minne_gib_efter": {
+    "qwen3.5:9b": 9.0
+   }
+  }
+ ]
+}

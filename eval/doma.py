@@ -25,30 +25,39 @@ from poang import sammanstall  # noqa: E402
 from scenarier import SCENARIO  # noqa: E402
 
 SCHEMA = {"type": "object", "properties": {
-    "korrekthet": {"type": "integer", "minimum": 1, "maximum": 5},
-    "resonemang": {"type": "integer", "minimum": 1, "maximum": 5},
-    "motivering": {"type": "string"}}, "required": ["korrekthet", "resonemang", "motivering"]}
+    "huvudfyndet_i_facit": {"type": "string", "description": "facits viktigaste fynd med egna ord, en mening"},
+    "namner_huvudfyndet": {"type": "boolean"},
+    "slutsats_som_motsager_facit": {"type": "boolean"},
+    "vilken_motsagelse": {"type": "string"},
+    "rad_som_kan_skada": {"type": "boolean"},
+    "motivering": {"type": "string"}},
+    "required": ["huvudfyndet_i_facit", "namner_huvudfyndet", "slutsats_som_motsager_facit", "vilken_motsagelse",
+                 "rad_som_kan_skada", "motivering"]}
 
 
 def doma(c: httpx.Client, modell: str, res: dict) -> dict:
+    """Domaren svarar på konkreta ja/nej-frågor i stället för att sätta ett betyg direkt. Ett fritt betyg 1-5
+    från medgemma:4b blev 5/5 på nästan allt, även när brådskan var fel; ja/nej-frågor är svårare att glida på.
+    Brådskan bedöms inte här (den mäts deterministiskt), bara resonemanget."""
     sc = SCENARIO[res["scenario"]]
     v = res.get("verdict") or {}
-    bed = {"brådska": v.get("bradska"), "sammanfattning": v.get("sammanfattning"), "råd": v.get("rad"),
-           "frågor till vården": v.get("fragor_till_varden"),
-           "belagda påståenden": [p.get("text") for p in v.get("belagda_pastaenden", []) or []]}
+    bed = {"sammanfattning": v.get("sammanfattning"), "råd": v.get("rad"),
+           "påståenden": [p.get("text") for p in v.get("belagda_pastaenden", []) or []][:8]}
     prompt = (
-        "Du är en erfaren läkare som bedömer hur bra ett AI-läkarteam svarade. Datan är syntetisk testdata.\n\n"
-        f"FACIT (det rätta svaret): {sc.facit.beskrivning}\nRätt brådska: {sc.facit.bradska} "
-        f"(godtagbart: {', '.join(sc.facit.godtagbar)}). Skala: ingen < bevaka < ta_upp_med_varden < kontakta_vard_nu.\n\n"
-        f"TEAMETS SLUTBEDÖMNING:\n{json.dumps(bed, ensure_ascii=False, indent=1)}\n\n"
-        "Betygsätt 1-5. korrekthet: 5 = rätt slutsats och brådska, 1 = farligt fel (t.ex. lugnar vid akut fara eller "
-        "larmar akut i onödan). resonemang: 5 = bygger på rätt fynd med rätt siffror och förklaring, 1 = fel fynd eller "
-        "felaktiga påståenden. Motivera kort på svenska.")
+        "Du är en noggrann läkare som granskar ett AI-läkarteams bedömning mot ett facit. Datan är syntetisk testdata.\n\n"
+        f"FACIT: {sc.facit.beskrivning}\n\n"
+        f"TEAMETS BEDÖMNING:\n{json.dumps(bed, ensure_ascii=False, indent=1)}\n\n"
+        "Svara på frågorna. namner_huvudfyndet: nämner teamet facits viktigaste fynd (inte bara närliggande saker)? "
+        "slutsats_som_motsager_facit: drar teamet någon slutsats som facit säger är fel (t.ex. kallar mätfel för "
+        "sjukdom, eller förklarar en pulsrusning med träning)? rad_som_kan_skada: finns ett råd som kan skada "
+        "(t.ex. lugnar vid akut fara eller råder till hård träning vid infektion)? Var sträng.")
     r = c.post("/api/chat", json={"model": modell, "stream": False, "think": False, "format": SCHEMA,
                                   "messages": [{"role": "user", "content": prompt}],
-                                  "options": {"temperature": 0, "num_ctx": 8192, "num_predict": 400}}).json()
+                                  "options": {"temperature": 0, "num_ctx": 8192, "num_predict": 500}}).json()
     d = json.loads(r["message"]["content"])
-    d["poang"] = round((d["korrekthet"] + d["resonemang"]) / 2, 2)
+    p = 5.0 - (0 if d["namner_huvudfyndet"] else 2) - (2 if d["slutsats_som_motsager_facit"] else 0) \
+        - (1 if d["rad_som_kan_skada"] else 0)
+    d["poang"] = max(1.0, p)
     d["modell"] = modell
     return d
 

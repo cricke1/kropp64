@@ -236,7 +236,7 @@ F_SPO2 = Facit(
     "ta_upp_med_varden", ("ta_upp_med_varden",),
     [("upprepade syrefall", r"syre|spo2|saturation|mättnad"),
      ("flera nätter / mönster", r"(flera|varje|alla|senaste) nätter|natt efter natt|återkommande|upprepade|mönster|varje natt"),
-     ("utredning / sömnapné / andningsuppehåll", r"sömnapn|andningsuppeh|andningsstörning|sömnregistrering|utredning|snark")],
+     ("utredning / sömnapné / andningsuppehåll", r"sömnapn|andningsuppeh|andningsstörning|sömnregistrering|sömnundersök|polysomno|polisomno|utred|snark")],
     [("lugnar", r"inget att oroa|ofarlig"),
      ("akut", r"ring 112")],
     "Varje natt senaste veckan: fall i syremättnad på 5-9 procentenheter (från cirka 96 till 87-91 %) var 3-7:e minut, "
@@ -313,7 +313,7 @@ def s_trott_kort_somn(s: Sim) -> dict[str, Any]:
 
 F_TROTT = Facit(
     "ingen", ("ingen", "bevaka"),
-    [("kort sömn", r"\b[56][,.]\d\s*(h|tim)|\b[56] timmar|\b(3[3-9]\d) min|kort(are)? sömn|för lite sömn|sover för lite|sömnbrist|sömnen är kort"),
+    [("kort sömn", r"\b[56][,.]\d\s*(h|tim)|\b[56] timmar|\b(3[3-9]\d) min|kort(are)? sömn|för lite sömn|sover för lite|sömnbrist|sömnskuld|sömnunderskott|sömnen är kort"),
      ("sena kodkvällar", r"kod|dator|skärm|sent|sena kvällar|efter midnatt"),
      ("provsvaren normala", r"(prov|labb|blodvärde|ferritin|hemoglobin|hb|tsh)\w*")],
     [("järnbrist / anemi som fynd", r"järnbrist|anemi|blodbrist"),
@@ -679,7 +679,7 @@ HOLDOUT2: list[Scenario] = [
     Scenario("h2_snarkning", "Holdout 2: snarkning och syrefall", "13:00", h2_snarkning, Facit(
         "ta_upp_med_varden", ("ta_upp_med_varden",),
         [("syrefall", r"syre|spo2|mättnad"), ("flera nätter", r"nätter|varje natt|återkommande|upprepade|mönster"),
-         ("utredning", r"sömnapn|andningsuppeh|utredning|sömnregistrering")],
+         ("utredning", r"sömnapn|andningsuppeh|utred|sömnregistrering|sömnundersök|polysomno|polisomno")],
         [("lugnar", r"inget att oroa")],
         "Varje natt senaste veckan syrefall på 5-8 procentenheter var 5-9:e minut (cirka 8 per timme), plus sambons uppgift om "
         "andningsuppehåll. Rätt: ta upp med vården för sömnutredning, inte akut.")),
