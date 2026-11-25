@@ -740,3 +740,39 @@ HOLDOUT3: list[Scenario] = [
         "sov ikapp och undvik hård träning i dag.")),
 ]
 SCENARIO.update({s.id: s for s in HOLDOUT3})
+
+
+# ------------------------------------------------------------------ HOLDOUT 4
+# Skrivna efter holdout 1 i v6: låg nattpuls besvarades utan att säga att den är normal. Orsaken (ingen tumregel
+# om låg puls) rättades generellt; de här scenarierna har inte setts förut.
+
+def h4_lag_puls_dag(s: Sim) -> dict[str, Any]:
+    s.standard(steg_mal=10000)
+    s.standardprover()
+    s.hr_add[~s.sover] -= 12  # vältränad: cirka 59 i stillhet på dagen
+    return _fraga("Klockan säger att min puls är runt 58 när jag sitter still. Är det för lågt?", 72)
+
+
+def h4_hog_puls_kaffe(s: Sim) -> dict[str, Any]:
+    s.standard()
+    s.standardprover()
+    a = s.nu - 50 * 60
+    sl = s.span(a, s.nu + 60)
+    s.hr_add[sl] = 14  # cirka 85 i stillhet, gradvis
+    return _fraga("Jag har druckit tre energidrycker idag och pulsen är 85 fast jag sitter still. Ska jag oroa mig?", 6)
+
+
+HOLDOUT4: list[Scenario] = [
+    Scenario("h4_lag_puls_dag", "Holdout 4: låg puls i stillhet hos vältränad", "15:00", h4_lag_puls_dag, Facit(
+        "ingen", ("ingen",),
+        [("pulsen med siffra", r"\b5\d\b"), ("normalt", r"normal|vanlig|inom|ofarlig|inget att oroa|frisk|vältränad")],
+        [("vårdkontakt", r"kontakta vården|boka tid"), ("bradykardi som sjukdom", r"(har|du har) bradykardi")],
+        "Vilopulsen på dagen cirka 57-60 och stabil i 28 dagar, mycket rörelse (10 000 steg). Rätt: normalt, inget att oroa sig för.")),
+    Scenario("h4_hog_puls_kaffe", "Holdout 4: förhöjd vilopuls efter energidryck", "15:00", h4_hog_puls_kaffe, Facit(
+        "ingen", ("ingen", "bevaka"),
+        [("pulsen med siffra", r"\b8\d\b"), ("koffein/energidryck", r"koffein|energidryck|kaffe")],
+        [("akut", r"kontakta vården (nu|omedelbart|direkt)|ring 112")],
+        "Vilopulsen har stigit till cirka 85 den senaste timmen (normalt cirka 71) efter energidrycker, utan andra tecken. Rätt: "
+        "trolig koffeineffekt, ingen fara; drick vatten, undvik mer koffein, kontakta vården vid bröstsmärta eller oregelbunden puls.")),
+]
+SCENARIO.update({s.id: s for s in HOLDOUT4})

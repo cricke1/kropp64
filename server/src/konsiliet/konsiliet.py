@@ -54,7 +54,10 @@ TEAM: dict[str, Lakare] = {l.id: l for l in [
            "spikar (ett värde över 130 med grannar under 100) är mätfel. Många hopp över 25 slag mellan minuter "
            "och saknade minuter betyder att klockan sitter löst. Puls som slår om plötsligt (stor ökning på 2 "
            "minuter) till över 140 i vila och sedan slutar tvärt kan vara en rytmrubbning: EKG under episod "
-           "behövs. Stigande nattpuls och fallande HRV flera nätter tyder på belastning eller begynnande infektion."),
+           "behövs. Stigande nattpuls och fallande HRV flera nätter tyder på belastning eller begynnande infektion. "
+           "Låg puls i sömn (40-60) och i stillhet (50-60) är normalt hos unga och vältränade; jämför med personens "
+           "egen baslinje och säg tydligt att det är normalt om den ligger nära. Under 40, eller låg puls med yrsel "
+           "eller svimning, bör tas upp med vården."),
     Lakare("somn", "Sömnläkare",
            "sömnlängd, insomningstid, nattlig syremättnad och andning, regelbundenhet",
            ("hamta_somn", "hamta_serie", "jamfor_baslinje"), "skrivbord_somn",

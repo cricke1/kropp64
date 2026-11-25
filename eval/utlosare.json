@@ -306,5 +306,23 @@
   },
   "fran_vakt": false,
   "nu": 1795518000
+ },
+ "h4_lag_puls_dag": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Klockan säger att min puls är runt 58 när jag sitter still. Är det för lågt?",
+   "hours": 72
+  },
+  "fran_vakt": false,
+  "nu": 1795528800
+ },
+ "h4_hog_puls_kaffe": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Jag har druckit tre energidrycker idag och pulsen är 85 fast jag sitter still. Ska jag oroa mig?",
+   "hours": 6
+  },
+  "fran_vakt": false,
+  "nu": 1795528800
  }
 }
