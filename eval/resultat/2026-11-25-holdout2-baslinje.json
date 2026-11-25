@@ -21,7 +21,8 @@
   "sek_medel": 224.4,
   "prompt_tokens_medel": 21770,
   "ut_tokens_medel": 3880,
-  "fel": 0
+  "fel": 0,
+  "domare_medel": 5.0
  },
  "rader": [
   {
@@ -49,6 +50,16 @@
    "anrop": 7,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Pulsen 170-180 kom under ett registrerat löppass 07:50-08:25 med cirka 168 steg/min.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Facit säger att pulsen var 170-180, medan teamet säger att den var 161-178. Det är en liten skillnad, men det är viktigt att notera.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är i stort sett korrekt och stöder facit. Det finns ingen rad som direkt kan skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.6
    }
@@ -80,6 +91,16 @@
    "anrop": 8,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Varje natt senaste veckan syrefall på 5-8 procentenheter var 5-9:e minut (cirka 8 per timme), plus sambons uppgift om andningsuppehåll.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet säger att klockan inte kan mäta snarkning eller andningsstopp, vilket gör det omöjligt att bekräfta eller utesluta symtomen baserat på mätdata. Facit säger att det finns en uppgift om andningsuppehåll, vilket antyder att det kan finnas en indikation på problem.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är inte skadlig. Det är en korrekt bedömning av begränsningarna i data och en rekommendation att söka vård för sömnutredning.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.9
    }
@@ -111,6 +132,10 @@
    "anrop": 9,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "fel": "Unterminated string starting at: line 7 column 16 (char 359)",
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 9.0
    }
@@ -141,6 +166,16 @@
    "anrop": 9,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "TSH 0,05 (under referens) och fritt T4 31 (över) för 15 dagar sedan, pulsen cirka 14 slag högre dygnet runt de senaste tio dagarna.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet nämner inte att det är överfunktion i sköldkörteln, men det är det som är det viktigaste fyndet. De nämner bara att det är höga vilopuls och låg HRV, men det är inte tillräckligt för att dra slutsatsen att det är överfunktion i sköldkörteln. De nämner inte heller att det är överfunktion i sköldkörteln.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är inte tillräckligt för att dra slutsatsen att det är överfunktion i sköldkörteln. De nämner bara att det är höga vilopuls och låg HRV, men det är inte tillräckligt för att dra slutsatsen att det är överfunktion i sköldkörteln. De nämner inte heller att det är överfunktion i sköldkörteln.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 9.0
    }
@@ -171,6 +206,16 @@
    "anrop": 9,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Sömnen påverkas inte märkbart, ingen oro.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar slutsatsen att det inte finns någon oro, medan facit säger att det inte finns någon oro.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets råd är inte skadligt.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 9.0
    }
@@ -3708,5 +3753,6 @@
     "qwen3.5:9b": 9.0
    }
   }
- ]
+ ],
+ "domarmodell": "medgemma:4b"
 }

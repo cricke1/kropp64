@@ -18,8 +18,51 @@ def main() -> None:
     filer = sorted((HIT / "resultat").glob("*.json"), key=ordning)
     data = [json.loads(f.read_text()) for f in filer]
     data = [d for d in data if d.get("rader")]
-    rad = ["# Utvärdering av konsiliet", "",
-           "Genereras av `eval/rapport.py`. 15 scenarier med syntetisk data och känt facit (se `eval/scenarier.py`).",
+    def agg(monster: str) -> dict:
+        from poang import sammanstall
+        rader = [r for f in sorted((HIT / "resultat").glob(monster)) for r in json.loads(f.read_text())["rader"]]
+        return sammanstall(rader) if rader else {}
+
+    slut = [("Gamla pipelinen, 16 tränade scenarier", agg("2026-11-24-baslinje.json")),
+            ("Nuvarande (v8), 16 tränade scenarier", agg("2026-11-2?-v8.json")),
+            ("Gamla pipelinen, 16 holdout-scenarier", agg("*holdout*-baslinje.json")),
+            ("Nuvarande (v8), 16 holdout-scenarier", agg("*holdout*-v8.json"))]
+    topp = ["# Utvärdering av konsiliet", "",
+            "## Slutsiffran", "",
+            "| Körning | n | Godtagbar brådska | Exakt | Över-/undertriage | Täckning av måste-fynd | Strykandel | "
+            "Median s (max) | Utdatatokens/möte |", "|---|---|---|---|---|---|---|---|---|"]
+    for namn, s_ in slut:
+        if s_:
+            topp.append(f"| {namn} | {s_['n']} | {s_['bradska_godtagbar']:.0%} | {s_['bradska_exakt']:.0%} | "
+                        f"{s_['overtriage']}/{s_['undertriage']} | {s_['tackning']:.0%} | "
+                        f"{s_['strykandel']:.0%} | {s_['sek_median']:.0f} ({s_['sek_max']:.0f}) | {s_['ut_tokens_medel']} |")
+    topp += ["",
+             "## Metod", "",
+             "- **Data:** en syntetisk person, minutupplöst simulering av 28 dygn (`eval/sim.py`). All data är märkt "
+             "`syntetisk` och skrivs till slängbara databaser under `eval/tmp/`, aldrig till den riktiga.",
+             "- **Klocka:** varje scenario körs i en egen process vars klocka flyttas till scenariots tidpunkt "
+             "(03:40 för nattliga syrefall, 21:40 för pulsrusningen). Vaktens egna regler får titta på datan och "
+             "deras larm fryses i `eval/utlosare.json`, så att alla varianter får exakt samma utlösare.",
+             "- **Facit** (`eval/scenarier.py`): rätt brådska, vilka brådskor som är godtagbara, fynd som måste finnas "
+             "(reguljära uttryck) och påståenden som inte får göras (räknas bara utan negation).",
+             "- **Tränade scenarier:** 16. Förbättringarna gjordes medan de kördes, så de är optimistiska.",
+             "- **Holdout:** 16 scenarier i fem omgångar, var och en skriven innan den kördes. När en holdout-omgång "
+             "visade ett fel rättades orsaken generellt (inte scenariot) och en ny omgång skrevs för att mäta igen. "
+             "Holdout 5 är delvis förorenad: vilopulsregeln för frågor skrevs efter att holdout 5:s faktablad "
+             "(men inte teamets svar) setts. Första körningen av varje omgång: holdout 1 och 2 med v4 (10 av 10 "
+             "brådska), holdout 3 med v5 (2 av 2), holdout 4 med v7 (2 av 2, ett missat fynd), holdout 5 med v8 "
+             "(2 av 2).",
+             "- **Tid:** modellen laddas ur före varje scenario, så tiden inkluderar en kall modellstart. Körningar "
+             "som överlappade en annan modell i minnet (swap) är omkörda; minnet efter varje scenario sparas "
+             "(`ollama_minne_gib_efter`).",
+             "- **Domare:** medgemma:4b (en annan modell än Qwen som kör mötet) svarar på ja/nej-frågor mot facit. Den "
+             "är för snäll (gav den gamla pipelinens holdout 2, med 1 av 5 rätt brådska, 5,0) och redovisas bara "
+             "som komplement.",
+             "- **Spridning:** varje variant är körd en gång. Samma scenario kan ge olika svar vid omkörning, särskilt "
+             "i den gamla pipelinen; skillnader på några procentenheter i täckning är brus.", "",
+             "## Alla körningar", ""]
+    rad = topp + [
+           "Genereras av `eval/rapport.py`.",
            "Brådska godtagbar = inom facits godtagbara nivåer. Täckning = andel måste-fynd i slutbedömningen.",
            "Förbjudna = påståenden som inte får göras (utan negation). Strykandel = granskarens strykningar / specialistpåståenden.",
            "Overifierade = siffror i slutbedömningens egen text som inte finns i någon hämtad källa.",

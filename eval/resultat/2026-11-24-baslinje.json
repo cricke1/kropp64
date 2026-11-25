@@ -7,21 +7,22 @@
  "sammanfattning": {
   "n": 16,
   "bradska_godtagbar": 0.562,
-  "bradska_exakt": 0.375,
+  "bradska_exakt": 0.438,
   "overtriage": 3,
   "undertriage": 4,
-  "tackning": 0.568,
+  "tackning": 0.599,
   "forbjudna": 0,
-  "strykandel": 0.142,
+  "strykandel": 0.136,
   "belagda_medel": 6.8,
   "overifierade_siffror": 4,
   "baslinjefel": 0,
   "sek_median": 290.4,
-  "sek_max": 382.1,
-  "sek_medel": 278.5,
-  "prompt_tokens_medel": 26438,
-  "ut_tokens_medel": 4530,
-  "fel": 0
+  "sek_max": 350.5,
+  "sek_medel": 275.3,
+  "prompt_tokens_medel": 26442,
+  "ut_tokens_medel": 4460,
+  "fel": 0,
+  "domare_medel": 4.43
  },
  "rader": [
   {
@@ -50,7 +51,17 @@
    "ut_tokens": 4049,
    "anrop": 10,
    "medgemma_anrop": 0,
-   "fel": false
+   "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Pulsen 150-175 slag/min kom under ett registrerat löppass på 45 minuter med cirka 160 steg/min, och sjönk efteråt. Rätt: ingen oro, normal träningspuls för en 18-åring.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": true,
+    "vilken_motsagelse": "Teamet drar slutsatsen att pulsen över 170 vid 17:52 var sannolikt kopplad till fysisk aktivitet snarare än vila, vilket motsäger facit som säger att det inte finns någon oro, normal träningspuls för en 18-åring.",
+    "rad_som_kan_skada": false,
+    "motivering": "Det finns inga råd som kan skada.",
+    "poang": 3.0,
+    "modell": "medgemma:4b"
+   }
   },
   {
    "scenario": "sent_spelande",
@@ -81,7 +92,17 @@
    "ut_tokens": 4268,
    "anrop": 8,
    "medgemma_anrop": 0,
-   "fel": false
+   "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "sen skärmtid ger sömnbrist, råd om skärmstopp/fast läggtid; ingen sjukdom",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet nämner inte sömnbrist eller skärmtid som en orsak till de observerade mätningarna. De beskriver bara sömnlängden, syremättnad och hjärtfrekvens.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning innehåller inte några råd som kan skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   }
   },
   {
    "scenario": "trott_fraga",
@@ -109,7 +130,17 @@
    "ut_tokens": 5347,
    "anrop": 11,
    "medgemma_anrop": 0,
-   "fel": false
+   "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "tröttheten förklaras bäst av för lite sömn och sena skärmkvällar; ingen sjukdom i datan",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet nämner inte att det inte finns någon sjukdom i datan, men det är den viktigaste slutsatsen i facit.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är inte skadlig.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   }
   },
   {
    "scenario": "lagt_ferritin",
@@ -138,7 +169,17 @@
    "ut_tokens": 5045,
    "anrop": 10,
    "medgemma_anrop": 0,
-   "fel": false
+   "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "lågt järnförråd kan förklara tröttheten, ta upp med vården (uppföljning/behandling); sömnen förklarar den inte.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet nämner inte att Hb är normalt, vilket är en viktig del av facit.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning fokuserar på vilopuls, HRV och stegräkning, men ignorerar den viktigaste informationen om Hb-värdet. Det finns inget råd som direkt kan skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   }
   },
   {
    "scenario": "motstridigt",
@@ -166,7 +207,17 @@
    "ut_tokens": 4849,
    "anrop": 13,
    "medgemma_anrop": 0,
-   "fel": false
+   "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Nattlig HRV låg tre nätter i rad, men varje kväll innan fanns ett hårt löppass på 60 minuter (ny träning). Hudtemperatur och andning normala, nattpulsen bara +3.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar inte någon slutsats som motsäger facit. De beskriver HRV-sänkningen, sömnen och pulsen, men de drar inte någon slutsats som är felaktig.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är överlag korrekt och följer facit. De identifierar HRV-sänkningen, sömnmönstret och pulsen. De nämner också att det saknas data om skärmtid och aktivitetsnivå, vilket är en viktig begränsning. De drar inte någon slutsats som är felaktig eller som kan skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   }
   },
   {
    "scenario": "spo2_akut",
@@ -194,7 +245,17 @@
    "ut_tokens": 3143,
    "anrop": 10,
    "medgemma_anrop": 0,
-   "fel": false
+   "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "I vila de senaste 12 minuterna: SpO2 84-87 % (normalt 97), andningsfrekvens cirka 26 och puls cirka 110, mot normala värden timmarna innan. Journalen har astma. Rätt: kontakta vården nu (1177/112 vid andnöd), ta Ventoline enligt ordination.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet nämner en motsägelse i SpO2-värdena, men det är inte en slutsats som motsäger facit. Facit säger att man ska kontakta vården, inte att man ska vara försiktig.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är korrekt och följer facit. Det finns inget råd som kan skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   }
   },
   {
    "scenario": "aterkommande_hopp",
@@ -223,7 +284,17 @@
    "ut_tokens": 3450,
    "anrop": 8,
    "medgemma_anrop": 0,
-   "fel": false
+   "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Tre episoder idag (för cirka 5 timmar, 2,5 timmar och 4 minuter sedan) där vilopulsen slår om från cirka 72 till cirka 148 och tillbaka efter 6-9 minuter, i vila vid datorn. Mönster som vid paroxysmal supraventrikulär takykardi.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet förklarar händelsen med att personen var stillasittande, vilket är en felaktig förklaring. Pulsen steg från 68 till 146 slag/min utan rörelse, vilket indikerar en paroxysmal supraventrikulär takykardi.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är felaktig. Pulsen steg från 68 till 146 slag/min utan rörelse, vilket indikerar en paroxysmal supraventrikulär takykardi. Teamet förklarar händelsen med att personen var stillasittande, vilket är en felaktig förklaring.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   }
   },
   {
    "scenario": "stress_projekt",
@@ -251,7 +322,11 @@
    "ut_tokens": 4732,
    "anrop": 11,
    "medgemma_anrop": 0,
-   "fel": false
+   "fel": false,
+   "domare": {
+    "fel": "Unterminated string starting at: line 7 column 16 (char 516)",
+    "modell": "medgemma:4b"
+   }
   },
   {
    "scenario": "akut_takykardi",
@@ -280,6 +355,16 @@
    "anrop": 12,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Äkta pulsrusning i vila: pulsen slog om från cirka 72 till cirka 168 slag/min på en minut medan personen satt vid datorn och kodade, utan steg och utan träningspass, och ligger kvar i 14 minuter. Rätt: kontakta vården nu (1177/akut, 112 vid bröstsmärta, svimning eller andnöd).",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet nämner inte att personen ska kontakta vården. De nämner att det är en varningssignal som kräver omedelbar utvärdering, men de nämner inte att personen ska kontakta vården.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets råd är att personen ska utvärderas omedelbart, vilket är korrekt. Det finns inget råd som kan skada.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 9.6
    }
@@ -310,6 +395,10 @@
    "anrop": 10,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "fel": "Unterminated string starting at: line 7 column 16 (char 529)",
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 9.0
    }
@@ -340,6 +429,16 @@
    "anrop": 10,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Mönstret är typiskt för en klocka som sitter löst.",
+    "namner_huvudfyndet": false,
+    "slutsats_som_motsager_facit": true,
+    "vilken_motsagelse": "Teamet drar slutsatsen att pulsen var kraftigt förhöjd till 114,5 slag/min vid klockan 20:00 jämfört med baslinjen på 74,0. Facit säger att pulsen hoppar mellan cirka 70 och 140 från minut till minut, med luckor där klockan inte registrerat något. Mönstret är typiskt för en klocka som sitter löst.",
+    "rad_som_kan_skada": false,
+    "motivering": "Råden är generella och inte skadliga.",
+    "poang": 1.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 9.1
    }
@@ -372,6 +471,16 @@
    "anrop": 12,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Tre nätter i rad: nattlig HRV sjunker från cirka 56 till 37-31 ms, nattpulsen stiger 5-9 slag/min, hudtemperaturen stiger 0,4-0,85 grader och andningsfrekvensen ökar. Stegen har minskat och sömnen blivit längre. Klassiskt mönster före en förkylning/infektion.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet beskriver en minskning av HRV och en ökning av vilopuls, men de drar inte någon slutsats om att detta är ett klassiskt mönster för en förkylning/infektion. De beskriver också en minskning av sömnvolymen, vilket inte är typiskt för en förkylning/infektion.",
+    "rad_som_kan_skada": false,
+    "motivering": "Råden är generella och baserade på data. Det finns inget råd som direkt kan skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 9.4
    }
@@ -405,6 +514,16 @@
    "anrop": 9,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "fall i syremättnad på 5-9 procentenheter (från cirka 96 till 87-91 %) var 3-7:e minut, korta, med pulsökning efteråt. Mönstret liknar andningsuppehåll i sömnen.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet beskriver en isolerad natt med syremättnad på 86,0 % och HRV på 42,0 ms, vilket inte motsäger facit, men det är inte en akut fara.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är inte skadlig. De rekommenderar en sömnutredning, vilket är lämpligt för en isolerad händelse med låg syremättnad och förändrad HRV, snarare än att larma akut.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.9
    }
@@ -436,6 +555,16 @@
    "anrop": 11,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Varannan dag cirka 12 000 steg (promenad 55 min + kvällspromenad), varannan dag under 2 000 steg och 13 timmar vid datorn. Natten efter aktiva dagar är HRV cirka 18 % högre och nattpulsen 2-3 slag/min lägre.",
+    "namner_huvudfyndet": false,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamets bedömning är inte en motsägelse mot facit, men det är en överdriven tolkning av data. Facit indikerar en låg aktivitet, men det är inte en diagnos. Teamets bedömning är mer en beskrivning av data, men det är inte en slutsats som motsäger facit.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är inte skadlig. Det är en beskrivning av data och ger inte några felaktiga råd.",
+    "poang": 3.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 9.4
    }
@@ -465,40 +594,60 @@
    "anrop": 13,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Helt normal vecka: sömn cirka 8 timmar, normal nattpuls och HRV, 8 000 steg per dag, normala provsvar.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet nämner inte att det finns ingen data för stegantal under hela veckan, men facit säger att det är 8 000 steg per dag. Det är en liten skillnad, men det är inte en motsägelse.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är i stort sett korrekt och överensstämmer med facit. Det finns ingen rad som kan skada.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 9.7
    }
   },
   {
    "scenario": "trott_spelkvallar",
-   "bradska": "ingen",
+   "bradska": "bevaka",
    "facit": "bevaka",
-   "exakt": false,
+   "exakt": true,
    "godtagbar": true,
    "overtriage": false,
    "undertriage": false,
-   "tackning": 0.0,
+   "tackning": 0.5,
    "maste": {
-    "sömnskuld / sömnbrist": false,
+    "sömnskuld / sömnbrist": true,
     "sena kvällar vid datorn": false
    },
    "forbjudna": [],
-   "pastaenden": 10,
-   "strykningar": 2,
-   "strykandel": 0.2,
-   "belagda": 8,
+   "pastaenden": 8,
+   "strykningar": 1,
+   "strykandel": 0.125,
+   "belagda": 7,
    "overifierade_siffror": [
     18.0
    ],
    "baslinjefel": [],
-   "sekunder": 382.1,
-   "prompt_tokens": 39509,
-   "ut_tokens": 6481,
-   "anrop": 12,
+   "sekunder": 329.8,
+   "prompt_tokens": 39574,
+   "ut_tokens": 5370,
+   "anrop": 13,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Sju nätter: spelar på datorn till cirka 01:40, somnar cirka 01:55 och vaknar 07:00, cirka 5 timmars sömn mot behovet 8: sömnskuld på cirka 20 timmar på en vecka.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Det finns inga tecken på överbelastning eller högt vilopuls som skulle indikera kardiologisk orsak till tröttheten.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning nämner inte sömnskuld eller trötthet på grund av sömnbrist. De fokuserar på låg fysisk aktivitet och stabil vilopuls, vilket inte är en indikation på att patienten har sömnskuld eller trötthet på grund av sömnbrist. Därför är det inte en rad som kan skada.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
-    "qwen3.5:9b": 9.9
+    "qwen3.5:9b": 9.8
    }
   }
  ],
@@ -12344,7 +12493,7 @@
    "scenario": "trott_spelkvallar",
    "titel": "Trött efter sena spelkvällar",
    "klocka": "16:30",
-   "forskjutning_s": -33413,
+   "forskjutning_s": -41243,
    "utlosare": {
     "kind": "question",
     "question": "Varför är jag så trött?",
@@ -12370,72 +12519,68 @@
     "labb": 4
    },
    "verdict": {
-    "sammanfattning": "Datan visar en sömnlängd mellan **295** och **326 minuter** under de senaste sju nätterna, vilket är kortare än rekommenderat för en 18-åring. Sömnen har dock en stabil struktur med en konstant djupsömnsvaraktighet på **86 minuter** per natt. Nattlig syremättnad var normal med ett medelvärde på **96,0 %** och ett minimum på **94,0 %**. Daglig pulsmedian var **71,0 slag/minuter** med en nattlig minsta värde på **57,0 slag/minuter**. Stressbelastning verkar vara låg baserat på en stabil vilopuls med median **50,0 slag/minuter** och en HRV-median på **54,7 ms**. Daglig fysisk aktivitet är mycket låg med en median på **105 steg**, vilket tyder på att personen sitter stilla under dagen. Stegtal på median **105,0 steg** indikerar extremt låg fysisk aktivitet under perioden. Pulsen ligger på en median av **71,0 slag/min**, vilket är lågt men inte direkt indikativt för sjukdom utan snarare stillasittande.",
-    "bradska": "ingen",
+    "sammanfattning": "Datan visar en mycket låg fysisk aktivitet (medelstegsanta 105,0 steg/dag) och en stabil vilopuls (median 50,0 slag/min). Sömnvaraktigheten ligger mellan 300–326 minuter per natt med hög andel djupsömn. HRV-medianen var 54,7 ms. Det finns dock inga data om fördelningen av steg eller specifika referensvärden för att bekräfta tolkningar om 'sedentär livsstil', 'kort sömn' eller 'inga tecken på överbelastning'.",
+    "bradska": "bevaka",
     "rad": [
-     "Datan visar en sömnlängd mellan **295** och **326 minuter** under de senaste sju nätterna, vilket är kortare än rekommenderat för en 18-åring. Sömnen har dock en stabil struktur med en konstant djupsömnsvaraktighet på **86 minuter** per natt. Nattlig syremättnad var normal med ett medelvärde på **96,0 %** och ett minimum på **94,0 %**. Daglig pulsmedian var **71,0 slag/minuter** med en nattlig minsta värde på **57,0 slag/minuter**. Stressbelastning verkar vara låg baserat på en stabil vilopuls med median **50,0 slag/minuter** och en HRV-median på **54,7 ms**. Daglig fysisk aktivitet är mycket låg med en median på **105 steg**, vilket tyder på att personen sitter stilla under dagen. Stegtal på median **105,0 steg** indikerar extremt låg fysisk aktivitet under perioden. Pulsen ligger på en median av **71,0 slag/min**, vilket är lågt men inte direkt indikativt för sjukdom utan snarare stillasittande."
+     "Din vilopuls är stabil med en median på 50,0 slag/min under perioden (S:resting_hr:1794929447-1795534247). [S:resting_hr:1794929447-1795534247]",
+     "Din dagliga aktivitet är mycket låg med en medelstegsanta på 105,0 steg/dag (S:steps:1794929447-1795534247). [S:steps:1794929447-1795534247]",
+     "Din HRV-median var 54,7 ms under perioden (S:hrv_rmssd:1794929424-1795534224). [S:hrv_rmssd:1794929424-1795534224]",
+     "Din sömnvaraktighet var 300–326 minuter per natt med en hög andel djupsömn på 86 minuter under de senaste tre nätterna (N:natt-1795480560, N:natt-1795394884, N:natt-1795309259). [N:natt-1795480560, N:natt-1795394884, N:natt-1795309259]"
     ],
     "fragor_till_varden": [
-     "Har du upplevt trötthet under hela veckan eller specifikt vissa dagar?",
-     "Sömnkvaliteten känns bra trots den korta sömnlängden?"
+     "Finns det tillgång till daglig fördelning av steg för att bedöma variation i aktivitet?",
+     "Vilka specifika rekommendationer för sömnvaraktighet vid 18 års ålder används för jämförelse?",
+     "Vilka referensvärden för HRV vid denna ålder används för att definiera överbelastning?"
     ],
     "belagda_pastaenden": [
      {
-      "text": "Sömnlängden varierade mellan 295 minuter och 326 minuter under de senaste sju nätterna.",
+      "text": "Din vilopuls är stabil med en median på 50,0 slag/min under perioden (S:resting_hr:1794929447-1795534247).",
       "kallor": [
-       "N:natt-1795048942",
-       "N:natt-1795480560"
+       "S:resting_hr:1794929447-1795534247"
+      ],
+      "av": "kardiolog"
+     },
+     {
+      "text": "Din dagliga aktivitet är mycket låg med en medelstegsanta på 105,0 steg/dag (S:steps:1794929447-1795534247), vilket tyder på en sedentär livsstil som kan bidra till trötthet.",
+      "kallor": [
+       "S:steps:1794929447-1795534247"
+      ],
+      "av": "kardiolog"
+     },
+     {
+      "text": "Datan visar inga tecken på överbelastning eller högt vilopuls som skulle indikera kardiologisk orsak till tröttheten.",
+      "kallor": [
+       "S:resting_hr:1794929447-1795534247"
+      ],
+      "av": "kardiolog"
+     },
+     {
+      "text": "Din aktivitetsnivå är mycket låg, med ett genomsnitt på 105 steg per mätning.",
+      "kallor": [
+       "S:steps:1794929424-1795534224"
       ],
       "av": "somn"
      },
      {
-      "text": "Din sömnstruktur är stabil med en konstant djupsömnsvaraktighet på 86 minuter per natt.",
+      "text": "Din HRV-median var 54,7 ms under perioden, vilket indikerar stabil nervsystemstillstånd utan tecken på överträningsstress.",
       "kallor": [
-       "N:natt-1794963679",
-       "N:natt-1795221920"
-      ],
-      "av": "somn"
-     },
-     {
-      "text": "Nattlig syremättnad var normal med ett medelvärde på 96,0 % och ett minimum på 94,0 %.",
-      "kallor": [
-       "S:spo2:1794929441-1795534241"
-      ],
-      "av": "somn"
-     },
-     {
-      "text": "Daglig pulsmedian var 71,0 slag/minuter med en nattlig minsta värde på 57,0 slag/minuter.",
-      "kallor": [
-       "S:hr:1794929421-1795534221"
-      ],
-      "av": "somn"
-     },
-     {
-      "text": "Din stressbelastning verkar vara låg baserat på en stabil vilopuls med median 50,0 slag/minuter (ref: S:resting_hr:1794929542-1795534342) och en HRV-median på 54,7 ms (ref: S:hrv_rmssd:1794929421-1795534221).",
-      "kallor": [
-       "S:resting_hr:1794929542-1795534342",
-       "S:hrv_rmssd:1794929421-1795534221"
-      ],
-      "av": "stress"
-     },
-     {
-      "text": "Din dagliga fysiska aktivitet är mycket låg med en median på 105 steg (ref: S:steps:1794929421-1795534221), vilket tyder på att du sitter stilla under dagen.",
-      "kallor": [
-       "S:steps:1794929421-1795534221"
-      ],
-      "av": "stress"
-     },
-     {
-      "text": "Stegtal på median **105,0 steg** indikerar extremt låg fysisk aktivitet under perioden [ref: S:steps:1794929421-1795534221].",
-      "kallor": [
-       "S:steps:1794929421-1795534221"
+       "S:hrv_rmssd:1794929424-1795534224"
       ],
       "av": "idrott"
      },
      {
-      "text": "Pulsen ligger på en median av **71,0 slag/min**, vilket är lågt men inte direkt indikativt för sjukdom utan snarare stillasittande [ref: S:hr:1794929421-1795534221].",
+      "text": "Din sömnvaraktighet var 300–326 minuter per natt med en hög andel djupsömn på 86 minuter under de senaste tre nätterna.",
       "kallor": [
-       "S:hr:1794929421-1795534221"
+       "N:natt-1795480560",
+       "N:natt-1795394884",
+       "N:natt-1795309259"
+      ],
+      "av": "idrott"
+     },
+     {
+      "text": "Din medelstegsaktivitet låg på 105,0 steg per dag, vilket indikerar mycket låg fysisk aktivitet och långvarigt stillasittande.",
+      "kallor": [
+       "S:steps:1794929424-1795534224"
       ],
       "av": "idrott"
      }
@@ -12443,144 +12588,114 @@
    },
    "strykningar": [
     {
-     "agent": "stress",
-     "claim": "Du får för lite sömn, med totalt 300–326 minuter per natt (ref: N:natt-1794963679, ref: N:natt-1795048942), vilket är under rekommenderat för en 18-åring.",
-     "reason": "siffran 18 finns inte i källdatan"
-    },
-    {
-     "agent": "idrott",
-     "claim": "Sömnmängden varierar mellan **295 och 326 minuter** per natt, vilket är betydligt under rekommenderat för en 18-åring [ref: N:natt-1794963679].",
+     "agent": "somn",
+     "claim": "Din sömnlängd varierar mellan 295 och 326 minuter per natt, vilket är kortare än rekommenderat för en 18-åring.",
      "reason": "siffran 18 finns inte i källdatan"
     }
    ],
    "pastaenden": [
     {
-     "agent": "somn",
-     "text": "Sömnlängden varierade mellan 295 minuter och 326 minuter under de senaste sju nätterna.",
+     "agent": "kardiolog",
+     "text": "Din vilopuls är stabil med en median på 50,0 slag/min under perioden (S:resting_hr:1794929447-1795534247).",
      "kallor": [
+      "S:resting_hr:1794929447-1795534247"
+     ]
+    },
+    {
+     "agent": "kardiolog",
+     "text": "Din dagliga aktivitet är mycket låg med en medelstegsanta på 105,0 steg/dag (S:steps:1794929447-1795534247), vilket tyder på en sedentär livsstil som kan bidra till trötthet.",
+     "kallor": [
+      "S:steps:1794929447-1795534247"
+     ]
+    },
+    {
+     "agent": "kardiolog",
+     "text": "Datan visar inga tecken på överbelastning eller högt vilopuls som skulle indikera kardiologisk orsak till tröttheten.",
+     "kallor": [
+      "S:resting_hr:1794929447-1795534247"
+     ]
+    },
+    {
+     "agent": "somn",
+     "text": "Din sömnlängd varierar mellan 295 och 326 minuter per natt, vilket är kortare än rekommenderat för en 18-åring.",
+     "kallor": [
+      "N:natt-1794963679",
       "N:natt-1795048942",
+      "N:natt-1795137039",
+      "N:natt-1795221920",
+      "N:natt-1795309259",
+      "N:natt-1795394884",
       "N:natt-1795480560"
      ]
     },
     {
      "agent": "somn",
-     "text": "Din sömnstruktur är stabil med en konstant djupsömnsvaraktighet på 86 minuter per natt.",
+     "text": "Din aktivitetsnivå är mycket låg, med ett genomsnitt på 105 steg per mätning.",
      "kallor": [
-      "N:natt-1794963679",
-      "N:natt-1795221920"
-     ]
-    },
-    {
-     "agent": "somn",
-     "text": "Nattlig syremättnad var normal med ett medelvärde på 96,0 % och ett minimum på 94,0 %.",
-     "kallor": [
-      "S:spo2:1794929441-1795534241"
-     ]
-    },
-    {
-     "agent": "somn",
-     "text": "Daglig pulsmedian var 71,0 slag/minuter med en nattlig minsta värde på 57,0 slag/minuter.",
-     "kallor": [
-      "S:hr:1794929421-1795534221"
-     ]
-    },
-    {
-     "agent": "stress",
-     "text": "Din stressbelastning verkar vara låg baserat på en stabil vilopuls med median 50,0 slag/minuter (ref: S:resting_hr:1794929542-1795534342) och en HRV-median på 54,7 ms (ref: S:hrv_rmssd:1794929421-1795534221).",
-     "kallor": [
-      "S:resting_hr:1794929542-1795534342",
-      "S:hrv_rmssd:1794929421-1795534221"
-     ]
-    },
-    {
-     "agent": "stress",
-     "text": "Du får för lite sömn, med totalt 300–326 minuter per natt (ref: N:natt-1794963679, ref: N:natt-1795048942), vilket är under rekommenderat för en 18-åring.",
-     "kallor": [
-      "N:natt-1794963679",
-      "N:natt-1795048942"
-     ]
-    },
-    {
-     "agent": "stress",
-     "text": "Din dagliga fysiska aktivitet är mycket låg med en median på 105 steg (ref: S:steps:1794929421-1795534221), vilket tyder på att du sitter stilla under dagen.",
-     "kallor": [
-      "S:steps:1794929421-1795534221"
+      "S:steps:1794929424-1795534224"
      ]
     },
     {
      "agent": "idrott",
-     "text": "Stegtal på median **105,0 steg** indikerar extremt låg fysisk aktivitet under perioden [ref: S:steps:1794929421-1795534221].",
+     "text": "Din HRV-median var 54,7 ms under perioden, vilket indikerar stabil nervsystemstillstånd utan tecken på överträningsstress.",
      "kallor": [
-      "S:steps:1794929421-1795534221"
+      "S:hrv_rmssd:1794929424-1795534224"
      ]
     },
     {
      "agent": "idrott",
-     "text": "Sömnmängden varierar mellan **295 och 326 minuter** per natt, vilket är betydligt under rekommenderat för en 18-åring [ref: N:natt-1794963679].",
+     "text": "Din sömnvaraktighet var 300–326 minuter per natt med en hög andel djupsömn på 86 minuter under de senaste tre nätterna.",
      "kallor": [
-      "N:natt-1794963679"
+      "N:natt-1795480560",
+      "N:natt-1795394884",
+      "N:natt-1795309259"
      ]
     },
     {
      "agent": "idrott",
-     "text": "Pulsen ligger på en median av **71,0 slag/min**, vilket är lågt men inte direkt indikativt för sjukdom utan snarare stillasittande [ref: S:hr:1794929421-1795534221].",
+     "text": "Din medelstegsaktivitet låg på 105,0 steg per dag, vilket indikerar mycket låg fysisk aktivitet och långvarigt stillasittande.",
      "kallor": [
-      "S:hr:1794929421-1795534221"
+      "S:steps:1794929424-1795534224"
      ]
     }
    ],
    "yttranden": [
     {
      "agent": "ordforande",
-     "text": "Sömnläkare: Granska sömnloggen för att identifiera mönster i sömnfaser, sömnlängd och nattlig syremättnad som kan orsaka trötthet."
+     "text": "Kardiolog: Utred utlösaren utifrån ditt område."
     },
     {
      "agent": "ordforande",
-     "text": "Stressmedicin: Analysera stressbelastning via HRV och vilopuls över dygnet samt skärmtid för att utesluta stress eller sömnbrist som orsak till trötthet."
+     "text": "Sömnläkare: Utred utlösaren utifrån ditt område."
     },
     {
      "agent": "ordforande",
-     "text": "Idrottsläkare: Granska aktivitetsnivå, stegantal och stillasittande tid för att bedöma om fysisk inaktivitet bidrar till tröttheten."
+     "text": "Idrottsläkare: Utred utlösaren utifrån ditt område."
+    },
+    {
+     "agent": "kardiolog",
+     "text": "Din vilopuls är stabil med en median på 50,0 slag/min under perioden (S:resting_hr:1794929447-1795534247). Din dagliga aktivitet är mycket låg med en medelstegsanta på 105,0 steg/dag (S:steps:1794929447-1795534247), vilket tyder på en sedentär livsstil som kan bidra till trötthet. Datan visar inga tecken på överbelastning eller högt vilopuls som skulle indikera kardiologisk orsak till tröttheten."
     },
     {
      "agent": "somn",
-     "text": "Din sömnlängd är kort med värden mellan 295 och 326 minuter per natt, vilket ligger under rekommenderat dagligt behov. Tröttheten verkar orsakas av denna insufficiens snarare än obalans i faser eller syremättnad."
-    },
-    {
-     "agent": "stress",
-     "text": "Din trötthet verkar inte bero på stress eller dålig sömnkvalitet, utan snarare på låg fysisk aktivitet. Dina HRV-värden och vilopuls är goda, men du sover för kort tid och rör dig mycket lite under dagen."
+     "text": "Din sömnlängd varierar mellan 295 och 326 minuter per natt, vilket är kortare än rekommenderat för en 18-åring. Din låga aktivitetsnivå på medel 105 steg per mätning kan bidra till trötthet."
     },
     {
      "agent": "idrott",
-     "text": "Datan visar mycket lågt stegantal på median **105,0 steg** per mätning [ref: S:steps:1794929421-1795534221] och sömn som ligger under 5 timmar varje natt, med max **326 min** [ref: N:natt-1795480560]. Denna kombination av fysisk inaktivitet och bristande sömn är den mest sannolika orsaken till tröttheten."
+     "text": "Din trötthet verkar inte kopplas till överbelastning då din HRV-median låg på 54,7 ms och sömnvaraktigheten var 300–326 minuter per natt. Däremot tyder den extremt låga stegmängden på 105,0 steg per dag på att stillasittande är huvudorsaken till din trötthet."
     },
     {
      "agent": "advokat",
-     "text": "*   Sömnläkarens slutsats om att trötthet beror på \"obalans i faser\" är inte stödd av datan; verktyget returnerar endast sömnlängd mellan **295** och **326 minuter** utan att rapportera några mätvärden för sömnfasers fördelning eller syremättnad som skulle kunna indikera en sådan obalans.\n*   Idrottsläkarens påstående om \"max 326 min\" är tekniskt felaktigt eftersom **326** är den övre gränsen för ett intervall (**295–326**) och inte en enskild mätning av sömn som nått sitt maximum; detta missförstånd kan leda till att man tror personen har sovit mer än de flesta nätter.\n*   Teamet ignorerar att **105,0 steg** per mätning är ett extremt lågt värde som sannolikt indikerar att sensorerna inte registrerade rörelse korrekt eller att personens aktivitetsnivå under den specifika tidsperioden var så låg att den inte upptäcktes av stegräknaren, vilket gör det omöjligt att dra säkra slutsatser om generell fysisk inaktivitet utan fler datapunkter."
+     "text": "*   Teamets slutsats om att \"sedentär livsstil\" är orsaken bygger enbart på medelvärdet på 105,0 steg/dag (S:steps:1794929447-1795534247), men detta medelvärde kan vara statistiskt felaktigt om det finns extremt få datapunkter eller stora variationer i aktivitet som inte visas; utan att se fördelningen av steg per dag är påståendet osäkert.\n*   Sömnläkares påstående om att sömnen är \"kortare än rekommenderat\" för en 18-åring baseras enbart på intervall 295–326 minuter (S:resting_hr:1794929447-1795534247), men teamet anger inte vilken specifik rekommendation eller källa som används för att definiera detta som \"kortare\", vilket gör jämförelsen obekräftad.\n*   Idrottsläkaren påstår att HRV-medianen på 54,7 ms (S:resting_hr:1794929447-1795534247) visar \"inga tecken på överbelastning\", men utan en definierad referensvärde för vad som utgör överbelastning vid denna ålder är tolkningen av HRV-data subjektiv och inte bekräftad av data."
     },
     {
      "agent": "ordforande",
-     "text": "Datan visar en sömnlängd mellan **295** och **326 minuter** under de senaste sju nätterna, vilket är kortare än rekommenderat för en 18-åring. Sömnen har dock en stabil struktur med en konstant djupsömnsvaraktighet på **86 minuter** per natt. Nattlig syremättnad var normal med ett medelvärde på **96,0 %** och ett minimum på **94,0 %**. Daglig pulsmedian var **71,0 slag/minuter** med en nattlig minsta värde på **57,0 slag/minuter**. Stressbelastning verkar vara låg baserat på en stabil vilopuls med median **50,0 slag/minuter** och en HRV-median på **54,7 ms**. Daglig fysisk aktivitet är mycket låg med en median på **105 steg**, vilket tyder på att personen sitter stilla under dagen. Stegtal på median **105,0 steg** indikerar extremt låg fysisk aktivitet under perioden. Pulsen ligger på en median av **71,0 slag/min**, vilket är lågt men inte direkt indikativt för sjukdom utan snarare stillasittande."
+     "text": "Datan visar en mycket låg fysisk aktivitet (medelstegsanta 105,0 steg/dag) och en stabil vilopuls (median 50,0 slag/min). Sömnvaraktigheten ligger mellan 300–326 minuter per natt med hög andel djupsömn. HRV-medianen var 54,7 ms. Det finns dock inga data om fördelningen av steg eller specifika referensvärden för att bekräfta tolkningar om 'sedentär livsstil', 'kort sömn' eller 'inga tecken på överbelastning'."
     }
    ],
    "verktygsanrop": [
     {
-     "agent": "somn",
-     "tool": "hamta_somn",
-     "args": {
-      "natter": 7
-     }
-    },
-    {
-     "agent": "somn",
-     "tool": "hamta_serie",
-     "args": {
-      "metric": "spo2",
-      "timmar_bakat": 168
-     }
-    },
-    {
-     "agent": "stress",
+     "agent": "kardiolog",
      "tool": "hamta_serie",
      "args": {
       "metric": "resting_hr",
@@ -12589,75 +12704,73 @@
      }
     },
     {
-     "agent": "stress",
+     "agent": "kardiolog",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps",
+      "timmar_bakat": 168,
+      "slut_timmar_bakat": 0
+     }
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "hr",
+      "timmar_bakat": 168,
+      "slut_timmar_bakat": 0
+     }
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "jamfor_baslinje",
+     "args": {
+      "metric": "resting_hr",
+      "timme": 7
+     }
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "jamfor_baslinje",
+     "args": {
+      "metric": "hr",
+      "timme": 12
+     }
+    },
+    {
+     "agent": "somn",
      "tool": "hamta_somn",
      "args": {
       "natter": 7
      }
     },
     {
-     "agent": "stress",
+     "agent": "idrott",
      "tool": "hamta_serie",
      "args": {
       "metric": "dator_kod",
-      "timmar_bakat": 168,
-      "slut_timmar_bakat": 0
-     }
-    },
-    {
-     "agent": "stress",
-     "tool": "hamta_serie",
-     "args": {
-      "metric": "dator_spel",
-      "timmar_bakat": 168,
-      "slut_timmar_bakat": 0
-     }
-    },
-    {
-     "agent": "stress",
-     "tool": "hamta_serie",
-     "args": {
-      "metric": "dator_chatt",
-      "timmar_bakat": 168,
-      "slut_timmar_bakat": 0
-     }
-    },
-    {
-     "agent": "stress",
-     "tool": "hamta_serie",
-     "args": {
-      "metric": "dator_webb",
-      "timmar_bakat": 168,
-      "slut_timmar_bakat": 0
+      "timmar_bakat": 7
      }
     },
     {
      "agent": "idrott",
      "tool": "hamta_somn",
      "args": {
-      "natter": 7
-     }
-    },
-    {
-     "agent": "idrott",
-     "tool": "hamta_serie",
-     "args": {
-      "metric": "dator_chatt",
-      "timmar_bakat": 24
+      "natter": 3
      }
     }
    ],
    "medlemmar": [
     "ordforande",
+    "kardiolog",
     "somn",
-    "stress",
     "idrott",
     "advokat",
     "granskare"
    ],
    "refs": {
-    "S:hr:1794929421-1795534221": {
-     "ref": "S:hr:1794929421-1795534221",
+    "S:hr:1794929424-1795534224": {
+     "ref": "S:hr:1794929424-1795534224",
      "metric": "hr",
      "enhet": "puls (slag/min)",
      "period": [
@@ -12741,8 +12854,8 @@
       ]
      ]
     },
-    "S:hrv_rmssd:1794929421-1795534221": {
-     "ref": "S:hrv_rmssd:1794929421-1795534221",
+    "S:hrv_rmssd:1794929424-1795534224": {
+     "ref": "S:hrv_rmssd:1794929424-1795534224",
      "metric": "hrv_rmssd",
      "enhet": "HRV RMSSD (ms)",
      "period": [
@@ -12826,8 +12939,8 @@
       ]
      ]
     },
-    "S:steps:1794929421-1795534221": {
-     "ref": "S:steps:1794929421-1795534221",
+    "S:steps:1794929424-1795534224": {
+     "ref": "S:steps:1794929424-1795534224",
      "metric": "steps",
      "enhet": "steg",
      "period": [
@@ -12910,6 +13023,239 @@
        106.5
       ]
      ]
+    },
+    "S:resting_hr:1794929447-1795534247": {
+     "ref": "S:resting_hr:1794929447-1795534247",
+     "metric": "resting_hr",
+     "enhet": "vilopuls (slag/min)",
+     "period": [
+      "2026-11-17 16:30",
+      "2026-11-24 16:30"
+     ],
+     "antal": 7,
+     "median": 50.0,
+     "min": [
+      49.0,
+      "2026-11-24 07:01"
+     ],
+     "max": [
+      52.0,
+      "2026-11-19 07:06"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-18 07:08",
+       51.0
+      ],
+      [
+       "2026-11-19 07:06",
+       52.0
+      ],
+      [
+       "2026-11-20 07:05",
+       51.0
+      ],
+      [
+       "2026-11-21 06:58",
+       50.0
+      ],
+      [
+       "2026-11-22 07:01",
+       50.0
+      ],
+      [
+       "2026-11-23 07:03",
+       50.0
+      ],
+      [
+       "2026-11-24 07:01",
+       49.0
+      ]
+     ]
+    },
+    "S:steps:1794929447-1795534247": {
+     "ref": "S:steps:1794929447-1795534247",
+     "metric": "steps",
+     "enhet": "steg",
+     "period": [
+      "2026-11-17 16:30",
+      "2026-11-24 16:30"
+     ],
+     "antal": 288,
+     "median": 105.0,
+     "min": [
+      78.0,
+      "2026-11-24 12:06"
+     ],
+     "max": [
+      124.0,
+      "2026-11-23 07:32"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-17 16:41",
+       105.0
+      ],
+      [
+       "2026-11-18 07:30",
+       103.0
+      ],
+      [
+       "2026-11-18 16:03",
+       107.0
+      ],
+      [
+       "2026-11-19 07:26",
+       105.0
+      ],
+      [
+       "2026-11-19 12:09",
+       101.0
+      ],
+      [
+       "2026-11-20 07:22",
+       107.0
+      ],
+      [
+       "2026-11-20 12:05",
+       106.5
+      ],
+      [
+       "2026-11-20 16:13",
+       101.0
+      ],
+      [
+       "2026-11-21 12:01",
+       108.0
+      ],
+      [
+       "2026-11-21 16:09",
+       103.0
+      ],
+      [
+       "2026-11-22 07:32",
+       104.5
+      ],
+      [
+       "2026-11-22 16:05",
+       106.0
+      ],
+      [
+       "2026-11-23 07:28",
+       105.0
+      ],
+      [
+       "2026-11-23 16:01",
+       103.5
+      ],
+      [
+       "2026-11-24 07:24",
+       104.5
+      ],
+      [
+       "2026-11-24 12:07",
+       106.5
+      ]
+     ]
+    },
+    "S:hr:1794929447-1795534247": {
+     "ref": "S:hr:1794929447-1795534247",
+     "metric": "hr",
+     "enhet": "puls (slag/min)",
+     "period": [
+      "2026-11-17 16:30",
+      "2026-11-24 16:30"
+     ],
+     "antal": 4320,
+     "median": 71.0,
+     "min": [
+      46.0,
+      "2026-11-23 02:05"
+     ],
+     "max": [
+      107.0,
+      "2026-11-23 16:02"
+     ],
+     "kurva_median": [
+      [
+       "2026-11-17 16:31",
+       70.0
+      ],
+      [
+       "2026-11-18 15:01",
+       71.0
+      ],
+      [
+       "2026-11-19 13:31",
+       72.0
+      ],
+      [
+       "2026-11-20 12:01",
+       71.0
+      ],
+      [
+       "2026-11-21 10:31",
+       71.0
+      ],
+      [
+       "2026-11-22 09:01",
+       72.5
+      ],
+      [
+       "2026-11-22 19:31",
+       73.0
+      ],
+      [
+       "2026-11-23 00:01",
+       59.0
+      ],
+      [
+       "2026-11-23 04:31",
+       59.0
+      ],
+      [
+       "2026-11-23 09:01",
+       72.0
+      ],
+      [
+       "2026-11-23 13:31",
+       72.0
+      ],
+      [
+       "2026-11-23 18:01",
+       74.0
+      ],
+      [
+       "2026-11-23 22:31",
+       72.0
+      ],
+      [
+       "2026-11-24 03:01",
+       57.0
+      ],
+      [
+       "2026-11-24 07:31",
+       72.0
+      ],
+      [
+       "2026-11-24 12:01",
+       71.0
+      ]
+     ]
+    },
+    "B:resting_hr:h7": {
+     "ref": "B:resting_hr:h7",
+     "kommentar": "för lite historik (27 punkter) för baslinje"
+    },
+    "B:hr:h12": {
+     "ref": "B:hr:h12",
+     "metric": "hr",
+     "timme": 12,
+     "dagar": 28,
+     "antal": 432,
+     "median": 73.0,
+     "p10": 68.0,
+     "p90": 97.0
     },
     "N:natt-1795480560": {
      "ref": "N:natt-1795480560",
@@ -12994,265 +13340,28 @@
       "awake": 8
      }
     },
-    "S:spo2:1794929441-1795534241": {
-     "ref": "S:spo2:1794929441-1795534241",
-     "metric": "spo2",
-     "enhet": "syremättnad (%)",
-     "period": [
-      "2026-11-17 16:30",
-      "2026-11-24 16:30"
-     ],
-     "antal": 1189,
-     "median": 96.0,
-     "min": [
-      94.0,
-      "2026-11-21 06:46"
-     ],
-     "max": [
-      99.0,
-      "2026-11-22 04:07"
-     ],
-     "kurva_median": [
-      [
-       "2026-11-18 02:01",
-       96.0
-      ],
-      [
-       "2026-11-19 02:51",
-       96.0
-      ],
-      [
-       "2026-11-20 04:11",
-       96.0
-      ],
-      [
-       "2026-11-21 05:06",
-       96.0
-      ],
-      [
-       "2026-11-22 02:52",
-       96.0
-      ],
-      [
-       "2026-11-22 04:07",
-       96.0
-      ],
-      [
-       "2026-11-22 05:21",
-       96.0
-      ],
-      [
-       "2026-11-22 06:35",
-       96.0
-      ],
-      [
-       "2026-11-23 02:36",
-       96.0
-      ],
-      [
-       "2026-11-23 03:50",
-       96.0
-      ],
-      [
-       "2026-11-23 05:04",
-       96.0
-      ],
-      [
-       "2026-11-23 06:18",
-       96.0
-      ],
-      [
-       "2026-11-24 02:05",
-       96.0
-      ],
-      [
-       "2026-11-24 03:19",
-       96.0
-      ],
-      [
-       "2026-11-24 04:33",
-       96.0
-      ],
-      [
-       "2026-11-24 05:47",
-       96.0
-      ]
-     ]
-    },
-    "S:resting_hr:1794929542-1795534342": {
-     "ref": "S:resting_hr:1794929542-1795534342",
-     "metric": "resting_hr",
-     "enhet": "vilopuls (slag/min)",
-     "period": [
-      "2026-11-17 16:32",
-      "2026-11-24 16:32"
-     ],
-     "antal": 7,
-     "median": 50.0,
-     "min": [
-      49.0,
-      "2026-11-24 07:01"
-     ],
-     "max": [
-      52.0,
-      "2026-11-19 07:06"
-     ],
-     "kurva_median": [
-      [
-       "2026-11-18 07:08",
-       51.0
-      ],
-      [
-       "2026-11-19 07:06",
-       52.0
-      ],
-      [
-       "2026-11-20 07:05",
-       51.0
-      ],
-      [
-       "2026-11-21 06:58",
-       50.0
-      ],
-      [
-       "2026-11-22 07:01",
-       50.0
-      ],
-      [
-       "2026-11-23 07:03",
-       50.0
-      ],
-      [
-       "2026-11-24 07:01",
-       49.0
-      ]
-     ]
-    },
-    "S:dator_kod:1794929542-1795534342": {
-     "ref": "S:dator_kod:1794929542-1795534342",
+    "S:dator_kod:1795509224-1795534424": {
+     "ref": "S:dator_kod:1795509224-1795534424",
      "metric": "dator_kod",
-     "antal": 0,
-     "kommentar": "ingen data i perioden"
-    },
-    "S:dator_spel:1794929542-1795534342": {
-     "ref": "S:dator_spel:1794929542-1795534342",
-     "metric": "dator_spel",
-     "enhet": "minuter vid datorn och spelade",
-     "period": [
-      "2026-11-17 16:32",
-      "2026-11-24 16:32"
-     ],
-     "antal": 2855,
-     "median": 1.0,
-     "min": [
-      1.0,
-      "2026-11-17 19:00"
-     ],
-     "max": [
-      1.0,
-      "2026-11-17 19:00"
-     ],
-     "kurva_median": [
-      [
-       "2026-11-17 19:00",
-       1.0
-      ],
-      [
-       "2026-11-17 21:59",
-       1.0
-      ],
-      [
-       "2026-11-18 00:58",
-       1.0
-      ],
-      [
-       "2026-11-18 20:57",
-       1.0
-      ],
-      [
-       "2026-11-18 23:56",
-       1.0
-      ],
-      [
-       "2026-11-19 19:52",
-       1.0
-      ],
-      [
-       "2026-11-19 22:51",
-       1.0
-      ],
-      [
-       "2026-11-20 19:05",
-       1.0
-      ],
-      [
-       "2026-11-20 22:03",
-       1.0
-      ],
-      [
-       "2026-11-21 01:01",
-       1.0
-      ],
-      [
-       "2026-11-21 21:20",
-       1.0
-      ],
-      [
-       "2026-11-22 00:18",
-       1.0
-      ],
-      [
-       "2026-11-22 20:29",
-       1.0
-      ],
-      [
-       "2026-11-22 23:27",
-       1.0
-      ],
-      [
-       "2026-11-23 19:57",
-       1.0
-      ],
-      [
-       "2026-11-23 22:55",
-       1.0
-      ]
-     ]
-    },
-    "S:dator_chatt:1794929542-1795534342": {
-     "ref": "S:dator_chatt:1794929542-1795534342",
-     "metric": "dator_chatt",
-     "antal": 0,
-     "kommentar": "ingen data i perioden"
-    },
-    "S:dator_webb:1794929542-1795534342": {
-     "ref": "S:dator_webb:1794929542-1795534342",
-     "metric": "dator_webb",
-     "antal": 0,
-     "kommentar": "ingen data i perioden"
-    },
-    "S:dator_chatt:1795448066-1795534466": {
-     "ref": "S:dator_chatt:1795448066-1795534466",
-     "metric": "dator_chatt",
      "antal": 0,
      "kommentar": "ingen data i perioden"
     }
    },
-   "sekunder": 382.1,
+   "sekunder": 329.8,
    "tokens": {
-    "prompt": 39509,
-    "ut": 6481,
-    "anrop": 12,
+    "prompt": 39574,
+    "ut": 5370,
+    "anrop": 13,
     "per_modell": {
      "qwen3.5:9b": {
-      "calls": 12,
-      "prompt_tokens": 39509,
-      "output_tokens": 6481,
-      "seconds": 382.0362799167633,
-      "prompt_eval_s": 135.455834334,
-      "eval_s": 241.244140459,
-      "gen_tokens_per_s": 26.9,
-      "prompt_tokens_per_s": 291.7
+      "calls": 13,
+      "prompt_tokens": 39574,
+      "output_tokens": 5370,
+      "seconds": 329.7247326374054,
+      "prompt_eval_s": 115.55753491600001,
+      "eval_s": 208.934964498,
+      "gen_tokens_per_s": 25.7,
+      "prompt_tokens_per_s": 342.5
      }
     }
    },
@@ -13260,107 +13369,116 @@
     {
      "modell": "qwen3.5:9b",
      "prompt": 754,
-     "ut": 333,
-     "s": 21.59,
+     "ut": 401,
+     "s": 24.73,
      "think": false,
      "verktyg": true,
      "schema": false
     },
     {
      "modell": "qwen3.5:9b",
-     "prompt": 2761,
-     "ut": 216,
-     "s": 20.12,
+     "prompt": 2789,
+     "ut": 301,
+     "s": 22.31,
      "think": false,
      "verktyg": true,
      "schema": false
     },
     {
      "modell": "qwen3.5:9b",
-     "prompt": 4286,
-     "ut": 689,
-     "s": 34.6,
+     "prompt": 4559,
+     "ut": 174,
+     "s": 14.35,
      "think": false,
      "verktyg": true,
      "schema": false
     },
     {
      "modell": "qwen3.5:9b",
-     "prompt": 4538,
-     "ut": 438,
-     "s": 35.4,
+     "prompt": 4857,
+     "ut": 643,
+     "s": 27.49,
+     "think": false,
+     "verktyg": true,
+     "schema": false
+    },
+    {
+     "modell": "qwen3.5:9b",
+     "prompt": 4974,
+     "ut": 503,
+     "s": 37.5,
      "think": false,
      "verktyg": false,
      "schema": true
     },
     {
      "modell": "qwen3.5:9b",
-     "prompt": 2828,
-     "ut": 579,
-     "s": 30.69,
+     "prompt": 2730,
+     "ut": 158,
+     "s": 18.17,
      "think": false,
      "verktyg": true,
      "schema": false
     },
     {
      "modell": "qwen3.5:9b",
-     "prompt": 5233,
-     "ut": 771,
-     "s": 43.55,
+     "prompt": 3641,
+     "ut": 573,
+     "s": 28.3,
      "think": false,
      "verktyg": true,
      "schema": false
     },
     {
      "modell": "qwen3.5:9b",
-     "prompt": 5649,
-     "ut": 526,
-     "s": 44.99,
+     "prompt": 3846,
+     "ut": 340,
+     "s": 29.81,
      "think": false,
      "verktyg": false,
      "schema": true
     },
     {
      "modell": "qwen3.5:9b",
-     "prompt": 2749,
-     "ut": 587,
-     "s": 35.69,
+     "prompt": 2725,
+     "ut": 211,
+     "s": 21.83,
      "think": false,
      "verktyg": true,
      "schema": false
     },
     {
      "modell": "qwen3.5:9b",
-     "prompt": 4153,
-     "ut": 900,
-     "s": 35.34,
+     "prompt": 3340,
+     "ut": 621,
+     "s": 29.74,
      "think": false,
      "verktyg": true,
      "schema": false
     },
     {
      "modell": "qwen3.5:9b",
-     "prompt": 4785,
-     "ut": 460,
-     "s": 36.77,
+     "prompt": 3621,
+     "ut": 428,
+     "s": 29.61,
      "think": false,
      "verktyg": false,
      "schema": true
     },
     {
      "modell": "qwen3.5:9b",
-     "prompt": 523,
-     "ut": 299,
-     "s": 14.41,
+     "prompt": 590,
+     "ut": 346,
+     "s": 17.11,
      "think": false,
      "verktyg": false,
      "schema": false
     },
     {
      "modell": "qwen3.5:9b",
-     "prompt": 1250,
-     "ut": 683,
-     "s": 28.91,
+     "prompt": 1148,
+     "ut": 671,
+     "s": 28.77,
      "think": false,
      "verktyg": false,
      "schema": true
@@ -13368,8 +13486,9 @@
    ],
    "fel": null,
    "ollama_minne_gib_efter": {
-    "qwen3.5:9b": 9.9
+    "qwen3.5:9b": 9.8
    }
   }
- ]
+ ],
+ "domarmodell": "medgemma:4b"
 }

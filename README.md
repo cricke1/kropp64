@@ -23,10 +23,12 @@ Läget den 24 november 2026:
 - Hela kedjan klocka, mobil, server, vakt och läkarteam fungerar och är testad på emulatorer och syntetisk
   testdata (se [RESAN.md](RESAN.md)). Den har ännu inte gått länge på min riktiga klocka, så det finns inga
   resultat från riktig data att visa än.
-- Läkarteamet utvärderas mot 15 scenarier med syntetisk data och facit ([eval/RESULTAT.md](eval/RESULTAT.md)).
-  Från första körningen till nuvarande version gick godtagbar brådska från 40 % till 100 % och mediantiden från
-  300 till 117 sekunder. Brådskan styrs numera av ett regelverk, och fixarna gjordes mot samma 15 scenarier, så
-  siffran är optimistisk tills de fem holdout-scenarierna körts.
+- Läkarteamet utvärderas mot 16 tränade scenarier och 16 holdout-scenarier med syntetisk data och facit
+  ([eval/RESULTAT.md](eval/RESULTAT.md)). På holdout-scenarierna (skrivna innan de kördes) gick godtagbar brådska
+  från 56 % (gamla pipelinen, 3 övertriage och 4 undertriage) till 100 % (v8), täckningen av måste-fynd från 67 %
+  till 94 % och mediantiden från 226 till 118 sekunder. Brådskan styrs av ett öppet regelverk med teamet som får
+  höja men inte sänka; utan regelverket (bara faktabladet) var det 73 % med 4 undertriage. Allt är syntetiskt,
+  varje variant körd en gång, och metoden och förbehållen står i eval/RESULTAT.md.
 - Alla skärmbilder och filmer i repot är märkta som demo, syntetisk testdata eller emulator.
 
 ## Sensorpanelen
@@ -129,8 +131,9 @@ Bara siffror som finns i en fil i repot.
 | Första riktiga tråden | 278 s, ingen bedömning, 47 656 prompttokens | [RESAN.md](RESAN.md) |
 | Minne för modellen med 16k kontext och parallella förfrågningar | 14,7 GB av 16, datorn swappade | RESAN.md |
 | Efter 8k kontext, en förfrågan åt gången, KV-cache q8_0, flash attention | 9,1 GB, en tråd 250 s i stället för 563 s | RESAN.md |
-| Utvärdering, 15 scenarier, första körningen | godtagbar brådska 40 %, median 300 s | [eval/RESULTAT.md](eval/RESULTAT.md) |
-| Utvärdering, 15 scenarier, nuvarande version (v3, regelram) | godtagbar brådska 100 %, exakt 87 %, median 117 s | eval/RESULTAT.md |
+| Utvärdering, 16 holdout-scenarier, gamla pipelinen | godtagbar brådska 56 %, täckning 67 %, median 226 s | [eval/RESULTAT.md](eval/RESULTAT.md) |
+| Utvärdering, 16 holdout-scenarier, nuvarande (v8) | godtagbar brådska 100 %, exakt 100 %, täckning 94 %, median 118 s | eval/RESULTAT.md |
+| Utvärdering, 16 tränade scenarier, gamla / v8 | 56 % / 100 % godtagbar brådska, median 290 / 123 s, 4 460 / 1 866 utdatatokens | eval/RESULTAT.md |
 | Nätavbrott i kedjan (emulatorer) | 360 punkter köade i mobilen, alla 1 215 på servern 2 s efter att nätet kom tillbaka, inga dubbletter | RESAN.md |
 | Sms-frist efter akut larm, med exakta alarm | sms skickat 39 ms efter fristen (tidigare 70 s för sent) | RESAN.md |
 
@@ -204,8 +207,8 @@ igenom med `KONSILIET_HOSTAR`).
 
 - Det här är inte en medicinteknisk produkt och ställer inga diagnoser. Den kan missa saker och den kan larma i
   onödan. Vid akuta besvär: ring 112.
-- Utvärderingen bygger på syntetiska scenarier, och fixarna är gjorda mot samma scenarier. Akuta larm går därför
-  aldrig via språkmodellen.
+- Utvärderingen bygger på syntetiska scenarier som jag själv skrivit, med regelverk av samma hand. Holdout-
+  scenarierna minskar men tar inte bort den risken. Akuta larm går därför aldrig via språkmodellen.
 - HRV, SpO2, andningsfrekvens och hudtemperatur finns inte passivt i Wear OS Health Services. De kommer via
   Health Connect när Fitbit-appen synkar, ofta timmar senare. Vakten utvärderar därför på datans egen tid, och
   något som upptäcks i efterhand blir aldrig akut.

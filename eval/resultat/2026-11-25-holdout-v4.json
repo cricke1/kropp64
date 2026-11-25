@@ -21,7 +21,8 @@
   "sek_medel": 109.1,
   "prompt_tokens_medel": 18422,
   "ut_tokens_medel": 1704,
-  "fel": 0
+  "fel": 0,
+  "domare_medel": 5.0
  },
  "rader": [
   {
@@ -50,6 +51,16 @@
    "anrop": 6,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Kontakta vården nu",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar inte någon slutsats som motsäger facit.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är i linje med facit. De identifierar den höga vilopulsen och rekommenderar att patienten kontaktar vården. Det finns inga slutsatser som motsäger facit eller råd som kan skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.1
    }
@@ -79,6 +90,16 @@
    "anrop": 6,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Pulsen 150-160 i 50 minuter kom under ett registrerat cykelpass (inga steg, men passet finns).",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar inte någon slutsats som motsäger facit.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är i linje med facit. De identifierar att pulsen var hög under ett cykelpass, vilket indikerar träning. De ger råd om att fortsätta träna och övervaka hur man känner sig, vilket är lämpligt. Det finns inget i bedömningen som skulle kunna skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.1
    }
@@ -110,6 +131,16 @@
    "anrop": 5,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Blodbrist med tömda järnförråd som kan förklara andfåddhet och trötthet.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar inte någon slutsats som motsäger facit.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är i linje med facit. De identifierar blodbrist med tömda järnförråd som en möjlig orsak till patientens symtom. De rekommenderar också att patienten bokar tid för ett nytt blodprov för att bekräfta anemin och utesluta andra orsaker till tröttheten. De råder också patienten att öka sin fysiska aktivitet gradvis, men prioriterar först att behandla den underliggande anemin innan de börjar träna hårdare. Det finns inga råd som kan skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 7.9
    }
@@ -140,6 +171,16 @@
    "anrop": 6,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Nattpulsen 45-52 är stabil och samma som baslinjen; vaken puls normal.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet säger att pulsen är 48 slag/minut, vilket är 2,3 enheter lägre än baslinjen på 53. Facit säger att pulsen är 45-52, vilket är samma som baslinjen. Detta är en liten skillnad, men det är inte en motsägelse.",
+    "rad_som_kan_skada": false,
+    "motivering": "Råden är generella och inte skadliga. De uppmanar till fortsatt övervakning och kontakt med vårdcentralen vid behov. Det finns inget som direkt kan skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.1
    }
@@ -170,6 +211,16 @@
    "anrop": 6,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Ett enda fall till cirka 85 % under två minuter en natt, resten av natten och alla andra nätter normalt utan upprepade fall.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet säger att det var ett enda fall, vilket är i linje med facit. Teamet säger att det är en tillfällig dip snarare än ett genomgående läge, vilket är i linje med facit. Teamet säger att det inte indikerar akut syrebrist, vilket är i linje med facit.",
+    "rad_som_kan_skada": false,
+    "motivering": "Råden är generella och inte skadliga.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.1
    }
@@ -3946,5 +3997,6 @@
     "qwen3.5:9b": 8.1
    }
   }
- ]
+ ],
+ "domarmodell": "medgemma:4b"
 }

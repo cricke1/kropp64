@@ -317,6 +317,172 @@ servern såg besökarens riktiga IP i stället för tunnelns 127.0.0.1 och block
 släpps in och de kräver token när Cloudflares header finns. Matris efteråt: sajten 200, demo 200, app-API utan
 token 401, med token 200, LAN 403.
 
+
+**Konsiliets kvalitet, kväll och natt 24-25 november.** Allt nedan är uppmätt med eval/ (siffrorna i eval/RESULTAT.md).
+
+**Konsiliet fick ett facit: 15 scenarier med känt rätt svar.** Att konsiliet "verkade mediokert" gick inte att
+förbättra utan att mäta. eval/ har nu en syntetisk person (minutupplöst simulering av 28 dygn: sömn, gång,
+löppass, datoranvändning styr puls, HRV, SpO2, hudtemperatur och andning) och 15 scenarier: äkta pulsrusning i
+vila, löppass, isolerade sensorspikar, löst sittande klocka, HRV-fall före förkylning, kort sömn av sent spelande,
+nattliga syrefall, aktiva mot stillasittande dagar, allt normalt, "varför är jag så trött?", lågt ferritin,
+träning eller infektion, lågt syre med astma, återkommande pulshopp och stress under en projektvecka. Varje
+scenario har rätt brådska, fynd som måste finnas och påståenden som inte får göras. All data är märkt
+`syntetisk`, ligger i slängbara databaser under eval/tmp/ och klockan i testprocessen flyttas till scenariots
+tid (03:40 för syrefallen, 21:40 för pulsrusningen). Vakten får själv titta på datan, och dess larm fryses i
+eval/utlosare.json så att alla varianter får exakt samma utlösare.
+
+**Baslinjen: 40 procent rätt brådska, 300 sekunder.** Den gamla pipelinen (commit bf2001e) fick godtagbar brådska
+i 6 av 15 fall, 6 undertriage och 3 övertriage, 64 % av måste-fynden, median 300 s (max 481) och i snitt 22 474
+prompt- och 4 300 utdatatokens per möte. Felen var inte slumpmässiga utan systematiska:
+- Pulsrusningen (167 i vila i 14 minuter) blev "ingen": specialisterna läste ett tvåtimmarsfönster där medianen
+  72 dränkte episoden.
+- Löst sittande klocka blev "kontakta_vard_nu". Advokaten skrev faktiskt att hoppen var fysiologiskt orimliga och
+  tydde på mätfel, men ingen lyssnade.
+- "Varför är jag så trött?" (5 h 50 min sömn i elva nätter) blev "kontakta_vard_nu", och modellen läste medianen
+  per mätpunkt som "105 steg per vecka".
+- Lågt ferritin blev "ingen": ingen specialist slog upp provsvaren. Förkylningen blev "ingen": ingen tittade på
+  hudtemperaturen.
+Sju av baslinjescenarierna kördes om senare utan swap (se nedan), och det nya scenariot om spelkvällar lades till:
+då blev det 9 av 16 godtagbara (56 %), median 290 s. Samma scenario kunde dessutom ge olika brådska vid omkörning
+(pulsrusningen blev "kontakta_vard_nu" andra gången, sensorspikarna "kontakta_vard_nu" i stället för
+"ta_upp_med_varden"): den gamla pipelinen var inte bara fel utan slumpmässig.
+
+**Faktablad före språkmodellen.** fakta.py räknar allt deterministiskt innan någon modell läser: observerat_*
+mot baslinje_* och skillnad_* (så att 65 inte kan kallas baslinje när baslinjen är 73,4), kvalitetskontroller
+(isolerade spikar, hopp över 25 slag mellan minuter, saknade minuter), träningspass som överlappar, pulsepisoder i
+vila idag, sju nätter mot 21 tidigare (HRV, nattpuls, hudtemperatur, andning, syrefall per timme), dygn med steg
+och datorminuter efter 23, senaste provsvar mot referens och journal. Varje del är en källa (F:larm, F:natter ...)
+och källorna i modellens svar är låsta till mötets ref:ar med JSON-schema, så att påhittade ref:ar inte längre går
+att skriva. Samma systemprompt (regler + faktablad) i alla anrop gör att Ollama kan återanvända prefixen.
+Resultat (v2): 15 av 15 godtagbar brådska, 87 % exakt, täckning 78 %, median 138 s.
+
+**Granskaren blev skarpare, och då syntes nya fel.** Ref-strängar och unix-tider räknas inte längre som belägg
+(tidigare godkändes i princip varje tiosiffrigt tal), siffror matchas mot rätt mätvärde ("HRV 65 ms" med en
+pulskälla stryks), talet efter ordet "baslinje" måste vara ett baslinjevärde, små tal kontrolleras, medicinska
+slutsatser ("tyder på infektion", "järnbrist") kräver en källa av rätt typ, och slutbedömningens egen text
+granskas. Första körningen strök 26 % av påståendena, och mycket av det var granskarens fel: gränser i fältnamn
+(minuter_over_140), "13 148" lästes som 13 och 148, "51-55" som -55, "72,5" efter ordet baslinje klipptes till 72,
+och "4525 minuter vid datorn" slapp igenom för att minuter räknades som en period. Det sista var ett riktigt
+modellfel: 4525 var dagens steg. Varje fel fick ett test (granskaren har nu 29 tester, regelverket 12). Ett nytt riktigt fel som
+fångades: källan sa att HRV var 4,3 ms HÖGRE, specialisten skrev "sjunkit med 4,3". Nu kontrolleras tecknet.
+
+**Brådskan efter öppna regler, med larmspärr.** fakta.regelbradska har uttryckliga tumregler (puls i vila över
+140 utan pass, steg eller mätfel; SpO2 under 90; provsvar utanför referens; minst 5 syrefall per timme flera
+nätter; HRV-fall; medelsömn under 6 h). Bara en akut vaktregel kan leda till kontakta_vard_nu, och utan belagda
+påståenden blir det minst bevaka. Ärligt: reglerna skrevs av samma hand som scenarierna, så de 100 procenten säger
+mer om att reglerna täcker mina scenarier än om verkligheten. Därför skrevs fem holdout-scenarier EFTER att
+reglerna frystes (se nedan). Och mätningen visade något oväntat: med faktabladet fick teamet rätt brådska i 15 av
+15 även när det valde fritt (v3-fri) eller när regeln bestämde helt (v3-regel). Det såg ut som att faktabladet gjorde
+hela jobbet, men det var fel slutsats: även v3-fri såg regelverkets tolkning, som en rad (F:tolkning) i
+faktabladet. När den raden också togs bort (v4-utan-regler) föll godtagbar brådska till 11 av 15 med 4
+undertriage: pulsrusningen i vila blev "bevaka", syrefallen och det låga ferritinet blev "bevaka",
+förkylningen "ingen". Täckningen av fynden var nästan densamma (85 % mot 86 %). Språkmodellen hittar alltså rätt
+fynd ur faktabladet men väger dem för lågt; reglerna är det som gör brådskan rätt.
+
+**Kortare svar, färre specialister: 117 sekunder.** Tiden går nästan helt åt till att skriva: Qwen läser
+promptar i cirka 390 tokens/s men skriver i cirka 22. Ordföranden ombads välja helst två specialister och skriva
+uppdrag på högst 20 ord, specialisterna en mening och högst tre påståenden. v3: median 117 s (från 300), 1 760
+utdatatokens (från 4 300), 5,7 modellanrop (från 9,9), fortfarande 15 av 15.
+
+**Qwen växte till 15 GiB och datorn swappade.** Mitt i baslinjekörningen gick mötena från 224 till 481 sekunder.
+`ollama ps` visade qwen3.5:9b på 15,4 GiB med 8k kontext, mot 8,3 GiB direkt efter laddning, och 12 GB swap.
+Efter urladdning sjönk swappen till 3,8 GB. Utvärderingen laddar nu ur modellen före varje scenario så att
+tiderna går att jämföra; de fem första baslinjescenarierna kördes innan dess och deras tider är därför för höga.
+I drift laddar konsiliet nu ur modellen efter ett möte om den
+vuxit över 11 GiB (llm.lasta_ur_om_for_stor); nästa möte laddar den ren på några sekunder i stället för att datorn
+swappar i minuter.
+
+**Diskussionen gav ingenting mätbart.** Specialisterna bemöter nu advokaten (en replikrunda där teamet håller med
+eller pekar på fältet som motsäger). Utan rundan: samma 15 av 15, täckning 77 % mot 76 %, och 9 sekunder snabbare.
+Den finns kvar för att den gör mötet begripligt i kontoret, inte för att den höjer kvaliteten.
+
+**Tänkande i slutbedömningen gjorde det sämre.** Med think på för ordföranden tog slutbedömningen 2 500 tokens
+(taket) och 100 sekunder, mötet 210 s, och exakt brådska sjönk från 5 av 5 till 3 av 5 på samma scenarier: modellen
+resonerade sig till "bevaka" för ett löppass och för enstaka sensorspikar. Avbröts efter fem scenarier.
+
+**Inget gemma4 på den här datorn i dag.** gemma4:12b (8 GB) laddades ner till 90 % när disken tog slut: 1,6 GB
+ledigt, eftersom swappen åt resten. Tre baslinjescenarier kraschade med "No space left on device". Nedladdningen
+avbröts och 6,6 GB halvfärdiga block raderades. gemma4:e4b visade sig vara 9,5 GB och avbröts också. Jämförelsen
+mellan modeller får vänta på mer disk och minne; som domare används i stället medgemma:4b, en annan modell än den
+som kör mötet.
+
+**MedGemma gjorde ingen nytta och är avstängd.** I den gamla pipelinen anropades MedGemma aldrig i de riktiga
+körningarna. Med Ollamas en-modell-i-taget kostar varje anrop dessutom ett modellbyte. Jag gav den en tydligare
+roll: en gång per möte skriver den bakgrundskunskap (vanliga och allvarliga orsaker, varningstecken) som läggs i
+faktabladet. Resultat: samma 15 av 15 godtagbar brådska men exakt brådska 80 % mot 87 %, strykandel 26 % mot 19 %
+och 11 sekunder långsammare (128 mot 117 s). Bakgrundstexten fick teamet att skriva fler allmänna påståenden som
+granskaren strök. MedGemma är nu av som standard (KONSILIET_LAGE_MEDGEMMA=1 slår på den) och finns inte längre i
+någon specialists verktygslåda.
+
+**Granskaren rättar källan i stället för att stryka.** Det vanligaste skälet till strykning var inte påhittade
+siffror utan fel rad: HRV-skillnaden -11 ms citerad från F:somnskuld i stället för F:natter. I feberfallet ströks
+på det sättet både temperatur och nattpuls, och slutbedömningen nämnde ingen av dem. Nu provar granskaren om
+påståendet håller helt med en annan faktabladsrad; finns exakt en sådan läggs den till som källa (markerat
+kalla_tillagd_av_granskaren). Garantin är densamma: varje siffra finns i en angiven källa av rätt mätvärde. En
+påhittad siffra räddas inte. Strykandelen sjönk från 15 % (v4) till 10 % (v6) och feberfallet fick full täckning.
+
+**Teamet fick sänka brådskan, och sänkte bara fel.** Hybridläget lät teamet flytta regelverkets nivå ett steg åt
+båda håll. I alla körningar sänkte teamet bara när det var fel: löst sittande klocka och HRV-fall efter träning
+blev "ingen" i stället för "bevaka", och i holdout 5 blev en vilopuls på 106 i soffan i en timme "ingen" fast
+teamets egen sammanfattning skrev att regelverket sa bevaka. Nu är regelverket golvet: teamet får höja ett steg
+men aldrig sänka.
+
+**En egen verktygsrunda per specialist: bättre täckning, för långsamt.** När varje specialist fick hämta något
+eget utöver faktabladet (en runda) steg täckningen av måste-fynd från 78 % till 89 % på samma åtta scenarier, med
+samma brådska, men mötet tog 185 s mot 116 s. Det är över målet på 120 sekunder, så standard är noll extra rundor.
+Med mer minne (två modeller laddade, eller parallella förfrågningar) är det den första knappen jag vrider på.
+Avbröts efter åtta scenarier.
+
+**Domaren som gav alla 5 av 5.** Som LLM-domare användes medgemma:4b (en annan modell än Qwen som kör mötet).
+Med frågan "betygsätt 1-5 mot facit" gav den 5/5 till nästan allt, också till baslinjens "kontakta vården nu" för
+någon som bara sover för lite. Den fick i stället konkreta ja/nej-frågor (nämns huvudfyndet, finns en slutsats som
+motsäger facit, finns ett skadligt råd) och poängen räknas ut av svaren. Då skilde den åtminstone på löst sittande
+klocka i baslinjen (1) och i v4 (5), men den sa fortfarande att baslinjen "nämnde ferritin" i ett svar där ordet
+inte förekommer. Domaren redovisas därför bara bredvid de deterministiska måtten, aldrig i stället för dem.
+
+**Holdout: fel hittade, rättade generellt, mätt på nya fall.** Holdout 1 (fem scenarier skrivna efter att reglerna
+frystes: pulsrusning 02:10 vid datorspel, cykelpass utan steg, blodbrist i provsvaren, låg nattpuls som är normal,
+ett enda syrefall) gav v4 5 av 5 rätt brådska mot 3 av 5 för den gamla pipelinen (som lugnade pulsrusningen med
+"ingen" och tog blodbristen som "bevaka"). Ett fel fanns ändå: det enda syrefallet fick rätt brådska men förklarades
+inte som troligt mätfel. Orsaken var att faktabladet saknade en tolkning för enstaka fall, så den lades till
+generellt (en till två fall en natt: vanligen tryck mot klockan eller sovställning, inte andningsuppehåll), och
+två nya scenarier skrevs (holdout 3) för att se att rättningen håller på fall den aldrig sett. Holdout 2 (fem
+scenarier skrivna innan holdout 1 kördes: morgonlöpning, snarkning med syrefall, feber, lågt TSH, spel med bra
+sömn) gav v4 5 av 5 mot 1 av 5 för den gamla pipelinen.
+
+**Användbarhetstestet: tröttheten missade sömnskulden.** På frågan "varför är jag så trött?" nämnde teamet inte
+sömnskulden, eftersom faktabladet inte hade den. Nu finns F:somnskuld (samma räkning som appens sömnskuld i
+vardag.somn: summa av behov minus sömn de senaste sju morgnarna, plus jämförelse mot egen baslinje), F:kvallar
+(minuter vid datorn efter 23 per kväll och sista minuten) och F:belastning (träningspass och minuter i hög
+pulszon). Ett nytt scenario, "trött efter sena spelkvällar", kräver att sömnskuld och sena kvällar nämns. Den
+gamla pipelinen nämnde ingen av dem. Samma körning visade ännu ett granskarfel: "sömnskulden är 21 timmar" passerade
+eftersom 21 timmar räknades som en tidsram. Nu räknas ett tal bara som ram med ett ramord ("senaste", "under",
+"i rad", "sedan"). Och vid trötthetsfrågor kallas nu klinisk kemist in även när provsvaren är normala, eftersom
+teamet annars aldrig sa att proverna var normala.
+
+**En röstmodell i minnet störde tiderna.** Runt 01:50-02:10 låg en annan agents röstmodell (Chatterbox på GPU:n)
+i minnet samtidigt som Qwen, med upp till 5,9 GB swap. Baslinjens körning av det nya scenariot tog då 382 s och
+fyra v5-möten låg på 117-131 s. Baslinjens körning gjordes om och slutvarianterna (v6, v8) kördes efter att
+röstmodellen fått en spärr mot att laddas samtidigt som en språkmodell; v5:s fyra första tider är märkta som störda.
+
+**Holdout 4 och 5: två fel till, två rättningar till.** Holdout 1 i v6 visade att låg nattpuls (48, samma som
+baslinjen) besvarades med att den låg "under den generella gränsen för vuxna" i stället för att den är normal.
+Kardiologen fick en tumregel om låg puls hos unga, och holdout 4 skrevs (låg dagpuls hos en vältränad, förhöjd
+puls efter energidrycker). Där svarade teamet på frågan "pulsen är 85 nu" med ett maxvärde från morgonen, för att
+faktabladet bara hade pulsen nu men inte pulsen nu mot baslinjen. Det lades till (plus senaste fem minuterna och
+senaste timmen), personens egen fråga blev en källa för det personen själv skrivit, och holdout 5 skrevs. Där
+upptäckte jag i faktabladet, innan teamet körts, att regelverket inte reagerade på en vilopuls på 106 i en timme
+när det var en fråga och inte ett vaktlarm; regeln lades till (samma sak som vaktens baslinjeregel), så holdout 5
+är delvis förorenad och märkt så i RESULTAT.md.
+
+**Slutsiffran (v8).** På de 16 tränade scenarierna: 16 av 16 godtagbar brådska (88 % exakt), 92 % av måste-fynden,
+median 123 s (max 166), 1 866 utdatatokens per möte. På de 16 holdout-scenarierna: 16 av 16 (100 % exakt), 94 %
+av fynden, median 118 s. Den gamla pipelinen på samma 16 holdout: 9 av 16, 3 övertriage och 4 undertriage, 67 %
+av fynden, 226 s. Tiderna inkluderar en kall modellstart och är något över målet på 120 s. Det som fortfarande är
+svagt: ett par fynd faller bort mellan körningar (förklaringen "troligen mätfel" till ett enstaka syrefall, ordet
+"spel" i svaret om spelande), domaren går inte att lita på, och allt är syntetiskt och skrivet av samma hand som
+reglerna. Riktig data på min egen klocka är nästa prov.
+
 ## Landningssidan, andra försöket: "ser AI ut"
 
 Ägaren tyckte att första versionen av kropp64.se såg ut som en mall: stor sansrubrik, två knappar, en

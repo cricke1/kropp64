@@ -21,7 +21,8 @@
   "sek_medel": 269.6,
   "prompt_tokens_medel": 25329,
   "ut_tokens_medel": 4332,
-  "fel": 0
+  "fel": 0,
+  "domare_medel": 5.0
  },
  "rader": [
   {
@@ -50,6 +51,16 @@
    "anrop": 9,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Klockan 02:10, spelar vid datorn, pulsen har slagit om från cirka 70 till cirka 150 i 12 minuter utan steg och utan pass. Rätt: kontakta vården nu.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet nämner inte att personen spelar vid datorn, men det är en viktig del av facit. Teamet nämner inte heller att pulsen har slagit om från cirka 70 till cirka 150 i 12 minuter utan steg och utan pass. Teamet nämner inte heller att det är viktigt att kontakta vården nu.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är inte tillräckligt detaljerad för att kunna avgöra om den motsäger facit. Det är dock viktigt att notera att teamet inte nämner att personen spelar vid datorn, vilket är en viktig del av facit. Teamet nämner inte heller att pulsen har slagit om från cirka 70 till cirka 150 i 12 minuter utan steg och utan pass. Teamet nämner inte heller att det är viktigt att kontakta vården nu.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.7
    }
@@ -81,6 +92,16 @@
    "anrop": 8,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Pulsen 150-160 i 50 minuter kom under ett registrerat cykelpass (inga steg, men passet finns).",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar inte någon slutsats som motsäger facit. De beskriver data och förklarar varför de anser att pulsen är normal.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är inte skadlig. De förklarar att pulsen är normal eftersom det är en träningspuls och att det inte finns några tecken på att patienten är sjuk.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.7
    }
@@ -114,6 +135,16 @@
    "anrop": 11,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Hb 112 g/L (under 134), ferritin 6, MCV 74: blodbrist med tömda järnförråd som kan förklara andfåddhet och trötthet.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet nämner inte att Hb är under 134, men det är en del av facit. Teamet nämner inte att ferritin är 6, men det är en del av facit. Teamet nämner inte att MCV är 74, men det är en del av facit. Teamet nämner inte att det kan förklara andfåddhet och trötthet, men det är en del av facit. Teamet nämner inte att ta upp med vården, men det är en del av facit. Teamet nämner inte att det inte är akut om inga alarmsymtom, men det är en del av facit.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är inte felaktig, men det är inte en fullständig sammanfattning av facit. Det är inte heller en slutsats som motsäger facit. Det finns inga råd som kan skada.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 9.6
    }
@@ -144,6 +175,16 @@
    "anrop": 12,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Nattpulsen 45-52 är stabil och samma som baslinjen; vaken puls normal.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet nämner att den lägsta nattliga pulsen var 44,0 slag/min, vilket är lägre än den normala pulsen vid klockan 3 på 56,0 slag/min. Facit säger att pulsen är stabil och samma som baslinjen.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning nämner att den lägsta nattliga pulsen var 44,0 slag/min, vilket är lägre än den normala pulsen vid klockan 3 på 56,0 slag/min. Facit säger att pulsen är stabil och samma som baslinjen.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 9.9
    }
@@ -174,6 +215,16 @@
    "anrop": 9,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Ett enda fall till cirka 85 % under två minuter en natt, resten av natten och alla andra nätter normalt utan upprepade fall.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet beskriver en dip till 85% som återhämtar sig snabbt, men ger ingen slutsats om orsak eller klinisk betydelse. Facit antyder att det är ett mätfel eller sovställning, vilket är en rimlig slutsats, men teamet är mer försiktigt.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets råd är generellt säkert och baseras på den tillgängliga datan. Det finns inget råd som direkt kan skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 9.0
    }
@@ -4198,5 +4249,6 @@
     "qwen3.5:9b": 9.0
    }
   }
- ]
+ ],
+ "domarmodell": "medgemma:4b"
 }

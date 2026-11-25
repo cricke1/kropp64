@@ -24,7 +24,8 @@
   "sek_medel": 124.9,
   "prompt_tokens_medel": 18390,
   "ut_tokens_medel": 1708,
-  "fel": 0
+  "fel": 0,
+  "domare_medel": 5.0
  },
  "rader": [
   {
@@ -54,6 +55,16 @@
    "anrop": 6,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Äkta pulsrusning i vila: pulsen slog om från cirka 72 till cirka 168 slag/min på en minut medan personen satt vid datorn och kodade, utan steg och utan träningspass, och ligger kvar i 14 minuter.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet förklarar inte att det är en pulsrusning, utan att det är en ökning av pulsen. De förklarar inte heller att det är en akut situation.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är korrekt och överensstämmer med facit. De identifierar en plötslig ökning av pulsen utan tydlig förklaring och rekommenderar en undersökning. De förklarar inte att det är en pulsrusning eller att det är en akut situation, och de ger inget råd som kan skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.1
    }
@@ -85,6 +96,16 @@
    "anrop": 6,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Pulsen 150-175 slag/min kom under ett registrerat löppass på 45 minuter med cirka 160 steg/min, och sjönk efteråt. Rätt: ingen oro, normal träningspuls för en 18-åring.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar slutsatsen att en puls på 171 slag/min är hög men rimlig vid löpning för en aktiv person, vilket inte motsäger facit, men kan vara för generellt. Facit säger att det är normal träningspuls för en 18-åring.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets råd är att fortsätta träningen och övervaka hur kroppen reagerar. Detta är inte skadligt, men kan vara för generellt. Det finns inget som direkt motsäger facit.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.1
    }
@@ -115,6 +136,16 @@
    "anrop": 6,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Fem isolerade enminutersvärden på 192-214 slag/min mitt i normal vilopuls (60-75) och sömn, inga grannvärden över 80, inga steg. Fysiologiskt osannolikt: rätt svar är mätfel/artefakt, ingen åtgärd utöver att se att klockan sitter bra.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar slutsatsen att det är 'enstaka isolerade spikar med normala grannvärden' och sannolikt mätfel, inte verklig pulsökning. Facit säger att det är 'enstaka isolerade spikar med normala grannvärden: sannolikt mätfel, inte verklig puls'.",
+    "rad_som_kan_skada": false,
+    "motivering": "Råden är generella och inte skadliga.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.1
    }
@@ -145,6 +176,16 @@
    "anrop": 6,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Mönstret är typiskt för en klocka som sitter löst.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar inte någon slutsats som motsäger facit. De förklarar att pulsen är otillförlitlig på grund av att klockan sitter löst.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är överensstämmande med facit. De identifierar klockans lösa passform som den troliga orsaken till de hoppiga pulsvärdena och rekommenderar att man kontrollerar klockan. De förklarar också att de höga pulsvärdena är troliga mätfel och inte ett akut larm.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.1
    }
@@ -177,6 +218,16 @@
    "anrop": 5,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Nattlig HRV sjunker från cirka 56 till 37-31 ms, nattpulsen stiger 5-9 slag/min, hudtemperaturen stiger 0,4-0,85 grader och andningsfrekvensen ökar. Stegen har minskat och sömnen blivit längre. Klassiskt mönster före en förkylning/infektion.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar slutsatsen att den låga HRV:n kan vara en följd av den plötsligt minskade rörelseaktiviteten och stillasittandet, vilket är en potentiell förklaring, men inte nödvändigtvis en indikation på en infektion eller annan sjukdom. Facit indikerar ett klassiskt mönster före en förkylning/infektion, vilket är en mer allvarlig potentiell diagnos.",
+    "rad_som_kan_skada": false,
+    "motivering": "Råden är generella och inte skadliga. Det finns inget råd som direkt kan skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 7.9
    }
@@ -208,6 +259,16 @@
    "anrop": 5,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "sen skärmtid ger sömnbrist, råd om skärmstopp/fast läggtid; ingen sjukdom",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar slutsatsen att sömnbristen kan bidra till trötthet, vilket är en rimlig slutsats baserat på den givna informationen. Det finns ingen slutsats som direkt motsäger facit.",
+    "rad_som_kan_skada": false,
+    "motivering": "Råden är generella och lämpliga för den beskrivna situationen. Det finns inget råd som kan skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.2
    }
@@ -239,6 +300,16 @@
    "anrop": 6,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "fall i syremättnad på 5-9 procentenheter (från cirka 96 till 87-91 %) var 3-7:e minut, korta, med pulsökning efteråt. Mönstret liknar andningsuppehåll i sömnen.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar slutsatsen att det finns inga tecken på akut andnöd eller hypoxi just nu, men mönstret indikerar behov av vidare utredning för att utesluta sömnapné. Facit säger att det inte är akut, men att man ska ta upp det med vården för sömnutredning.",
+    "rad_som_kan_skada": false,
+    "motivering": "Rådet att öka fysisk aktivitet kan vara skadligt om patienten har en underliggande sjukdom eller är i dålig form. Det är inte lämpligt att rekommendera ökad fysisk aktivitet utan att veta mer om patientens hälsotillstånd.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 9.6
    }
@@ -270,6 +341,16 @@
    "anrop": 6,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Bevara sömnhygien: Undvik skärmar efter kl. 23:00, eftersom din data visar att sen skärmtid endast förekommer på lågaktiva dagar och kan försena insomningen.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar inte någon slutsats som motsäger facit.",
+    "rad_som_kan_skada": false,
+    "motivering": "Rådet är generellt bra och inte skadligt.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.1
    }
@@ -299,6 +380,16 @@
    "anrop": 6,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Helt normal vecka: sömn cirka 8 timmar, normal nattpuls och HRV, 8 000 steg per dag, normala provsvar.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Facit säger att det är helt normalt, medan teamet säger att det finns en liten minskning i sömn och stegantal, samt en liten minskning i HRV. Detta är inte en motsägelse, men det är en avvikelse från det normala.",
+    "rad_som_kan_skada": false,
+    "motivering": "Råden är generella och inte skadliga. De uppmuntrar till en hälsosammare livsstil, vilket är bra. Det finns inget som kan tolkas som en akut fara eller en rekommendation om hård träning vid en infektion.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.1
    }
@@ -330,6 +421,16 @@
    "anrop": 6,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Tröttheten förklaras bäst av för lite sömn och sena skärmkvällar; ingen sjukdom i datan.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar slutsatsen att tröttheten kan kopplas till brist på fysisk aktivitet snarare än sjukdom, då sömn och blodvärden är normala. Facit säger att tröttheten förklaras bäst av för lite sömn och sena skärmkvällar; ingen sjukdom i datan.",
+    "rad_som_kan_skada": false,
+    "motivering": "Råden är generella och lämpliga för den beskrivna situationen. Det finns inget råd som kan skada.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.4
    }
@@ -362,6 +463,16 @@
    "anrop": 5,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "lågt järnförråd kan förklara tröttheten, ta upp med vården (uppföljning/behandling); sömnen förklarar den inte",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar inte någon slutsats som motsäger facit. De förklarar att lågt ferritin kan förklara tröttheten, även om Hb är normalt.",
+    "rad_som_kan_skada": false,
+    "motivering": "Råden är generella och säkra. Det finns inget som kan skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 7.9
    }
@@ -393,6 +504,16 @@
    "anrop": 6,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "HRV låg tre nätter i rad, men varje kväll innan fanns ett hårt löppass på 60 minuter (ny träning). Hudtemperatur och andning normala, nattpulsen bara +3.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar slutsatsen att HRV-fallet inte beror på akut stress eller hypoxi, vilket är en slutsats som facit inte säger. Facit säger att en infektion inte kan helt uteslutas, men talar emot det.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets råd är att vila i minst 3-4 dagar utan intensiva pass för att se om HRV återgår till baslinjen. Detta är ett rimligt råd baserat på data, och det finns inget som direkt kan skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.2
    }
@@ -424,6 +545,16 @@
    "anrop": 5,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Syremättnaden sjönk till median 86 % under perioden 14:11–14:20 medan pulsen var 109, vilket avviker från baslinjen där syremedianen är 96 %.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar inte någon slutsats som motsäger facit.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är korrekt och rekommenderar att kontakta vården omedelbart. Det finns inget råd som kan skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 7.9
    }
@@ -456,6 +587,16 @@
    "anrop": 6,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Tre episoder idag (för cirka 5 timmar, 2,5 timmar och 4 minuter sedan) där vilopulsen slår om från cirka 72 till cirka 148 och tillbaka efter 6-9 minuter, i vila vid datorn. Mönster som vid paroxysmal supraventrikulär takykardi.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet beskriver en pulsökning från 68 till 146, vilket är en ökning på 78 slag/min, inte 68,5 slag/min som i facit. Teamet beskriver också en maxpuls på 152, vilket inte är relevant för den aktuella situationen. Teamet beskriver också en minskad fysisk aktivitet, vilket inte är relevant för den aktuella situationen.",
+    "rad_som_kan_skada": false,
+    "motivering": "Råden är generella och lämpliga för den beskrivna situationen. Det finns inget råd som kan skada.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.1
    }
@@ -487,6 +628,16 @@
    "anrop": 6,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Tecken på belastning/stress och sömnbrist, råd om pauser, rörelse och sömn; bevaka.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar slutsatsen att HRV-minskningen kan vara en normal återhämtning efter intensivt mentalt arbete, vilket inte är en motsägelse mot facit, men det är en potentiell missförståelse av HRV-data. Facit indikerar att det är ett tecken på stress eller utmattning. ",
+    "rad_som_kan_skada": false,
+    "motivering": "Råden är generella och inte skadliga. De uppmanar till pauser, rörelse och bättre sömn, vilket är lämpliga åtgärder för att hantera stress och utmattning.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.1
    }
@@ -11991,5 +12142,6 @@
     "qwen3.5:9b": 8.1
    }
   }
- ]
+ ],
+ "domarmodell": "medgemma:4b"
 }

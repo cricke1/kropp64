@@ -21,7 +21,8 @@
   "sek_medel": 102.8,
   "prompt_tokens_medel": 17053,
   "ut_tokens_medel": 1564,
-  "fel": 0
+  "fel": 0,
+  "domare_medel": 5.0
  },
  "rader": [
   {
@@ -49,6 +50,16 @@
    "anrop": 7,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Pulsen 170-180 kom under ett registrerat löppass 07:50-08:25 med cirka 168 steg/min.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet nämner pulsen 170-180, men facit anger 170-180. Det är en liten skillnad, men det är viktigt att notera att det är en skillnad i värde. ",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets råd är att fortsätta träna och övervaka pulsen. Det finns inget i råden som kan skada patienten.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.2
    }
@@ -80,6 +91,16 @@
    "anrop": 5,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Varje natt senaste veckan syrefall på 5-8 procentenheter var 5-9:e minut (cirka 8 per timme), plus sambons uppgift om andningsuppehåll.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet nämner inte direkt att det är ett syrefall på 5-8 procentenheter, men det är en sammanfattning av det faktum att det finns ett mönster av syrefall. Det är inte en motsägelse, men det är inte heller en direkt referens till facit.",
+    "rad_som_kan_skada": false,
+    "motivering": "Råden är generella och lämpliga för situationen. Det finns inget råd som kan skada.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 7.9
    }
@@ -111,6 +132,16 @@
    "anrop": 5,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "tecken på infektion/feber, vila, bevaka, kontakta vården vid andnöd eller hög feber.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet drar slutsatsen att det är en begynnande infektion baserat på hudtemperatur, andningsfrekvens och puls, vilket är i linje med facit. Det finns ingen slutsats som motsäger facit.",
+    "rad_som_kan_skada": false,
+    "motivering": "Råden är generella och lämpliga för en person med milda symtom. Det finns inget råd som kan skada.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 7.9
    }
@@ -141,6 +172,16 @@
    "anrop": 6,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "TSH 0,05 (under referens) och fritt T4 31 (över) för 15 dagar sedan, pulsen cirka 14 slag högre dygnet runt de senaste tio dagarna.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet nämner inte att TSH är under referens, men det är en viktig del av facit. Det är dock inte en motsägelse eftersom det är en del av den övergripande bilden.",
+    "rad_som_kan_skada": false,
+    "motivering": "Teamets bedömning är generellt korrekt och ger lämpliga råd. Det finns inget direkt skadligt råd i bedömningen.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 8.1
    }
@@ -171,6 +212,16 @@
    "anrop": 5,
    "medgemma_anrop": 0,
    "fel": false,
+   "domare": {
+    "huvudfyndet_i_facit": "Sömnen påverkas inte märkbart, ingen oro.",
+    "namner_huvudfyndet": true,
+    "slutsats_som_motsager_facit": false,
+    "vilken_motsagelse": "Teamet säger att HRV är 2 ms lägre än baslinjen, men facit säger att HRV är normal. Detta är en motsägelse.",
+    "rad_som_kan_skada": false,
+    "motivering": "Råden är generella och inte skadliga.",
+    "poang": 5.0,
+    "modell": "medgemma:4b"
+   },
    "ollama_minne_gib_efter": {
     "qwen3.5:9b": 7.9
    }
@@ -3848,5 +3899,6 @@
     "qwen3.5:9b": 7.9
    }
   }
- ]
+ ],
+ "domarmodell": "medgemma:4b"
 }
