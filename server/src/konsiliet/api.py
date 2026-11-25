@@ -334,7 +334,7 @@ def consult(cid: str) -> dict[str, Any]:
     if not r:
         raise HTTPException(404)
     d = dict(r)
-    for k in ("trigger", "transcript", "verdict", "stats"):
+    for k in ("trigger", "transcript", "verdict", "stats", "evidence"):
         d[k] = json.loads(d[k]) if d[k] else None
     return d
 
