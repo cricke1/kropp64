@@ -502,3 +502,7 @@ Pixel_8_Kropp64_B utan fönster.
 Slutsats: det finns ingen trovärdig mobilsiffra från emulatorn. Det som är verifierat för telefoner är
 mobillayouten (375-442 px), att riggen sänker kvaliteten i steg och att den går över till stillbilden när
 bildtakten inte räcker. En riktig mellanklassmobil behövs för en siffra.
+
+**Rösttjänsten startar av sig själv.** En schemalagd uppgift på Lenovon ("Kropp64 rosttjanst") startar
+`rost_tjanst.bat` vid inloggning och startar om den upp till tre gånger om den faller. Tidigare slutade
+rösterna fungera efter en omstart av laptopen.
