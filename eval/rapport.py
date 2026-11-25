@@ -26,7 +26,9 @@ def main() -> None:
     slut = [("Gamla pipelinen, 16 tränade scenarier", agg("2026-11-24-baslinje.json")),
             ("Nuvarande (v8), 16 tränade scenarier", agg("2026-11-2?-v8.json")),
             ("Gamla pipelinen, 16 holdout-scenarier", agg("*holdout*-baslinje.json")),
-            ("Nuvarande (v8), 16 holdout-scenarier", agg("*holdout*-v8.json"))]
+            ("Nuvarande (v8), 16 holdout-scenarier", agg("*holdout*-v8.json")),
+            ("v8 med gemma4:12b, 16 holdout-scenarier", agg("*holdout*-v8-gemma12b.json")),
+            ("v8 med gemma4:e4b, 16 holdout-scenarier", agg("*holdout*-v8-gemma4e4b.json"))]
     topp = ["# Utvärdering av konsiliet", "",
             "## Slutsiffran", "",
             "| Körning | n | Godtagbar brådska | Exakt | Över-/undertriage | Täckning av måste-fynd | Strykandel | "
@@ -37,6 +39,13 @@ def main() -> None:
                         f"{s_['overtriage']}/{s_['undertriage']} | {s_['tackning']:.0%} | "
                         f"{s_['strykandel']:.0%} | {s_['sek_median']:.0f} ({s_['sek_max']:.0f}) | {s_['ut_tokens_medel']} |")
     topp += ["",
+             "## Modellval", "",
+             "qwen3.5:9b är kvar som modell. Samma v8 och samma 16 holdout-scenarier med gemma4:12b: samma brådska "
+             "(16 av 16 godtagbara, 14 exakta mot 16, de två andra ett steg högre), bättre täckning (98 % mot 94 %) och "
+             "klart bättre källdisciplin (granskaren strök 5 % mot 16 %), men median 156 s mot 118 s och 12,3 GiB i "
+             "Ollama mot 8,4 GiB. Med gemma4:12b nådde swappen 10,8 GB och disken 8 GB ledigt. Den här datorn delas "
+             "med röst, webb och vakt, så den extra tiden och minnet vägde tyngre. Med mer minne är gemma4:12b det "
+             "första att byta till.", "",
              "## Metod", "",
              "- **Data:** en syntetisk person, minutupplöst simulering av 28 dygn (`eval/sim.py`). All data är märkt "
              "`syntetisk` och skrivs till slängbara databaser under `eval/tmp/`, aldrig till den riktiga.",

@@ -111,7 +111,8 @@ def lage() -> dict[str, Any]:
         "medgemma": e("KONSILIET_LAGE_MEDGEMMA", "0") == "1",
         "temperatur": float(e("KONSILIET_LAGE_TEMP", "0.2")),
         "max_specialister": int(e("KONSILIET_LAGE_MAX_SPEC", "3")),
-        "tolkning": e("KONSILIET_LAGE_TOLKNING", "1") == "1",  # regelverkets tolkning som källa F:tolkning
+        "tolkning": e("KONSILIET_LAGE_TOLKNING", "1") == "1",
+        "tokenfaktor": float(e("KONSILIET_LAGE_TOKENFAKTOR", "1")),  # större svarstak för pratigare modeller  # regelverkets tolkning som källa F:tolkning
     }
 
 
@@ -172,6 +173,8 @@ class Mote:
 
     def chat(self, messages: list[dict[str, Any]], **kw: Any) -> llm.Reply:
         kw.setdefault("temperature", self.lage["temperatur"])
+        if "max_tokens" in kw:
+            kw["max_tokens"] = int(kw["max_tokens"] * self.lage["tokenfaktor"])
         return llm.chat(settings.model_orchestrator, [{"role": "system", "content": self.system()}, *messages],
                         usage=self.usage, **kw)
 
