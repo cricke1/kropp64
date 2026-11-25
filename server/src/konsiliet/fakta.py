@@ -372,6 +372,26 @@ def just_nu(nu: float) -> dict[str, Any]:
             out[namn] = _r(np.median(x[:, 1]), 0)
     s = _v("steps", nu - 900, nu)
     out["steg"] = int(s[:, 1].sum()) if len(s) else 0
+    if "puls_median" in out:
+        bas = _baslinje("hr", datetime.fromtimestamp(nu).hour)
+        if bas:
+            out["puls_baslinje_samma_timme"] = _r(bas[0], 0)
+            out["skillnad_puls_mot_baslinje"] = _r(out["puls_median"] - bas[0], 0)
+            out["riktning_puls_mot_baslinje"] = "högre" if out["skillnad_puls_mot_baslinje"] > 0 else "lägre"
+        fore = _v("hr", nu - 3 * 3600, nu - 3600)
+        if len(fore):
+            out["puls_median_1_till_3_timmar_sedan"] = _r(np.median(fore[:, 1]), 0)
+    x5 = _v("hr", nu - 300, nu)
+    if len(x5):
+        out["puls_senaste_5_min_median"] = _r(np.median(x5[:, 1]), 0)
+        out["puls_senaste_5_min_max"] = _r(x5[:, 1].max(), 0)
+    s5 = _v("steps", nu - 900, nu)
+    out["steg_senaste_15_min_per_minut_max"] = int(s5[:, 1].max()) if len(s5) else 0
+    v60 = _v("hr", nu - 3600, nu)
+    s60 = _v("steps", nu - 3600, nu)
+    if len(v60) >= 30:
+        out["puls_median_senaste_timmen"] = _r(np.median(v60[:, 1]), 0)
+        out["steg_senaste_timmen"] = int(s60[:, 1].sum()) if len(s60) else 0
     p = _pass(nu - 900, nu)
     if p:
         out["traningspass"] = p
@@ -538,6 +558,13 @@ def regelbradska(trigger: dict[str, Any], f: dict[str, dict[str, Any]]) -> tuple
         ep = L.get("pulsepisoder_i_vila_idag")
         if isinstance(ep, list) and len(ep) >= 2 and not matfel:  # episoder i hoppig data är mätfel
             hoj("ta_upp_med_varden", f"{len(ep)} pulsepisoder i vila idag med plötslig start")
+    nu_ = f.get("F:nu") or {}
+    if trigger.get("kind") == "question" and nu_.get("puls_baslinje_samma_timme") and nu_.get("puls_median_senaste_timmen") \
+            and nu_.get("steg_senaste_timmen", 999) < 100 \
+            and nu_["puls_median_senaste_timmen"] - nu_["puls_baslinje_samma_timme"] >= 25:
+        # samma sak som vaktens baslinjeregel: vilopulsen har legat långt över det normala i en timme utan rörelse
+        hoj("bevaka", f"vilopuls {nu_['puls_median_senaste_timmen']} senaste timmen utan rörelse mot normalt "
+                      f"{nu_['puls_baslinje_samma_timme']}")
     for p in (f.get("F:prover") or {}).get("prover", []):
         if p["bedomning_mot_referens"] != "inom" and p["dagar_sedan"] <= 180:
             hoj("ta_upp_med_varden", f"{p['analys']} {p['varde']} {p['enhet']} {p['bedomning_mot_referens']}")

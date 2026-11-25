@@ -7,13 +7,13 @@ from pathlib import Path
 
 HIT = Path(__file__).resolve().parent
 sys.path.insert(0, str(HIT))
-from scenarier import HOLDOUT, HOLDOUT2, HOLDOUT3, HOLDOUT4, SCENARIER  # noqa: E402
+from scenarier import HOLDOUT, HOLDOUT2, HOLDOUT3, HOLDOUT4, HOLDOUT5, SCENARIER  # noqa: E402
 
 
 def main() -> None:
     def ordning(p: Path) -> tuple[int, int, float]:
         n = p.stem
-        grupp = 4 if "holdout4" in n else 3 if "holdout3" in n else 2 if "holdout2" in n else 1 if "holdout" in n else 0
+        grupp = 5 if "holdout5" in n else 4 if "holdout4" in n else 3 if "holdout3" in n else 2 if "holdout2" in n else 1 if "holdout" in n else 0
         return (grupp, 0 if n.endswith("baslinje") else 1, p.stat().st_mtime)
     filer = sorted((HIT / "resultat").glob("*.json"), key=ordning)
     data = [json.loads(f.read_text()) for f in filer]
@@ -44,7 +44,7 @@ def main() -> None:
     rad += ["", "## Per scenario (brådska, täckning)", "",
             "| Scenario | Facit | " + " | ".join(d["variant"] for d in data) + " |",
             "|---|---|" + "---|" * len(data)]
-    for sc in SCENARIER + HOLDOUT + HOLDOUT2 + HOLDOUT3 + HOLDOUT4:
+    for sc in SCENARIER + HOLDOUT + HOLDOUT2 + HOLDOUT3 + HOLDOUT4 + HOLDOUT5:
         celler = []
         for d in data:
             r = next((x for x in d["rader"] if x["scenario"] == sc.id), None)

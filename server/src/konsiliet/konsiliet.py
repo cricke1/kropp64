@@ -125,6 +125,7 @@ def _gemensam() -> str:
         "som mättes nu; fält med baslinje_ är personens normala nivå; skillnad_ är differensen. Kalla ALDRIG ett "
         "observerat värde för baslinje. Ange som källa den ref där siffran faktiskt står (raden i faktabladet). "
         "F:tolkning är regelverkets deterministiska tolkning (t.ex. mätfel eller träning) och väger tungt. "
+        "U:fraga är personens egen fråga: citera den bara för det personen själv sagt, aldrig som mätvärde. "
         "Räkna inte om siffror själv (inga egna procent eller medelvärden), använd "
         "de färdiga skillnad-fälten. Påståenden utan giltig källa eller med siffror som inte finns i källan stryks "
         "av granskaren. Skriv hellre färre, säkra påståenden än många osäkra. Säg tydligt när datan inte räcker."
@@ -201,6 +202,9 @@ def _kallschema(m: Mote, max_items: int = 4) -> dict[str, Any]:
 def _forbered(m: Mote) -> None:
     with matning.tid("Faktablad"):
         m.fakta = fakta.faktaark(m.trigger)
+    if m.trigger.get("kind") == "question":
+        # Personens egen fråga är en källa för det personen själv säger ("pulsen är 85"), inte för mätvärden.
+        m.refs["U:fraga"] = {"ref": "U:fraga", "personen_skrev": m.trigger.get("question", "")}
     if m.trigger.get("kind") == "anomaly":
         m.refs["U:utlosare"] = {"ref": "U:utlosare", "metric": m.trigger.get("metric"), "titel": m.trigger.get("title"),
                                 "detalj": m.trigger.get("detail")}
@@ -490,6 +494,10 @@ def kontrollera(text: str, kallor: list[str], refs: dict[str, dict[str, Any]], t
             per_fam.setdefault(f, set()).update(s)
         bas |= b
         familjer |= fam
+    if "U:fraga" in giltiga:  # det personen själv skrev kan citeras oavsett mätvärde ("du skrev att pulsen är 85")
+        egna = set(_tal_text(str(refs["U:fraga"].get("personen_skrev", ""))))
+        for f in ("puls", "hrv", "spo2", "steg", "temp", "andning", "tid", "somn", "alla"):
+            per_fam.setdefault(f, set()).update(egna)
     alla = per_fam.get("alla", set())
     ren = _TUSEN.sub("", _REF.sub(" ", text))
     ren = _DATUM.sub(" ", _KLOCKA.sub(" ", ren))

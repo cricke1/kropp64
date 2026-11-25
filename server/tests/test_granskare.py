@@ -176,3 +176,10 @@ def test_fel_rad_i_faktabladet_ratttas_om_bara_en_rad_passar():
     assert len(g) == 1 and g[0]["kalla_tillagd_av_granskaren"] == "F:natter"
     # en påhittad siffra räddas inte
     assert granska(m, "x", {"pastaenden": [{"text": "HRV är 23 ms lägre än baslinjen.", "kallor": ["F:somnskuld"]}]}) == []
+
+def test_personens_egen_siffra_kan_citeras_men_inte_uppfinnas():
+    m = mote2()
+    m.refs["U:fraga"] = {"ref": "U:fraga", "personen_skrev": "Pulsen är 85 fast jag sitter still."}
+    g = lambda t, k: len(granska(m, "x", {"pastaenden": [{"text": t, "kallor": k}]})) == 1
+    assert g("Du skrev att pulsen är 85 slag/min.", ["U:fraga"])
+    assert not g("Du skrev att pulsen är 95 slag/min.", ["U:fraga"])

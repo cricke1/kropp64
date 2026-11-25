@@ -1,10 +1,10 @@
 """LLM som domare: en ANNAN lokal modell än den som körde konsiliet betygsätter varje slutbedömning mot facit.
 
-    cd server && .venv/bin/python ../eval/doma.py eval/resultat/<fil>.json --modell gemma4:12b
+    cd server && .venv/bin/python ../eval/doma.py ../eval/resultat/<fil>.json --modell medgemma:4b
 
-Domaren ser facit (scenariots beskrivning av rätt svar) och slutbedömningen, och ger 1-5 på:
-  korrekthet   stämmer slutsatsen och brådskan med facit
-  resonemang   bygger den på rätt fynd, utan påhittade eller felmärkta siffror och utan fel förklaring
+Domaren ser facit (scenariots beskrivning av rätt svar) och slutbedömningen och svarar på ja/nej-frågor:
+nämner bedömningen facits huvudfynd, drar den en slutsats som motsäger facit, finns ett råd som kan skada.
+Poängen räknas ut av svaren: 5 - 2 (missat huvudfynd) - 2 (motsägelse) - 1 (skadligt råd), lägst 1.
 Resultatet skrivs in i resultatfilen (rader[i].domare) och RESULTAT.md uppdateras.
 Domaren körs separat och påverkar inte mötets tid. Den är en grov kontroll, inte sanningen: poängen
 redovisas bredvid de deterministiska måtten, aldrig i stället för dem.
@@ -65,7 +65,7 @@ def doma(c: httpx.Client, modell: str, res: dict) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("fil")
-    ap.add_argument("--modell", default="gemma4:12b")
+    ap.add_argument("--modell", default="medgemma:4b")
     a = ap.parse_args()
     p = Path(a.fil)
     data = json.loads(p.read_text())
@@ -75,7 +75,8 @@ def main() -> None:
             rad["domare"] = doma(c, a.modell, res)
         except Exception as e:  # en domare som inte svarar ska inte förstöra resultatet
             rad["domare"] = {"fel": str(e), "modell": a.modell}
-        print(rad["scenario"], rad["domare"].get("korrekthet"), rad["domare"].get("resonemang"),
+        print(rad["scenario"], rad["domare"].get("poang"), rad["domare"].get("namner_huvudfyndet"),
+              rad["domare"].get("slutsats_som_motsager_facit"),
               str(rad["domare"].get("motivering", ""))[:120], flush=True)
     data["sammanfattning"] = sammanstall(data["rader"])
     data["domarmodell"] = a.modell

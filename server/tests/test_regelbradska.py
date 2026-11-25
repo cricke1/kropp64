@@ -75,3 +75,10 @@ def test_hybrid_sanker_inte_vardfall():
 def test_hybrid_far_hoja_ett_steg():
     m = _mote("avvikelse", "hybrid", "ingen")
     assert bestam_bradska(m, "ta_upp_med_varden", [{"text": "x"}])[0] == "bevaka"
+
+
+def test_fraga_med_hog_vilopuls_senaste_timmen_ger_bevaka():
+    f = {"F:nu": {"puls_baslinje_samma_timme": 74, "puls_median_senaste_timmen": 106, "steg_senaste_timmen": 0}}
+    assert fakta.regelbradska({"kind": "question"}, f)[0] == "bevaka"
+    f["F:nu"]["steg_senaste_timmen"] = 2500  # rörelse förklarar pulsen
+    assert fakta.regelbradska({"kind": "question"}, f)[0] == "ingen"

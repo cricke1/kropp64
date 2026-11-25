@@ -776,3 +776,42 @@ HOLDOUT4: list[Scenario] = [
         "trolig koffeineffekt, ingen fara; drick vatten, undvik mer koffein, kontakta vården vid bröstsmärta eller oregelbunden puls.")),
 ]
 SCENARIO.update({s.id: s for s in HOLDOUT4})
+
+
+# ------------------------------------------------------------------ HOLDOUT 5
+# Skrivna efter holdout 4 (frågan om pulsen just nu besvarades med ett gammalt maxvärde). Orsaken (faktabladet
+# saknade "pulsen nu mot baslinjen" för frågor) rättades generellt; de här scenarierna har inte setts förut.
+
+def h5_trappor(s: Sim) -> dict[str, Any]:
+    s.standard()
+    s.standardprover()
+    s.gang(0, (s.nu - s.ts(0, 0)) / 60 - 6, 5, takt=120)  # trappor/rask gång för 6-1 minuter sedan
+    return _fraga("Pulsen är 95 just nu, jag gick precis uppför trapporna till lägenheten. Är det normalt?", 4)
+
+
+def h5_vila_hog(s: Sim) -> dict[str, Any]:
+    s.standard()
+    s.standardprover()
+    a = s.nu - 70 * 60
+    sl = s.span(a, s.nu + 60)
+    s.steg[s.span(a - 600, s.nu + 60)] = 0
+    s.hr_add[sl] = 30 + s.rng.normal(0, 2, sl.stop - sl.start)
+    return _fraga("Pulsen har legat runt 100 i en timme fast jag ligger i soffan och inte gjort något. Vad kan det vara?", 6)
+
+
+HOLDOUT5: list[Scenario] = [
+    Scenario("h5_trappor", "Holdout 5: puls efter trappor", "18:20", h5_trappor, Facit(
+        "ingen", ("ingen",),
+        [("pulsen nu", r"\b9\d\b|\b1[01]\d\b"), ("rörelse / trappor", r"trapp|steg|gång|rörelse|ansträng|aktivitet")],
+        [("vårdkontakt", r"kontakta vården|boka tid")],
+        "Pulsen cirka 95-110 de senaste minuterna direkt efter 5 minuters rask gång (cirka 120 steg/min) och normal vilopuls "
+        "innan. Rätt: normal reaktion på trappor, ingen oro.")),
+    Scenario("h5_vila_hog", "Holdout 5: hög vilopuls en timme utan orsak", "21:00", h5_vila_hog, Facit(
+        "bevaka", ("bevaka", "ta_upp_med_varden"),
+        [("pulsen nu mot baslinje", r"\b(9\d|10\d)\b"), ("i vila / utan rörelse", r"vila|utan (rörelse|steg)|inga steg|0 steg|soffan|stilla")],
+        [("lugnar helt", r"inget att oroa"), ("akut", r"ring 112")],
+        "Pulsen cirka 100 i vila i drygt en timme mot baslinje cirka 71, inga steg, inget pass. Rätt: bevaka (vätska, koffein, "
+        "feber, stress?) och ta upp med vården om det håller i sig eller kommer tillbaka; kontakta vården direkt vid "
+        "bröstsmärta, andnöd eller svimning.")),
+]
+SCENARIO.update({s.id: s for s in HOLDOUT5})

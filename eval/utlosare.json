@@ -324,5 +324,23 @@
   },
   "fran_vakt": false,
   "nu": 1795528800
+ },
+ "h5_trappor": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Pulsen är 95 just nu, jag gick precis uppför trapporna till lägenheten. Är det normalt?",
+   "hours": 4
+  },
+  "fran_vakt": false,
+  "nu": 1795540800
+ },
+ "h5_vila_hog": {
+  "utlosare": {
+   "kind": "question",
+   "question": "Pulsen har legat runt 100 i en timme fast jag ligger i soffan och inte gjort något. Vad kan det vara?",
+   "hours": 6
+  },
+  "fran_vakt": false,
+  "nu": 1795550400
  }
 }

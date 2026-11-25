@@ -19,7 +19,7 @@ HIT = Path(__file__).resolve().parent
 sys.path.insert(0, str(HIT))
 
 from poang import poang, sammanstall  # noqa: E402
-from scenarier import HOLDOUT, HOLDOUT2, HOLDOUT3, HOLDOUT4, SCENARIER  # noqa: E402
+from scenarier import HOLDOUT, HOLDOUT2, HOLDOUT3, HOLDOUT4, HOLDOUT5, SCENARIER  # noqa: E402
 
 
 def main() -> None:
@@ -34,10 +34,11 @@ def main() -> None:
     ap.add_argument("--holdout2", action="store_true", help="kör andra holdout-omgången")
     ap.add_argument("--holdout3", action="store_true", help="kör tredje holdout-omgången")
     ap.add_argument("--holdout4", action="store_true", help="kör fjärde holdout-omgången")
+    ap.add_argument("--holdout5", action="store_true", help="kör femte holdout-omgången")
     ap.add_argument("--fortsatt", action="store_true", help="behåll redan körda scenarier i resultatfilen")
     a = ap.parse_args()
 
-    alla = HOLDOUT4 if a.holdout4 else HOLDOUT3 if a.holdout3 else HOLDOUT2 if a.holdout2 else HOLDOUT if a.holdout else SCENARIER
+    alla = HOLDOUT5 if a.holdout5 else HOLDOUT4 if a.holdout4 else HOLDOUT3 if a.holdout3 else HOLDOUT2 if a.holdout2 else HOLDOUT if a.holdout else SCENARIER
     valda = [s for s in alla if not a.bara or s.id in a.bara.split(",")]
     env = {**os.environ, **dict(kv.split("=", 1) for kv in a.env)}
     env.pop("KONSILIET_DB", None)
