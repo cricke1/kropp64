@@ -406,6 +406,17 @@ avbröts och 6,6 GB halvfärdiga block raderades. gemma4:e4b visade sig vara 9,5
 mellan modeller får vänta på mer disk och minne; som domare används i stället medgemma:4b, en annan modell än den
 som kör mötet.
 
+**Modelljämförelsen, dagen efter med 22 GB ledig disk.** Samma v8 och samma 16 holdout-scenarier, bara modellen
+utbytt. gemma4:12b: 16 av 16 godtagbar brådska (14 exakta mot qwens 16; ett cykelpass och en morgonlöpning blev
+"bevaka"), 98 % av fynden mot 94 %, och granskaren strök bara 5 % av påståendena mot 16 %, alltså bättre
+källdisciplin. Men 156 s mot 118 s och 12,3 GiB i Ollama mot 8,4. Swappen gick till 10,8 GB och disken ner till 8 GB
+ledigt; minnesvakten avbröt den första körningen när swappen växte 3 GB och fick köras om med bara disk- och
+minnesgräns. gemma4:e4b klipptes mitt i JSON-svaren med samma tak och fick 2,5 gånger större tak, men skrev ändå
+6 752 utdatatokens per möte mot 1 806, fick i snitt 0,5 belagda påståenden och lade nästan allt på "bevaka":
+12 av 16 godtagbara, 4 övertriage, 69 % av fynden. qwen3.5:9b är kvar, eftersom datorn delas med röst, webb och
+vakt och 120-sekundersmålet redan är på gränsen. gemma4:12b är det första bytet om minnet blir större. Båda
+gemma-modellerna är borttagna igen.
+
 **MedGemma gjorde ingen nytta och är avstängd.** I den gamla pipelinen anropades MedGemma aldrig i de riktiga
 körningarna. Med Ollamas en-modell-i-taget kostar varje anrop dessutom ett modellbyte. Jag gav den en tydligare
 roll: en gång per möte skriver den bakgrundskunskap (vanliga och allvarliga orsaker, varningstecken) som läggs i

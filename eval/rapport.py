@@ -45,7 +45,10 @@ def main() -> None:
              "klart bättre källdisciplin (granskaren strök 5 % mot 16 %), men median 156 s mot 118 s och 12,3 GiB i "
              "Ollama mot 8,4 GiB. Med gemma4:12b nådde swappen 10,8 GB och disken 8 GB ledigt. Den här datorn delas "
              "med röst, webb och vakt, så den extra tiden och minnet vägde tyngre. Med mer minne är gemma4:12b det "
-             "första att byta till.", "",
+             "första att byta till. gemma4:e4b (med 2,5 gånger större svarstak, eftersom den annars klipptes mitt i JSON) "
+             "var sämre: 12 av 16 godtagbara med 4 övertriage, 69 % täckning och i snitt 0,5 belagda påståenden per "
+             "möte, eftersom den skrev långa, utfyllda svar (6 752 utdatatokens per möte mot 1 806) som ofta klipptes. "
+             "Båda gemma-modellerna är borttagna igen.", "",
              "## Metod", "",
              "- **Data:** en syntetisk person, minutupplöst simulering av 28 dygn (`eval/sim.py`). All data är märkt "
              "`syntetisk` och skrivs till slängbara databaser under `eval/tmp/`, aldrig till den riktiga.",

@@ -134,6 +134,7 @@ Bara siffror som finns i en fil i repot.
 | Utvärdering, 16 holdout-scenarier, gamla pipelinen | godtagbar brådska 56 %, täckning 67 %, median 226 s | [eval/RESULTAT.md](eval/RESULTAT.md) |
 | Utvärdering, 16 holdout-scenarier, nuvarande (v8) | godtagbar brådska 100 %, exakt 100 %, täckning 94 %, median 118 s | eval/RESULTAT.md |
 | Utvärdering, 16 tränade scenarier, gamla / v8 | 56 % / 100 % godtagbar brådska, median 290 / 123 s, 4 460 / 1 866 utdatatokens | eval/RESULTAT.md |
+| Modellval på 16 holdout: qwen3.5:9b / gemma4:12b / gemma4:e4b | godtagbar brådska 100 / 100 / 75 %, täckning 94 / 98 / 69 %, median 118 / 156 / 114 s, minne 8,4 / 12,3 / 9,3 GiB: qwen kvar | eval/RESULTAT.md |
 | Nätavbrott i kedjan (emulatorer) | 360 punkter köade i mobilen, alla 1 215 på servern 2 s efter att nätet kom tillbaka, inga dubbletter | RESAN.md |
 | Sms-frist efter akut larm, med exakta alarm | sms skickat 39 ms efter fristen (tidigare 70 s för sent) | RESAN.md |
 

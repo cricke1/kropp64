@@ -1,0 +1,4313 @@
+{
+ "variant": "holdout2-v8-gemma4e4b",
+ "datum": "2026-11-25",
+ "beskrivning": "v8 med gemma4:e4b som modell i hela mötet",
+ "env": {
+  "KONSILIET_MODEL_ORCH": "gemma4:e4b",
+  "KONSILIET_LAGE_TOKENFAKTOR": "2.5"
+ },
+ "src": "../eval/tmp/src-v8e",
+ "sammanfattning": {
+  "n": 5,
+  "bradska_godtagbar": 0.8,
+  "bradska_exakt": 0.6,
+  "overtriage": 1,
+  "undertriage": 0,
+  "tackning": 0.9,
+  "forbjudna": 0,
+  "strykandel": 0.053,
+  "belagda_medel": 1.0,
+  "overifierade_siffror": 0,
+  "baslinjefel": 0,
+  "sek_median": 114.3,
+  "sek_max": 130.8,
+  "sek_medel": 117.3,
+  "prompt_tokens_medel": 27174,
+  "ut_tokens_medel": 6927,
+  "fel": 0
+ },
+ "rader": [
+  {
+   "scenario": "h2_morgonlopning",
+   "bradska": "bevaka",
+   "facit": "ingen",
+   "exakt": false,
+   "godtagbar": true,
+   "overtriage": false,
+   "undertriage": false,
+   "tackning": 1.0,
+   "maste": {
+    "kopplar till löppasset": true
+   },
+   "forbjudna": [],
+   "pastaenden": 2,
+   "strykningar": 1,
+   "strykandel": 0.5,
+   "belagda": 0,
+   "overifierade_siffror": [],
+   "baslinjefel": [],
+   "sekunder": 107.5,
+   "prompt_tokens": 24847,
+   "ut_tokens": 6657,
+   "anrop": 6,
+   "medgemma_anrop": 0,
+   "fel": false,
+   "ollama_minne_gib_efter": {
+    "gemma4:e4b": 9.3
+   }
+  },
+  {
+   "scenario": "h2_snarkning",
+   "bradska": "ta_upp_med_varden",
+   "facit": "ta_upp_med_varden",
+   "exakt": true,
+   "godtagbar": true,
+   "overtriage": false,
+   "undertriage": false,
+   "tackning": 1.0,
+   "maste": {
+    "syrefall": true,
+    "flera nätter": true,
+    "utredning": true
+   },
+   "forbjudna": [],
+   "pastaenden": 3,
+   "strykningar": 0,
+   "strykandel": 0.0,
+   "belagda": 0,
+   "overifierade_siffror": [],
+   "baslinjefel": [],
+   "sekunder": 122.6,
+   "prompt_tokens": 28776,
+   "ut_tokens": 7054,
+   "anrop": 7,
+   "medgemma_anrop": 0,
+   "fel": false,
+   "ollama_minne_gib_efter": {
+    "gemma4:e4b": 9.3
+   }
+  },
+  {
+   "scenario": "h2_feber",
+   "bradska": "bevaka",
+   "facit": "bevaka",
+   "exakt": true,
+   "godtagbar": true,
+   "overtriage": false,
+   "undertriage": false,
+   "tackning": 1.0,
+   "maste": {
+    "temperatur upp": true,
+    "puls upp": true,
+    "vila / infektion": true
+   },
+   "forbjudna": [],
+   "pastaenden": 3,
+   "strykningar": 0,
+   "strykandel": 0.0,
+   "belagda": 0,
+   "overifierade_siffror": [],
+   "baslinjefel": [],
+   "sekunder": 111.1,
+   "prompt_tokens": 24263,
+   "ut_tokens": 6689,
+   "anrop": 6,
+   "medgemma_anrop": 0,
+   "fel": false,
+   "ollama_minne_gib_efter": {
+    "gemma4:e4b": 9.3
+   }
+  },
+  {
+   "scenario": "h2_tsh",
+   "bradska": "ta_upp_med_varden",
+   "facit": "ta_upp_med_varden",
+   "exakt": true,
+   "godtagbar": true,
+   "overtriage": false,
+   "undertriage": false,
+   "tackning": 0.5,
+   "maste": {
+    "TSH": true,
+    "vilopuls": false
+   },
+   "forbjudna": [],
+   "pastaenden": 5,
+   "strykningar": 0,
+   "strykandel": 0.0,
+   "belagda": 2,
+   "overifierade_siffror": [],
+   "baslinjefel": [],
+   "sekunder": 114.3,
+   "prompt_tokens": 29375,
+   "ut_tokens": 6928,
+   "anrop": 7,
+   "medgemma_anrop": 0,
+   "fel": false,
+   "ollama_minne_gib_efter": {
+    "gemma4:e4b": 9.3
+   }
+  },
+  {
+   "scenario": "h2_spel_ok",
+   "bradska": "bevaka",
+   "facit": "ingen",
+   "exakt": false,
+   "godtagbar": false,
+   "overtriage": true,
+   "undertriage": false,
+   "tackning": 1.0,
+   "maste": {
+    "spelminuter": true,
+    "sömnen räcker": true
+   },
+   "forbjudna": [],
+   "pastaenden": 6,
+   "strykningar": 0,
+   "strykandel": 0.0,
+   "belagda": 3,
+   "overifierade_siffror": [],
+   "baslinjefel": [],
+   "sekunder": 130.8,
+   "prompt_tokens": 28609,
+   "ut_tokens": 7305,
+   "anrop": 7,
+   "medgemma_anrop": 0,
+   "fel": false,
+   "ollama_minne_gib_efter": {
+    "gemma4:e4b": 9.3
+   }
+  }
+ ],
+ "korningar": [
+  {
+   "scenario": "h2_morgonlopning",
+   "titel": "Holdout 2: hög puls under morgonlöpning",
+   "klocka": "12:00",
+   "forskjutning_s": -465,
+   "utlosare": {
+    "kind": "question",
+    "question": "Varför låg min puls på nästan 180 i morse?",
+    "hours": 12
+   },
+   "utlosare_fran_vakt": false,
+   "dataantal": {
+    "hr": 10368,
+    "hrv_rmssd": 3139,
+    "spo2": 3867,
+    "skin_temp": 2693,
+    "resp_rate": 2693,
+    "steps": 1620,
+    "dator_kod": 0,
+    "dator_spel": 6694,
+    "dator_chatt": 0,
+    "dator_webb": 0,
+    "dator_annat": 0,
+    "resting_hr": 28,
+    "natter": 28,
+    "pass": 1,
+    "journal": 1,
+    "labb": 4
+   },
+   "verdict": {
+    "sammanfattning": "{\n  \"sammanfattning\": \"Det finns ingen data som entydigt kan förklara varför pulsen var hög i morse. Det högsta observerade pulsvärdet under en träningsperiod var 170 slag/minut (ref:F:dagar, rad 1), vilket kan vara en normal reaktion på intensiv träning. I vila var pulsen lägre än baslinjen (ref:F:nu, rad 3).\",\n  \"bradska\": \"ingen\",\n  \"bradska_motivering\": \"inga avvikelser\",\n  \"rad\": [\n    \"Fortsätt med din planerade träning, men var uppmärksam på hur din kropp reagerar.\",\n    \"Försök att integrera mer rörelse i din vardag för att möta ditt mål att träna mer.\"\n  ]",
+    "bradska": "bevaka",
+    "rad": [],
+    "fragor_till_varden": [],
+    "bradska_bestamd_av": "teamet inom regelverkets ram",
+    "bradska_team": "bevaka",
+    "bradska_regel": "ingen",
+    "bradska_regel_skal": [],
+    "belagda_pastaenden": []
+   },
+   "strykningar": [
+    {
+     "agent": "advokat",
+     "claim": "Även om det finns en viss sömnskuld (ref:F:somnskuld, rad 3), kan detta vara en normal variation och inte en direkt orsak till en specifik pulsökning på morgonen.",
+     "reason": "siffran 3 finns inte i källdatan"
+    }
+   ],
+   "pastaenden": [
+    {
+     "agent": "advokat",
+     "text": "Pulsens maxvärde på 170 slag/minut under träningspasset (ref:F:dagar, rad 1) kan vara en normal reaktion på intensiv träning, snarare än ett mätfel.",
+     "kallor": [
+      "F:dagar"
+     ]
+    },
+    {
+     "agent": "advokat",
+     "text": "Det finns ingen data som entydigt bevisar att en specifik stressfaktor (t.ex. AI-arbete) orsakade en högre puls, då pulsen i vila (ref:F:nu, rad 3) var lägre än baslinjen.",
+     "kallor": [
+      "F:nu"
+     ]
+    }
+   ],
+   "yttranden": [
+    {
+     "agent": "ordforande",
+     "text": "Kardiolog: Granska pulsdata (F:puls, F:nu) för att bedöma maxpuls (170) och eventuella spikar. Jämför med baslinje."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Idrottsläkare: Analysera aktivitetsdata (F:dagar) och steg (F:dagar) för att bedöma träningsbelastning och stillasittande."
+    },
+    {
+     "agent": "kardiolog",
+     "text": "{\n  \"sammanfattning\": \"Maxpulsen på 170 under träningspasset är förväntad. Det finns inga tecken på mätfel i pulssignalen. Vilopulsen i de senaste 15 minuterna är lägre än baslinjen.\",\n  \"pastaenden\": [\n    {\n      \"text\": \"Maxpulsen på 170 under träningspasset är markerad som träningspuls (F:puls).\",\n      \"kallor\": [\"F:puls\", \"F:dagar\"]\n    },\n    {\n      \"text\": \"Klockans pulsdata visar ren signal med inga tecken på mätfel (F:puls).\",\n      \"kallor\": [\"F:puls\"]\n    },\n    {\n      \"text\": \"Den"
+    },
+    {
+     "agent": "idrott",
+     "text": "{\n  \"sammanfattning\": \"Träningsbelastningen verkar vara låg baserat på det få registrerade passet (F:belastning). Stegen är varierande men ligger nära baslinjen (F:dagar). Återhämtningen verkar vara stabil under de senaste nätterna (F:natter).\",\n  \"pastaenden\": [\n    {\n      \"text\": \"Endast ett träningspass (löpning) har registrerats under de senaste 7 dygnen (F:belastning).\",\n      \"kallor\": [\"F:belastning\"]\n    },\n    {\n      \"text\": \"Stegen på 7330 på den senaste dagen är nära baslinjen på 61"
+    },
+    {
+     "agent": "advokat",
+     "text": "- Pulsens maxvärde på 170 slag/minut under träningspasset (ref:F:dagar, rad 1) kan vara en normal reaktion på intensiv träning, snarare än ett mätfel.\n- Det finns ingen data som entydigt bevisar att en specifik stressfaktor (t.ex. AI-arbete) orsakade en högre puls, då pulsen i vila (ref:F:nu, rad 3) var lägre än baslinjen."
+    },
+    {
+     "agent": "ordforande",
+     "text": "{\n  \"sammanfattning\": \"Det finns ingen data som entydigt kan förklara varför pulsen var hög i morse. Det högsta observerade pulsvärdet under en träningsperiod var 170 slag/minut (ref:F:dagar, rad 1), vilket kan vara en normal reaktion på intensiv träning. I vila var pulsen lägre än baslinjen (ref:F:nu, rad 3).\",\n  \"bradska\": \"ingen\",\n  \"bradska_motivering\": \"inga avvikelser\",\n  \"rad\": [\n    \"Fortsätt med din planerade träning, men var uppmärksam på hur din kropp reagerar.\",\n    \"Försök att integrera mer rörelse i din vardag för att möta ditt mål att träna mer.\"\n  ]"
+    }
+   ],
+   "verktygsanrop": [
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "hr"
+     }
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_labb",
+     "args": {}
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "sok_journal",
+     "args": {}
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "dator_spel"
+     }
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "idrott",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "hr"
+     }
+    },
+    {
+     "agent": "idrott",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "idrott",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "idrott",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "idrott",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "dator_spel"
+     }
+    },
+    {
+     "agent": "idrott",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    }
+   ],
+   "medlemmar": [
+    "ordforande",
+    "kardiolog",
+    "idrott",
+    "advokat",
+    "granskare"
+   ],
+   "refs": {
+    "U:fraga": {
+     "ref": "U:fraga",
+     "personen_skrev": "Varför låg min puls på nästan 180 i morse?"
+    },
+    "F:nu": {
+     "ref": "F:nu",
+     "klockan": "12:00",
+     "period": "senaste 15 minuterna",
+     "puls_median": 69,
+     "steg": 0,
+     "puls_baslinje_samma_timme": 72,
+     "skillnad_puls_mot_baslinje": -3,
+     "riktning_puls_mot_baslinje": "lägre",
+     "puls_median_1_till_3_timmar_sedan": 72,
+     "puls_senaste_5_min_median": 71,
+     "puls_senaste_5_min_max": 74,
+     "steg_senaste_15_min_per_minut_max": 0,
+     "puls_median_senaste_timmen": 69,
+     "steg_senaste_timmen": 0
+    },
+    "F:puls": {
+     "ref": "F:puls",
+     "period": "senaste 24 timmarna",
+     "median": 70,
+     "max": 170,
+     "max_tid": "08:13",
+     "max_under_traningspass": true,
+     "minuter_over_140": 35,
+     "varav_under_eller_direkt_efter_pass": 35,
+     "varav_med_steg_samma_minut": 34,
+     "kvalitet": {
+      "andel_hopp_over_25_slag_mellan_minuter": 0,
+      "andel_saknade_minuter": 0,
+      "isolerade_spikar": [],
+      "antal_isolerade_spikar": 0,
+      "tolkning": "ren signal, inga tecken på mätfel"
+     }
+    },
+    "F:natter": {
+     "ref": "F:natter",
+     "beskrivning": "senaste nätterna, nyast först",
+     "natter": [
+      {
+       "natt_till": "2026-11-25",
+       "somnade": "23:18",
+       "vaknade": "07:29",
+       "ref": "N:natt-1795558680",
+       "somn_timmar": 8.1,
+       "hrv_median_ms": 56,
+       "nattpuls_lagsta_10min": 47,
+       "hudtemp_median_c": 34.22,
+       "andning_median_per_min": 14.2,
+       "spo2_median": 96,
+       "spo2_fall_antal": 0,
+       "spo2_fall_per_timme": 0,
+       "spo2_lagsta": 94
+      },
+      {
+       "natt_till": "2026-11-24",
+       "somnade": "23:30",
+       "vaknade": "07:42",
+       "ref": "N:natt-1795473000",
+       "somn_timmar": 8,
+       "hrv_median_ms": 59,
+       "nattpuls_lagsta_10min": 47,
+       "hudtemp_median_c": 33.98,
+       "andning_median_per_min": 14.2,
+       "spo2_median": 96,
+       "spo2_fall_antal": 0,
+       "spo2_fall_per_timme": 0,
+       "spo2_lagsta": 94
+      },
+      {
+       "natt_till": "2026-11-23",
+       "somnade": "23:26",
+       "vaknade": "07:31",
+       "ref": "N:natt-1795386410",
+       "somn_timmar": 8,
+       "hrv_median_ms": 56,
+       "nattpuls_lagsta_10min": 54,
+       "hudtemp_median_c": 34.02,
+       "andning_median_per_min": 14.3,
+       "spo2_median": 96,
+       "spo2_fall_antal": 0,
+       "spo2_fall_per_timme": 0,
+       "spo2_lagsta": 94
+      },
+      {
+       "natt_till": "2026-11-22",
+       "somnade": "23:32",
+       "vaknade": "07:10",
+       "ref": "N:natt-1795300353",
+       "somn_timmar": 7.4,
+       "hrv_median_ms": 53,
+       "nattpuls_lagsta_10min": 51,
+       "hudtemp_median_c": 34.03,
+       "andning_median_per_min": 14.2,
+       "spo2_median": 96
+      },
+      {
+       "natt_till": "2026-11-21",
+       "somnade": "23:31",
+       "vaknade": "07:27",
+       "ref": "N:natt-1795213873",
+       "somn_timmar": 7.9,
+       "hrv_median_ms": 50,
+       "nattpuls_lagsta_10min": 53,
+       "hudtemp_median_c": 34,
+       "andning_median_per_min": 14.3,
+       "spo2_median": 96
+      },
+      {
+       "natt_till": "2026-11-20",
+       "somnade": "00:01",
+       "vaknade": "07:09",
+       "ref": "N:natt-1795129314",
+       "somn_timmar": 6.9,
+       "hrv_median_ms": 54,
+       "nattpuls_lagsta_10min": 54,
+       "hudtemp_median_c": 34.07,
+       "andning_median_per_min": 14.1,
+       "spo2_median": 96
+      },
+      {
+       "natt_till": "2026-11-19",
+       "somnade": "23:36",
+       "vaknade": "07:19",
+       "ref": "N:natt-1795041415",
+       "somn_timmar": 7.6,
+       "hrv_median_ms": 60,
+       "nattpuls_lagsta_10min": 54,
+       "hudtemp_median_c": 34.17,
+       "andning_median_per_min": 14.3,
+       "spo2_median": 96
+      }
+     ],
+     "baslinje_natt": {
+      "beskrivning": "median av 21 tidigare nätter",
+      "somn_timmar": 7.9,
+      "hrv_median_ms": 57,
+      "nattpuls_lagsta_10min": 53,
+      "hudtemp_median_c": 34.09,
+      "andning_median_per_min": 14.2,
+      "spo2_median": 96
+     },
+     "skillnad_senaste_3_natter_mot_baslinje": {
+      "beskrivning": "medel av de 3 senaste nätterna minus baslinjen: negativt = lägre än normalt",
+      "somn_timmar": 0.1,
+      "hrv_median_ms": 0,
+      "nattpuls_lagsta_10min": -3.7,
+      "hudtemp_median_c": -0.02,
+      "andning_median_per_min": 0,
+      "spo2_median": 0,
+      "hrv_procent": 0
+     },
+     "riktning_senaste_3_natter_mot_baslinje": {
+      "somn_timmar": "högre än baslinjen",
+      "hrv_median_ms": "samma som baslinjen",
+      "nattpuls_lagsta_10min": "lägre än baslinjen",
+      "hudtemp_median_c": "lägre än baslinjen",
+      "andning_median_per_min": "samma som baslinjen",
+      "spo2_median": "samma som baslinjen"
+     },
+     "natter_med_minst_5_syrefall_per_timme": 0,
+     "syrefall_definition": "fall på minst 4 procentenheter under nattens 90:e percentil (som ODI)",
+     "medel_somn_timmar_senaste": 7.7
+    },
+    "N:natt-1795558680": {
+     "natt_till": "2026-11-25",
+     "somnade": "23:18",
+     "vaknade": "07:29",
+     "ref": "N:natt-1795558680",
+     "somn_timmar": 8.1,
+     "hrv_median_ms": 56,
+     "nattpuls_lagsta_10min": 47,
+     "hudtemp_median_c": 34.22,
+     "andning_median_per_min": 14.2,
+     "spo2_median": 96,
+     "spo2_fall_antal": 0,
+     "spo2_fall_per_timme": 0,
+     "spo2_lagsta": 94
+    },
+    "N:natt-1795473000": {
+     "natt_till": "2026-11-24",
+     "somnade": "23:30",
+     "vaknade": "07:42",
+     "ref": "N:natt-1795473000",
+     "somn_timmar": 8,
+     "hrv_median_ms": 59,
+     "nattpuls_lagsta_10min": 47,
+     "hudtemp_median_c": 33.98,
+     "andning_median_per_min": 14.2,
+     "spo2_median": 96,
+     "spo2_fall_antal": 0,
+     "spo2_fall_per_timme": 0,
+     "spo2_lagsta": 94
+    },
+    "N:natt-1795386410": {
+     "natt_till": "2026-11-23",
+     "somnade": "23:26",
+     "vaknade": "07:31",
+     "ref": "N:natt-1795386410",
+     "somn_timmar": 8,
+     "hrv_median_ms": 56,
+     "nattpuls_lagsta_10min": 54,
+     "hudtemp_median_c": 34.02,
+     "andning_median_per_min": 14.3,
+     "spo2_median": 96,
+     "spo2_fall_antal": 0,
+     "spo2_fall_per_timme": 0,
+     "spo2_lagsta": 94
+    },
+    "N:natt-1795300353": {
+     "natt_till": "2026-11-22",
+     "somnade": "23:32",
+     "vaknade": "07:10",
+     "ref": "N:natt-1795300353",
+     "somn_timmar": 7.4,
+     "hrv_median_ms": 53,
+     "nattpuls_lagsta_10min": 51,
+     "hudtemp_median_c": 34.03,
+     "andning_median_per_min": 14.2,
+     "spo2_median": 96
+    },
+    "N:natt-1795213873": {
+     "natt_till": "2026-11-21",
+     "somnade": "23:31",
+     "vaknade": "07:27",
+     "ref": "N:natt-1795213873",
+     "somn_timmar": 7.9,
+     "hrv_median_ms": 50,
+     "nattpuls_lagsta_10min": 53,
+     "hudtemp_median_c": 34,
+     "andning_median_per_min": 14.3,
+     "spo2_median": 96
+    },
+    "N:natt-1795129314": {
+     "natt_till": "2026-11-20",
+     "somnade": "00:01",
+     "vaknade": "07:09",
+     "ref": "N:natt-1795129314",
+     "somn_timmar": 6.9,
+     "hrv_median_ms": 54,
+     "nattpuls_lagsta_10min": 54,
+     "hudtemp_median_c": 34.07,
+     "andning_median_per_min": 14.1,
+     "spo2_median": 96
+    },
+    "N:natt-1795041415": {
+     "natt_till": "2026-11-19",
+     "somnade": "23:36",
+     "vaknade": "07:19",
+     "ref": "N:natt-1795041415",
+     "somn_timmar": 7.6,
+     "hrv_median_ms": 60,
+     "nattpuls_lagsta_10min": 54,
+     "hudtemp_median_c": 34.17,
+     "andning_median_per_min": 14.3,
+     "spo2_median": 96
+    },
+    "F:dagar": {
+     "ref": "F:dagar",
+     "beskrivning": "dygn, nyast först",
+     "dagar": [
+      {
+       "datum": "2026-11-25 (idag, hittills)",
+       "steg": 7330,
+       "traningspass": [
+        {
+         "typ": "löpning",
+         "start": "07:50",
+         "minuter": 35,
+         "medelpuls_under_passet": 164,
+         "maxpuls_under_passet": 170,
+         "puls_10_till_20_min_efter_passet": 76
+        }
+       ]
+      },
+      {
+       "datum": "2026-11-24",
+       "steg": 5756,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 243
+       },
+       "dator_minuter_efter_23": 4,
+       "sista_datorminut_pa_kvallen": "23:03"
+      },
+      {
+       "datum": "2026-11-23",
+       "steg": 6200,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 244
+       },
+       "dator_minuter_efter_23": 9,
+       "sista_datorminut_pa_kvallen": "23:08"
+      },
+      {
+       "datum": "2026-11-22",
+       "steg": 5856,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 266
+       },
+       "dator_minuter_efter_23": 9,
+       "sista_datorminut_pa_kvallen": "23:08"
+      },
+      {
+       "datum": "2026-11-21",
+       "steg": 5781,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 246
+       },
+       "dator_minuter_efter_23": 16,
+       "sista_datorminut_pa_kvallen": "23:15"
+      },
+      {
+       "datum": "2026-11-20",
+       "steg": 5954,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 200
+       },
+       "dator_minuter_efter_23": 0,
+       "sista_datorminut_pa_kvallen": "22:49"
+      },
+      {
+       "datum": "2026-11-19",
+       "steg": 5958,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 209
+       },
+       "dator_minuter_efter_23": 0,
+       "sista_datorminut_pa_kvallen": "22:34"
+      }
+     ],
+     "baslinje_steg_per_dag": 6110
+    },
+    "F:somnskuld": {
+     "ref": "F:somnskuld",
+     "beskrivning": "samma räkning som appens sömnskuld: summa av (behov - sömn) per natt",
+     "somnbehov_timmar": 8.0,
+     "natter_med_data": 7,
+     "somnskuld_timmar_senaste_7_natter": 2.2,
+     "medel_somn_timmar_senaste_7": 7.7,
+     "natter_under_7_timmar": 1,
+     "natter_med_datorn_efter_midnatt": 0,
+     "baslinje_somn_timmar_tidigare_veckor": 7.9,
+     "skillnad_medel_somn_mot_baslinje_timmar": -0.2
+    },
+    "F:kvallar": {
+     "ref": "F:kvallar",
+     "beskrivning": "datorn efter 23:00 per kväll, nyast först",
+     "kvallar_med_datorn_efter_23": 4,
+     "kvallar_med_datorn_efter_01": 0,
+     "kvallar": [
+      {
+       "kvall": "2026-11-24",
+       "minuter_vid_datorn_efter_23": 4,
+       "sista_datorminut": "23:03",
+       "per_kategori": {
+        "spel": 4
+       }
+      },
+      {
+       "kvall": "2026-11-23",
+       "minuter_vid_datorn_efter_23": 9,
+       "sista_datorminut": "23:08",
+       "per_kategori": {
+        "spel": 9
+       }
+      },
+      {
+       "kvall": "2026-11-22",
+       "minuter_vid_datorn_efter_23": 9,
+       "sista_datorminut": "23:08",
+       "per_kategori": {
+        "spel": 9
+       }
+      },
+      {
+       "kvall": "2026-11-21",
+       "minuter_vid_datorn_efter_23": 16,
+       "sista_datorminut": "23:15",
+       "per_kategori": {
+        "spel": 16
+       }
+      },
+      {
+       "kvall": "2026-11-20",
+       "minuter_vid_datorn_efter_23": 0,
+       "sista_datorminut": null,
+       "per_kategori": "inga"
+      },
+      {
+       "kvall": "2026-11-19",
+       "minuter_vid_datorn_efter_23": 0,
+       "sista_datorminut": null,
+       "per_kategori": "inga"
+      }
+     ]
+    },
+    "F:belastning": {
+     "ref": "F:belastning",
+     "period": "senaste 7 dygnen",
+     "antal_traningspass": 1,
+     "traningsminuter_totalt": 35,
+     "pass": [
+      {
+       "typ": "löpning",
+       "start": "07:50",
+       "minuter": 35,
+       "medelpuls_under_passet": 164,
+       "maxpuls_under_passet": 170,
+       "puls_10_till_20_min_efter_passet": 76
+      }
+     ],
+     "minuter_i_zon_4_5_per_dag_senaste_3": {
+      "2026-11-25": 33
+     },
+     "tranade_igar": false
+    },
+    "F:prover": {
+     "ref": "F:prover",
+     "beskrivning": "senaste provsvaret per analys",
+     "prover": [
+      {
+       "ref": "L:c396c96d0d",
+       "analys": "Hb",
+       "varde": "148",
+       "enhet": "g/L",
+       "referens": "134.0-170.0",
+       "datum": "2026-03-30",
+       "dagar_sedan": 240,
+       "bedomning_mot_referens": "inom"
+      },
+      {
+       "ref": "L:43d14831fd",
+       "analys": "Ferritin",
+       "varde": "72",
+       "enhet": "µg/L",
+       "referens": "15.0-150.0",
+       "datum": "2026-03-30",
+       "dagar_sedan": 240,
+       "bedomning_mot_referens": "inom"
+      },
+      {
+       "ref": "L:17c2cfe783",
+       "analys": "TSH",
+       "varde": "1,6",
+       "enhet": "mIE/L",
+       "referens": "0.4-4.0",
+       "datum": "2026-03-30",
+       "dagar_sedan": 240,
+       "bedomning_mot_referens": "inom"
+      },
+      {
+       "ref": "L:f7a69c46ee",
+       "analys": "CRP",
+       "varde": "<1",
+       "enhet": "mg/L",
+       "referens": "-5.0",
+       "datum": "2026-03-30",
+       "dagar_sedan": 240,
+       "bedomning_mot_referens": "inom"
+      }
+     ]
+    },
+    "L:c396c96d0d": {
+     "ref": "L:c396c96d0d",
+     "analys": "Hb",
+     "varde": "148",
+     "enhet": "g/L",
+     "referens": "134.0-170.0",
+     "datum": "2026-03-30",
+     "dagar_sedan": 240,
+     "bedomning_mot_referens": "inom"
+    },
+    "L:43d14831fd": {
+     "ref": "L:43d14831fd",
+     "analys": "Ferritin",
+     "varde": "72",
+     "enhet": "µg/L",
+     "referens": "15.0-150.0",
+     "datum": "2026-03-30",
+     "dagar_sedan": 240,
+     "bedomning_mot_referens": "inom"
+    },
+    "L:17c2cfe783": {
+     "ref": "L:17c2cfe783",
+     "analys": "TSH",
+     "varde": "1,6",
+     "enhet": "mIE/L",
+     "referens": "0.4-4.0",
+     "datum": "2026-03-30",
+     "dagar_sedan": 240,
+     "bedomning_mot_referens": "inom"
+    },
+    "L:f7a69c46ee": {
+     "ref": "L:f7a69c46ee",
+     "analys": "CRP",
+     "varde": "<1",
+     "enhet": "mg/L",
+     "referens": "-5.0",
+     "datum": "2026-03-30",
+     "dagar_sedan": 240,
+     "bedomning_mot_referens": "inom"
+    },
+    "F:journal": {
+     "ref": "F:journal",
+     "anteckningar": [
+      {
+       "ref": "J:09aab5bea4",
+       "date": "2026-03-30",
+       "kind": "anteckning",
+       "title": "Hälsobesök",
+       "text": "Hälsosamtal. Frisk, inga mediciner, inga kända allergier. Blodprover tagna, normala."
+      }
+     ]
+    },
+    "J:09aab5bea4": {
+     "ref": "J:09aab5bea4",
+     "date": "2026-03-30",
+     "kind": "anteckning",
+     "title": "Hälsobesök",
+     "text": "Hälsosamtal. Frisk, inga mediciner, inga kända allergier. Blodprover tagna, normala."
+    },
+    "F:tolkning": {
+     "ref": "F:tolkning",
+     "beskrivning": "deterministiska regler, inte en språkmodell",
+     "metric": null,
+     "brådska_enligt_regler": "ingen",
+     "skal": [
+      "inga regler slog till"
+     ]
+    }
+   },
+   "sekunder": 107.5,
+   "tokens": {
+    "prompt": 24847,
+    "ut": 6657,
+    "anrop": 6,
+    "per_modell": {
+     "gemma4:e4b": {
+      "calls": 6,
+      "prompt_tokens": 24847,
+      "output_tokens": 6657,
+      "seconds": 107.45,
+      "prompt_eval_s": 13.7,
+      "eval_s": 86.32,
+      "gen_tokens_per_s": 77.1,
+      "prompt_tokens_per_s": 1814.2
+     }
+    }
+   },
+   "llm_anrop": [
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4132,
+     "ut": 136,
+     "s": 15.88,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4306,
+     "ut": 1750,
+     "s": 28.37,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4115,
+     "ut": 1750,
+     "s": 21.5,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4014,
+     "ut": 271,
+     "s": 6.12,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4059,
+     "ut": 1000,
+     "s": 11.52,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4221,
+     "ut": 1750,
+     "s": 24.06,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    }
+   ],
+   "fel": null,
+   "ollama_minne_gib_efter": {
+    "gemma4:e4b": 9.3
+   }
+  },
+  {
+   "scenario": "h2_snarkning",
+   "titel": "Holdout 2: snarkning och syrefall",
+   "klocka": "13:00",
+   "forskjutning_s": -83373,
+   "utlosare": {
+    "kind": "question",
+    "question": "Min sambo säger att jag snarkar och slutar andas ibland. Syns något i datan?",
+    "hours": 168
+   },
+   "utlosare_fran_vakt": false,
+   "dataantal": {
+    "hr": 10368,
+    "hrv_rmssd": 3154,
+    "spo2": 3908,
+    "skin_temp": 2709,
+    "resp_rate": 2709,
+    "steps": 1605,
+    "dator_kod": 0,
+    "dator_spel": 6688,
+    "dator_chatt": 0,
+    "dator_webb": 0,
+    "dator_annat": 0,
+    "resting_hr": 28,
+    "natter": 28,
+    "pass": 0,
+    "journal": 1,
+    "labb": 4
+   },
+   "verdict": {
+    "sammanfattning": "Datan visar upprepade nattliga syrefall, specifikt 58 fall per natt (F:natter, ref:F:natter), vilket utlöser en varning enligt regelverket. Det finns inga direkta mätvärden för snarkning eller andningsstopp i datan.",
+    "bradska": "ta_upp_med_varden",
+    "bradska_motivering": "upprepade nattliga syrefall (minst 5 per timme)",
+    "rad": [
+     "Kontakta vårdgivare för att diskutera de upprepade nattliga syrefallen (58 fall per natt, F:natter, ref:F:natter) och eventuellt behov av vidare utredning."
+    ],
+    "fragor_till_varden": [],
+    "bradska_bestamd_av": "teamet inom regelverkets ram",
+    "bradska_team": "ta_upp_med_varden",
+    "bradska_regel": "ta_upp_med_varden",
+    "bradska_regel_skal": [
+     "ta_upp_med_varden: upprepade nattliga syrefall (minst 5 per timme)"
+    ],
+    "belagda_pastaenden": []
+   },
+   "strykningar": [],
+   "pastaenden": [
+    {
+     "agent": "advokat",
+     "text": "Det finns inga direkta mätvärden i datan som bekräftar snarkning eller andningsstopp, och de observerade sömnparametrarna (t.ex. andning_median_per_min: 14.2 i F:natter, ref:N:natt-1795471679) kan vara inom normala gränser för sömn, vilket inte utesluter att det är en normal variation eller ett mätfel.",
+     "kallor": [
+      "F:natter",
+      "F:tolkning"
+     ]
+    },
+    {
+     "agent": "advokat",
+     "text": "Datan visar ingen aktiv träning (F:belastning, ref:F:belastning) och det observerade antalet steg (F:nu, ref:F:nu) är 0 i de senaste 15 minuterna, vilket indikerar att personen är stilla, men detta kan vara en normal del av en långvarig sittande period utan att nödvändigtvis indikera en patologisk process.",
+     "kallor": [
+      "F:belastning",
+      "F:nu"
+     ]
+    },
+    {
+     "agent": "advokat",
+     "text": "Även om det finns upprepade nattliga syrefall (F:natter, ref:F:natter), är det en deterministisk regel som indikerar att 'ta upp med varden' (F:tolkning, ref:F:tolkning), vilket inte är en vardaglig förklaring utan en systemvarning som inte kan bevisas vara sjukdom utan ytterligare information.",
+     "kallor": [
+      "F:natter",
+      "F:tolkning"
+     ]
+    }
+   ],
+   "yttranden": [
+    {
+     "agent": "ordforande",
+     "text": "Sömnläkare: Granska nattliga syrefall (spo2_fall_antal) och andningsmönster (andning_median_per_min) för att bedöma sömnkvalitet."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Kardiolog: Analysera nattpuls (nattpuls_lagsta_10min) och pulsvariabilitet (hrv_median_ms) för att se mönster."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Stressmedicin: Bedöm dygnsrytm och skärmtid (kvallar_med_datorn_efter_23) i relation till nattliga mätvärden."
+    },
+    {
+     "agent": "somn",
+     "text": "{\n  \"sammanfattning\": \"Data indikerar mönster som bör bevakas. Nattliga syrefall uppvisas regelbundet. Andningsmönstret är stabilt men kan vara kopplat till dessa fall.\",\n  \"pastaenden\": [\n    {\n      \"text\": \"Flera nätter har haft minst 5 syrefall per timme (F:natter, ref:F:tolkning).\",\n      \"kallor\": [\"F:natter\", \"F:tolkning\"]\n    },\n    {\n      \"text\": \"Andningsmedianen ligger stabilt runt 14.1-14.3 per minut (F:natter).\",\n      \"kallor\": [\"F:natter\"]\n    },\n    {\n      \"text\": \"Sömnskulden "
+    },
+    {
+     "agent": "kardiolog",
+     "text": "{\n  \"sammanfattning\": \"Nattpuls och HRV visar en trend som kan tyda på belastning. Det finns ingen omedelbar fara baserat på de tillgängliga mätvärdena. Bevaka utvecklingen framöver.\",\n  \"pastaenden\": [\n    {\n      \"text\": \"Nattpuls_lagsta_10min har varit lägre än baslinjen de senaste 3 nätterna (ref:F:natter).\",\n      \"kallor\": [\"F:natter\"]\n    },\n    {\n      \"text\": \"HRV_median_ms har varit högre än baslinjen de senaste 3 nätterna (ref:F:natter).\",\n      \"kallor\": [\"F:natter\"]\n    },\n    {\n   "
+    },
+    {
+     "agent": "stress",
+     "text": "{\n  \"sammanfattning\": \"Datan visar mönster som kan tyda på dygnsbelastning. Nattliga syrefall har observerats i flera nätter (F:natter). Det har förekommit 4 kvällar med datoranvändning efter 23:00 (F:kvallar). Datan räcker inte för att dra slutsatser om stressbelastning (F:belastning).\",\n  \"pastaenden\": [\n    {\n      \"text\": \"Flera nätter har haft minst 5 syrefall per timme (F:natter).\",\n      \"kallor\": [\"F:natter\"]\n    },\n    {\n      \"text\": \"Det har registrerats 4 kvällar med datoranvändning "
+    },
+    {
+     "agent": "advokat",
+     "text": "- Det finns inga direkta mätvärden i datan som bekräftar snarkning eller andningsstopp, och de observerade sömnparametrarna (t.ex. andning_median_per_min: 14.2 i F:natter, ref:N:natt-1795471679) kan vara inom normala gränser för sömn, vilket inte utesluter att det är en normal variation eller ett mätfel.\n- Datan visar ingen aktiv träning (F:belastning, ref:F:belastning) och det observerade antalet steg (F:nu, ref:F:nu) är 0 i de senaste 15 minuterna, vilket indikerar att personen är stilla, men detta kan vara en normal del av en långvarig sittande period utan att nödvändigtvis indikera en patologisk process.\n- Även om det finns upprepade nattliga syrefall (F:natter, ref:F:natter), är det en deterministisk regel som indikerar att 'ta upp med varden' (F:tolkning, ref:F:tolkning), vilket inte är en vardaglig förklaring utan en systemvarning som inte kan bevisas vara sjukdom utan ytterligare information."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Datan visar upprepade nattliga syrefall, specifikt 58 fall per natt (F:natter, ref:F:natter), vilket utlöser en varning enligt regelverket. Det finns inga direkta mätvärden för snarkning eller andningsstopp i datan."
+    }
+   ],
+   "verktygsanrop": [
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "hr"
+     }
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "dator_spel"
+     }
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "hr"
+     }
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_labb",
+     "args": {}
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "sok_journal",
+     "args": {}
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "dator_spel"
+     }
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "hr"
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "sok_journal",
+     "args": {}
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "dator_spel"
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    }
+   ],
+   "medlemmar": [
+    "ordforande",
+    "somn",
+    "kardiolog",
+    "stress",
+    "advokat",
+    "granskare"
+   ],
+   "refs": {
+    "U:fraga": {
+     "ref": "U:fraga",
+     "personen_skrev": "Min sambo säger att jag snarkar och slutar andas ibland. Syns något i datan?"
+    },
+    "F:nu": {
+     "ref": "F:nu",
+     "klockan": "13:00",
+     "period": "senaste 15 minuterna",
+     "puls_median": 72,
+     "steg": 0,
+     "puls_baslinje_samma_timme": 71,
+     "skillnad_puls_mot_baslinje": 1,
+     "riktning_puls_mot_baslinje": "högre",
+     "puls_median_1_till_3_timmar_sedan": 72,
+     "puls_senaste_5_min_median": 70,
+     "puls_senaste_5_min_max": 73,
+     "steg_senaste_15_min_per_minut_max": 0,
+     "puls_median_senaste_timmen": 77,
+     "steg_senaste_timmen": 1049
+    },
+    "F:puls": {
+     "ref": "F:puls",
+     "period": "senaste 48 timmarna",
+     "median": 70,
+     "max": 109,
+     "max_tid": "12:14",
+     "max_under_traningspass": false,
+     "minuter_over_140": 0,
+     "varav_under_eller_direkt_efter_pass": 0,
+     "varav_med_steg_samma_minut": 0,
+     "kvalitet": {
+      "andel_hopp_over_25_slag_mellan_minuter": 0,
+      "andel_saknade_minuter": 0,
+      "isolerade_spikar": [],
+      "antal_isolerade_spikar": 0,
+      "tolkning": "ren signal, inga tecken på mätfel"
+     }
+    },
+    "F:natter": {
+     "ref": "F:natter",
+     "beskrivning": "senaste nätterna, nyast först",
+     "natter": [
+      {
+       "natt_till": "2026-11-24",
+       "somnade": "23:07",
+       "vaknade": "07:29",
+       "ref": "N:natt-1795471679",
+       "somn_timmar": 8.3,
+       "hrv_median_ms": 58,
+       "nattpuls_lagsta_10min": 49,
+       "hudtemp_median_c": 34.07,
+       "andning_median_per_min": 14.2,
+       "spo2_median": 96,
+       "spo2_fall_antal": 58,
+       "spo2_fall_per_timme": 7,
+       "spo2_lagsta": 87
+      },
+      {
+       "natt_till": "2026-11-23",
+       "somnade": "23:18",
+       "vaknade": "07:39",
+       "ref": "N:natt-1795385920",
+       "somn_timmar": 8.3,
+       "hrv_median_ms": 60,
+       "nattpuls_lagsta_10min": 52,
+       "hudtemp_median_c": 34,
+       "andning_median_per_min": 14.1,
+       "spo2_median": 96,
+       "spo2_fall_antal": 58,
+       "spo2_fall_per_timme": 7,
+       "spo2_lagsta": 87
+      },
+      {
+       "natt_till": "2026-11-22",
+       "somnade": "23:27",
+       "vaknade": "07:41",
+       "ref": "N:natt-1795300032",
+       "somn_timmar": 8,
+       "hrv_median_ms": 60,
+       "nattpuls_lagsta_10min": 54,
+       "hudtemp_median_c": 33.99,
+       "andning_median_per_min": 14.2,
+       "spo2_median": 96,
+       "spo2_fall_antal": 58,
+       "spo2_fall_per_timme": 7.1,
+       "spo2_lagsta": 88
+      },
+      {
+       "natt_till": "2026-11-21",
+       "somnade": "23:03",
+       "vaknade": "07:41",
+       "ref": "N:natt-1795212215",
+       "somn_timmar": 8.5,
+       "hrv_median_ms": 50,
+       "nattpuls_lagsta_10min": 51,
+       "hudtemp_median_c": 33.92,
+       "andning_median_per_min": 14.3,
+       "spo2_median": 96
+      },
+      {
+       "natt_till": "2026-11-20",
+       "somnade": "23:20",
+       "vaknade": "07:28",
+       "ref": "N:natt-1795126846",
+       "somn_timmar": 7.9,
+       "hrv_median_ms": 65,
+       "nattpuls_lagsta_10min": 53,
+       "hudtemp_median_c": 34.01,
+       "andning_median_per_min": 14.3,
+       "spo2_median": 96
+      },
+      {
+       "natt_till": "2026-11-19",
+       "somnade": "23:34",
+       "vaknade": "07:19",
+       "ref": "N:natt-1795041240",
+       "somn_timmar": 7.7,
+       "hrv_median_ms": 50,
+       "nattpuls_lagsta_10min": 53,
+       "hudtemp_median_c": 34.11,
+       "andning_median_per_min": 14.3,
+       "spo2_median": 96
+      },
+      {
+       "natt_till": "2026-11-18",
+       "somnade": "23:32",
+       "vaknade": "07:17",
+       "ref": "N:natt-1794954729",
+       "somn_timmar": 7.6,
+       "hrv_median_ms": 59,
+       "nattpuls_lagsta_10min": 54,
+       "hudtemp_median_c": 34.19,
+       "andning_median_per_min": 14.1,
+       "spo2_median": 96
+      }
+     ],
+     "baslinje_natt": {
+      "beskrivning": "median av 21 tidigare nätter",
+      "somn_timmar": 7.9,
+      "hrv_median_ms": 55,
+      "nattpuls_lagsta_10min": 53,
+      "hudtemp_median_c": 34.06,
+      "andning_median_per_min": 14.2,
+      "spo2_median": 96
+     },
+     "skillnad_senaste_3_natter_mot_baslinje": {
+      "beskrivning": "medel av de 3 senaste nätterna minus baslinjen: negativt = lägre än normalt",
+      "somn_timmar": 0.3,
+      "hrv_median_ms": 4.3,
+      "nattpuls_lagsta_10min": -1.3,
+      "hudtemp_median_c": -0.04,
+      "andning_median_per_min": 0,
+      "spo2_median": 0,
+      "hrv_procent": 8
+     },
+     "riktning_senaste_3_natter_mot_baslinje": {
+      "somn_timmar": "högre än baslinjen",
+      "hrv_median_ms": "högre än baslinjen",
+      "nattpuls_lagsta_10min": "lägre än baslinjen",
+      "hudtemp_median_c": "lägre än baslinjen",
+      "andning_median_per_min": "samma som baslinjen",
+      "spo2_median": "samma som baslinjen"
+     },
+     "natter_med_minst_5_syrefall_per_timme": 3,
+     "syrefall_definition": "fall på minst 4 procentenheter under nattens 90:e percentil (som ODI)",
+     "medel_somn_timmar_senaste": 8
+    },
+    "N:natt-1795471679": {
+     "natt_till": "2026-11-24",
+     "somnade": "23:07",
+     "vaknade": "07:29",
+     "ref": "N:natt-1795471679",
+     "somn_timmar": 8.3,
+     "hrv_median_ms": 58,
+     "nattpuls_lagsta_10min": 49,
+     "hudtemp_median_c": 34.07,
+     "andning_median_per_min": 14.2,
+     "spo2_median": 96,
+     "spo2_fall_antal": 58,
+     "spo2_fall_per_timme": 7,
+     "spo2_lagsta": 87
+    },
+    "N:natt-1795385920": {
+     "natt_till": "2026-11-23",
+     "somnade": "23:18",
+     "vaknade": "07:39",
+     "ref": "N:natt-1795385920",
+     "somn_timmar": 8.3,
+     "hrv_median_ms": 60,
+     "nattpuls_lagsta_10min": 52,
+     "hudtemp_median_c": 34,
+     "andning_median_per_min": 14.1,
+     "spo2_median": 96,
+     "spo2_fall_antal": 58,
+     "spo2_fall_per_timme": 7,
+     "spo2_lagsta": 87
+    },
+    "N:natt-1795300032": {
+     "natt_till": "2026-11-22",
+     "somnade": "23:27",
+     "vaknade": "07:41",
+     "ref": "N:natt-1795300032",
+     "somn_timmar": 8,
+     "hrv_median_ms": 60,
+     "nattpuls_lagsta_10min": 54,
+     "hudtemp_median_c": 33.99,
+     "andning_median_per_min": 14.2,
+     "spo2_median": 96,
+     "spo2_fall_antal": 58,
+     "spo2_fall_per_timme": 7.1,
+     "spo2_lagsta": 88
+    },
+    "N:natt-1795212215": {
+     "natt_till": "2026-11-21",
+     "somnade": "23:03",
+     "vaknade": "07:41",
+     "ref": "N:natt-1795212215",
+     "somn_timmar": 8.5,
+     "hrv_median_ms": 50,
+     "nattpuls_lagsta_10min": 51,
+     "hudtemp_median_c": 33.92,
+     "andning_median_per_min": 14.3,
+     "spo2_median": 96
+    },
+    "N:natt-1795126846": {
+     "natt_till": "2026-11-20",
+     "somnade": "23:20",
+     "vaknade": "07:28",
+     "ref": "N:natt-1795126846",
+     "somn_timmar": 7.9,
+     "hrv_median_ms": 65,
+     "nattpuls_lagsta_10min": 53,
+     "hudtemp_median_c": 34.01,
+     "andning_median_per_min": 14.3,
+     "spo2_median": 96
+    },
+    "N:natt-1795041240": {
+     "natt_till": "2026-11-19",
+     "somnade": "23:34",
+     "vaknade": "07:19",
+     "ref": "N:natt-1795041240",
+     "somn_timmar": 7.7,
+     "hrv_median_ms": 50,
+     "nattpuls_lagsta_10min": 53,
+     "hudtemp_median_c": 34.11,
+     "andning_median_per_min": 14.3,
+     "spo2_median": 96
+    },
+    "N:natt-1794954729": {
+     "natt_till": "2026-11-18",
+     "somnade": "23:32",
+     "vaknade": "07:17",
+     "ref": "N:natt-1794954729",
+     "somn_timmar": 7.6,
+     "hrv_median_ms": 59,
+     "nattpuls_lagsta_10min": 54,
+     "hudtemp_median_c": 34.19,
+     "andning_median_per_min": 14.1,
+     "spo2_median": 96
+    },
+    "F:dagar": {
+     "ref": "F:dagar",
+     "beskrivning": "dygn, nyast först",
+     "dagar": [
+      {
+       "datum": "2026-11-24 (idag, hittills)",
+       "steg": 4055
+      },
+      {
+       "datum": "2026-11-23",
+       "steg": 5935,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 278
+       },
+       "dator_minuter_efter_23": 29,
+       "sista_datorminut_pa_kvallen": "23:28"
+      },
+      {
+       "datum": "2026-11-22",
+       "steg": 5762,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 259
+       },
+       "dator_minuter_efter_23": 10,
+       "sista_datorminut_pa_kvallen": "23:09"
+      },
+      {
+       "datum": "2026-11-21",
+       "steg": 5855,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 260
+       },
+       "dator_minuter_efter_23": 11,
+       "sista_datorminut_pa_kvallen": "23:10"
+      },
+      {
+       "datum": "2026-11-20",
+       "steg": 5698,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 243
+       },
+       "dator_minuter_efter_23": 27,
+       "sista_datorminut_pa_kvallen": "23:26"
+      },
+      {
+       "datum": "2026-11-19",
+       "steg": 5420,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 184
+       },
+       "dator_minuter_efter_23": 0,
+       "sista_datorminut_pa_kvallen": "22:30"
+      },
+      {
+       "datum": "2026-11-18",
+       "steg": 5762,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 200
+       },
+       "dator_minuter_efter_23": 0,
+       "sista_datorminut_pa_kvallen": "22:54"
+      }
+     ],
+     "baslinje_steg_per_dag": 5939
+    },
+    "F:somnskuld": {
+     "ref": "F:somnskuld",
+     "beskrivning": "samma räkning som appens sömnskuld: summa av (behov - sömn) per natt",
+     "somnbehov_timmar": 8.0,
+     "natter_med_data": 7,
+     "somnskuld_timmar_senaste_7_natter": 0.8,
+     "medel_somn_timmar_senaste_7": 8.1,
+     "natter_under_7_timmar": 0,
+     "natter_med_datorn_efter_midnatt": 0,
+     "baslinje_somn_timmar_tidigare_veckor": 7.9,
+     "skillnad_medel_somn_mot_baslinje_timmar": 0.2
+    },
+    "F:kvallar": {
+     "ref": "F:kvallar",
+     "beskrivning": "datorn efter 23:00 per kväll, nyast först",
+     "kvallar_med_datorn_efter_23": 4,
+     "kvallar_med_datorn_efter_01": 0,
+     "kvallar": [
+      {
+       "kvall": "2026-11-23",
+       "minuter_vid_datorn_efter_23": 29,
+       "sista_datorminut": "23:28",
+       "per_kategori": {
+        "spel": 29
+       }
+      },
+      {
+       "kvall": "2026-11-22",
+       "minuter_vid_datorn_efter_23": 10,
+       "sista_datorminut": "23:09",
+       "per_kategori": {
+        "spel": 10
+       }
+      },
+      {
+       "kvall": "2026-11-21",
+       "minuter_vid_datorn_efter_23": 11,
+       "sista_datorminut": "23:10",
+       "per_kategori": {
+        "spel": 11
+       }
+      },
+      {
+       "kvall": "2026-11-20",
+       "minuter_vid_datorn_efter_23": 27,
+       "sista_datorminut": "23:26",
+       "per_kategori": {
+        "spel": 27
+       }
+      },
+      {
+       "kvall": "2026-11-19",
+       "minuter_vid_datorn_efter_23": 0,
+       "sista_datorminut": null,
+       "per_kategori": "inga"
+      },
+      {
+       "kvall": "2026-11-18",
+       "minuter_vid_datorn_efter_23": 0,
+       "sista_datorminut": null,
+       "per_kategori": "inga"
+      }
+     ]
+    },
+    "F:belastning": {
+     "ref": "F:belastning",
+     "period": "senaste 7 dygnen",
+     "antal_traningspass": 0,
+     "traningsminuter_totalt": 0,
+     "pass": "inga",
+     "minuter_i_zon_4_5_per_dag_senaste_3": "inga",
+     "tranade_igar": false
+    },
+    "F:prover": {
+     "ref": "F:prover",
+     "beskrivning": "senaste provsvaret per analys",
+     "prover": [
+      {
+       "ref": "L:00a7e0e72b",
+       "analys": "Hb",
+       "varde": "148",
+       "enhet": "g/L",
+       "referens": "134.0-170.0",
+       "datum": "2026-03-29",
+       "dagar_sedan": 240,
+       "bedomning_mot_referens": "inom"
+      },
+      {
+       "ref": "L:dd7fb8d991",
+       "analys": "Ferritin",
+       "varde": "72",
+       "enhet": "µg/L",
+       "referens": "15.0-150.0",
+       "datum": "2026-03-29",
+       "dagar_sedan": 240,
+       "bedomning_mot_referens": "inom"
+      },
+      {
+       "ref": "L:278a50d194",
+       "analys": "TSH",
+       "varde": "1,6",
+       "enhet": "mIE/L",
+       "referens": "0.4-4.0",
+       "datum": "2026-03-29",
+       "dagar_sedan": 240,
+       "bedomning_mot_referens": "inom"
+      },
+      {
+       "ref": "L:7f8b391a6c",
+       "analys": "CRP",
+       "varde": "<1",
+       "enhet": "mg/L",
+       "referens": "-5.0",
+       "datum": "2026-03-29",
+       "dagar_sedan": 240,
+       "bedomning_mot_referens": "inom"
+      }
+     ]
+    },
+    "L:00a7e0e72b": {
+     "ref": "L:00a7e0e72b",
+     "analys": "Hb",
+     "varde": "148",
+     "enhet": "g/L",
+     "referens": "134.0-170.0",
+     "datum": "2026-03-29",
+     "dagar_sedan": 240,
+     "bedomning_mot_referens": "inom"
+    },
+    "L:dd7fb8d991": {
+     "ref": "L:dd7fb8d991",
+     "analys": "Ferritin",
+     "varde": "72",
+     "enhet": "µg/L",
+     "referens": "15.0-150.0",
+     "datum": "2026-03-29",
+     "dagar_sedan": 240,
+     "bedomning_mot_referens": "inom"
+    },
+    "L:278a50d194": {
+     "ref": "L:278a50d194",
+     "analys": "TSH",
+     "varde": "1,6",
+     "enhet": "mIE/L",
+     "referens": "0.4-4.0",
+     "datum": "2026-03-29",
+     "dagar_sedan": 240,
+     "bedomning_mot_referens": "inom"
+    },
+    "L:7f8b391a6c": {
+     "ref": "L:7f8b391a6c",
+     "analys": "CRP",
+     "varde": "<1",
+     "enhet": "mg/L",
+     "referens": "-5.0",
+     "datum": "2026-03-29",
+     "dagar_sedan": 240,
+     "bedomning_mot_referens": "inom"
+    },
+    "F:journal": {
+     "ref": "F:journal",
+     "anteckningar": [
+      {
+       "ref": "J:941d2e8d2c",
+       "date": "2026-03-29",
+       "kind": "anteckning",
+       "title": "Hälsobesök",
+       "text": "Hälsosamtal. Frisk, inga mediciner, inga kända allergier. Blodprover tagna, normala."
+      }
+     ]
+    },
+    "J:941d2e8d2c": {
+     "ref": "J:941d2e8d2c",
+     "date": "2026-03-29",
+     "kind": "anteckning",
+     "title": "Hälsobesök",
+     "text": "Hälsosamtal. Frisk, inga mediciner, inga kända allergier. Blodprover tagna, normala."
+    },
+    "F:tolkning": {
+     "ref": "F:tolkning",
+     "beskrivning": "deterministiska regler, inte en språkmodell",
+     "metric": null,
+     "brådska_enligt_regler": "ta_upp_med_varden",
+     "skal": [
+      "ta_upp_med_varden: upprepade nattliga syrefall (minst 5 per timme)"
+     ]
+    }
+   },
+   "sekunder": 122.6,
+   "tokens": {
+    "prompt": 28776,
+    "ut": 7054,
+    "anrop": 7,
+    "per_modell": {
+     "gemma4:e4b": {
+      "calls": 7,
+      "prompt_tokens": 28776,
+      "output_tokens": 7054,
+      "seconds": 122.5,
+      "prompt_eval_s": 14.64,
+      "eval_s": 100.62,
+      "gen_tokens_per_s": 70.1,
+      "prompt_tokens_per_s": 1965.6
+     }
+    }
+   },
+   "llm_anrop": [
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4038,
+     "ut": 198,
+     "s": 16.67,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4099,
+     "ut": 1750,
+     "s": 28.41,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4210,
+     "ut": 1750,
+     "s": 23.8,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4021,
+     "ut": 1750,
+     "s": 24.33,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 3920,
+     "ut": 398,
+     "s": 8.74,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4150,
+     "ut": 1000,
+     "s": 14.46,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4338,
+     "ut": 208,
+     "s": 6.09,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    }
+   ],
+   "fel": null,
+   "ollama_minne_gib_efter": {
+    "gemma4:e4b": 9.3
+   }
+  },
+  {
+   "scenario": "h2_feber",
+   "titel": "Holdout 2: tecken på feber",
+   "klocka": "10:00",
+   "forskjutning_s": -7896,
+   "utlosare": {
+    "kind": "question",
+    "question": "Jag känner mig hängig sedan i går. Vad säger klockan?",
+    "hours": 72
+   },
+   "utlosare_fran_vakt": false,
+   "dataantal": {
+    "hr": 10368,
+    "hrv_rmssd": 3273,
+    "spo2": 4349,
+    "skin_temp": 2837,
+    "resp_rate": 2837,
+    "steps": 1576,
+    "dator_kod": 0,
+    "dator_spel": 6736,
+    "dator_chatt": 0,
+    "dator_webb": 0,
+    "dator_annat": 0,
+    "resting_hr": 28,
+    "natter": 28,
+    "pass": 0,
+    "journal": 1,
+    "labb": 4
+   },
+   "verdict": {
+    "sammanfattning": "{\n  \"sammanfattning\": \"Baserat på regelverket är brådskan 'bevaka' på grund av mönstret där HRV har varit under baslinjen tre nätter i följd, samtidigt som hudtemperaturen, andningen och nattpulsen har uppvisat en uppåtgående trend. Detta mönster tolkas av regelverket som ett tecken på begynnande infektion.\",\n  \"bradska\": \"bevaka\",\n  \"bradska_motivering\": \"Regelverket anger 'bevaka: HRV under baslinjen tre nätter med hudtemperatur upp, andning upp, nattpuls upp; hudtemperaturen har stigit: mönstret talar för begynnande infektion'.\",\n  \"rad\": [\n    \"Fortsätt med egenvård och håll koll på dina v",
+    "bradska": "bevaka",
+    "rad": [],
+    "fragor_till_varden": [],
+    "bradska_bestamd_av": "teamet inom regelverkets ram",
+    "bradska_team": "bevaka",
+    "bradska_regel": "bevaka",
+    "bradska_regel_skal": [
+     "bevaka: HRV under baslinjen tre nätter med hudtemperatur upp, andning upp, nattpuls upp; hudtemperaturen har stigit: mönstret talar för begynnande infektion"
+    ],
+    "belagda_pastaenden": []
+   },
+   "strykningar": [],
+   "pastaenden": [
+    {
+     "agent": "advokat",
+     "text": "Det kan vara enbart en period av låg fysisk aktivitet som bidrar till känslan av att vara hängig, eftersom antalet steg under de senaste 15 minuterna är 0 (F:nu, steg:0).",
+     "kallor": [
+      "F:nu"
+     ]
+    },
+    {
+     "agent": "advokat",
+     "text": "Den observerade pulsen på 86 slag/minut under de senaste 15 minuterna (F:nu, puls_median:86) kan vara en del av en normal variation, då pulsen under de senaste 1 till 3 timmarna är 68 slag/minut (F:nu, puls_median_1_till_3_timmar_sedan:68) och den nuvarande pulsen är högre än baslinjen för samma timme (F:nu, skillnad_puls_mot_baslinje:15).",
+     "kallor": [
+      "F:nu"
+     ]
+    },
+    {
+     "agent": "advokat",
+     "text": "Det finns inga direkta data som bekräftar att personen har genomfört någon form av träningspass under de senaste 7 dygnen (F:belastning, antal_traningspass:0).",
+     "kallor": [
+      "F:belastning"
+     ]
+    }
+   ],
+   "yttranden": [
+    {
+     "agent": "ordforande",
+     "text": "Stressmedicin: Granska pulsdata (F:nu, F:puls) och nattdata (F:natter) för att bedöma stress och dygnsrytm."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Sömnläkare: Analysera sömnlängd, HRV och andning (F:natter) för att se mönster i nattlig återhämtning."
+    },
+    {
+     "agent": "stress",
+     "text": "{\n  \"sammanfattning\": \"Pulsdata indikerar en högre puls i de senaste 15 minuterna jämfört med baslinjen (F:nu). Sömnmönstret visar en genomsnittlig sömn på 9 timmar de senaste 7 nätterna (F:somnskuld). Det finns en trend av lägre HRV de senaste 3 nätterna (F:natter).\",\n  \"pastaenden\": [\n    {\n      \"text\": \"Pulsmedianen de senaste 15 minuterna är 86, vilket är 15 högre än baslinjen (F:nu).\",\n      \"kallor\": [\"F:nu\"]\n    },\n    {\n      \"text\": \"Medelvärdet för sömn de senaste 7 nätterna är 9 timm"
+    },
+    {
+     "agent": "somn",
+     "text": "{\n  \"sammanfattning\": \"Sömnmönstret visar en viss oregelbundenhet i återhämtningen. Medelvärdet av sömnlängd de senaste 7 nätterna är 9 timmar (F:somnskuld), vilket ligger inom det rekommenderade intervallet för en 18-åring (Tumregler). Det finns en ackumulerad sömnskuld på 0.3 timmar de senaste 7 nätterna (F:somnskuld), vilket indikerar en liten negativ avvikelse från baslinjen (F:somnskuld). HRV-medianen de senaste 3 nätterna är lägre än baslinjen (F:natter), vilket kan tyda på en pågående str"
+    },
+    {
+     "agent": "advokat",
+     "text": "- Det kan vara enbart en period av låg fysisk aktivitet som bidrar till känslan av att vara hängig, eftersom antalet steg under de senaste 15 minuterna är 0 (F:nu, steg:0).\n- Den observerade pulsen på 86 slag/minut under de senaste 15 minuterna (F:nu, puls_median:86) kan vara en del av en normal variation, då pulsen under de senaste 1 till 3 timmarna är 68 slag/minut (F:nu, puls_median_1_till_3_timmar_sedan:68) och den nuvarande pulsen är högre än baslinjen för samma timme (F:nu, skillnad_puls_mot_baslinje:15).\n- Det finns inga direkta data som bekräftar att personen har genomfört någon form av träningspass under de senaste 7 dygnen (F:belastning, antal_traningspass:0)."
+    },
+    {
+     "agent": "ordforande",
+     "text": "{\n  \"sammanfattning\": \"Baserat på regelverket är brådskan 'bevaka' på grund av mönstret där HRV har varit under baslinjen tre nätter i följd, samtidigt som hudtemperaturen, andningen och nattpulsen har uppvisat en uppåtgående trend. Detta mönster tolkas av regelverket som ett tecken på begynnande infektion.\",\n  \"bradska\": \"bevaka\",\n  \"bradska_motivering\": \"Regelverket anger 'bevaka: HRV under baslinjen tre nätter med hudtemperatur upp, andning upp, nattpuls upp; hudtemperaturen har stigit: mönstret talar för begynnande infektion'.\",\n  \"rad\": [\n    \"Fortsätt med egenvård och håll koll på dina v"
+    }
+   ],
+   "verktygsanrop": [
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "hr"
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "sok_journal",
+     "args": {}
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "dator_spel"
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "hr"
+     }
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "dator_spel"
+     }
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    }
+   ],
+   "medlemmar": [
+    "ordforande",
+    "stress",
+    "somn",
+    "advokat",
+    "granskare"
+   ],
+   "refs": {
+    "U:fraga": {
+     "ref": "U:fraga",
+     "personen_skrev": "Jag känner mig hängig sedan i går. Vad säger klockan?"
+    },
+    "F:nu": {
+     "ref": "F:nu",
+     "klockan": "10:00",
+     "period": "senaste 15 minuterna",
+     "puls_median": 86,
+     "steg": 0,
+     "puls_baslinje_samma_timme": 71,
+     "skillnad_puls_mot_baslinje": 15,
+     "riktning_puls_mot_baslinje": "högre",
+     "puls_median_1_till_3_timmar_sedan": 68,
+     "puls_senaste_5_min_median": 82,
+     "puls_senaste_5_min_max": 84,
+     "steg_senaste_15_min_per_minut_max": 0,
+     "puls_median_senaste_timmen": 80,
+     "steg_senaste_timmen": 1500
+    },
+    "F:puls": {
+     "ref": "F:puls",
+     "period": "senaste 48 timmarna",
+     "median": 70,
+     "max": 119,
+     "max_tid": "09:52",
+     "max_under_traningspass": false,
+     "minuter_over_140": 0,
+     "varav_under_eller_direkt_efter_pass": 0,
+     "varav_med_steg_samma_minut": 0,
+     "kvalitet": {
+      "andel_hopp_over_25_slag_mellan_minuter": 0,
+      "andel_saknade_minuter": 0,
+      "isolerade_spikar": [],
+      "antal_isolerade_spikar": 0,
+      "tolkning": "ren signal, inga tecken på mätfel"
+     }
+    },
+    "F:natter": {
+     "ref": "F:natter",
+     "beskrivning": "senaste nätterna, nyast först",
+     "natter": [
+      {
+       "natt_till": "2026-11-25",
+       "somnade": "21:49",
+       "vaknade": "09:28",
+       "ref": "N:natt-1795553388",
+       "somn_timmar": 11.4,
+       "hrv_median_ms": 30,
+       "nattpuls_lagsta_10min": 64,
+       "hudtemp_median_c": 35.38,
+       "andning_median_per_min": 17.3,
+       "spo2_median": 96,
+       "spo2_fall_antal": 0,
+       "spo2_fall_per_timme": 0,
+       "spo2_lagsta": 94
+      },
+      {
+       "natt_till": "2026-11-24",
+       "somnade": "22:09",
+       "vaknade": "09:18",
+       "ref": "N:natt-1795468174",
+       "somn_timmar": 10.9,
+       "hrv_median_ms": 36,
+       "nattpuls_lagsta_10min": 57,
+       "hudtemp_median_c": 34.76,
+       "andning_median_per_min": 16.8,
+       "spo2_median": 96,
+       "spo2_fall_antal": 0,
+       "spo2_fall_per_timme": 0,
+       "spo2_lagsta": 94
+      },
+      {
+       "natt_till": "2026-11-23",
+       "somnade": "23:12",
+       "vaknade": "07:54",
+       "ref": "N:natt-1795385527",
+       "somn_timmar": 8.5,
+       "hrv_median_ms": 63,
+       "nattpuls_lagsta_10min": 53,
+       "hudtemp_median_c": 34.03,
+       "andning_median_per_min": 14.2,
+       "spo2_median": 96,
+       "spo2_fall_antal": 0,
+       "spo2_fall_per_timme": 0,
+       "spo2_lagsta": 94
+      },
+      {
+       "natt_till": "2026-11-22",
+       "somnade": "23:21",
+       "vaknade": "07:35",
+       "ref": "N:natt-1795299677",
+       "somn_timmar": 8.1,
+       "hrv_median_ms": 56,
+       "nattpuls_lagsta_10min": 53,
+       "hudtemp_median_c": 33.97,
+       "andning_median_per_min": 14.2,
+       "spo2_median": 96
+      },
+      {
+       "natt_till": "2026-11-21",
+       "somnade": "22:58",
+       "vaknade": "07:31",
+       "ref": "N:natt-1795211901",
+       "somn_timmar": 8.4,
+       "hrv_median_ms": 59,
+       "nattpuls_lagsta_10min": 53,
+       "hudtemp_median_c": 33.94,
+       "andning_median_per_min": 14.2,
+       "spo2_median": 96
+      },
+      {
+       "natt_till": "2026-11-20",
+       "somnade": "23:29",
+       "vaknade": "07:27",
+       "ref": "N:natt-1795127383",
+       "somn_timmar": 7.9,
+       "hrv_median_ms": 50,
+       "nattpuls_lagsta_10min": 53,
+       "hudtemp_median_c": 34.03,
+       "andning_median_per_min": 14.3,
+       "spo2_median": 96
+      },
+      {
+       "natt_till": "2026-11-19",
+       "somnade": "23:16",
+       "vaknade": "07:18",
+       "ref": "N:natt-1795040174",
+       "somn_timmar": 7.8,
+       "hrv_median_ms": 58,
+       "nattpuls_lagsta_10min": 53,
+       "hudtemp_median_c": 34.09,
+       "andning_median_per_min": 14.2,
+       "spo2_median": 96
+      }
+     ],
+     "baslinje_natt": {
+      "beskrivning": "median av 21 tidigare nätter",
+      "somn_timmar": 8,
+      "hrv_median_ms": 54,
+      "nattpuls_lagsta_10min": 53,
+      "hudtemp_median_c": 34.17,
+      "andning_median_per_min": 14.3,
+      "spo2_median": 96
+     },
+     "skillnad_senaste_3_natter_mot_baslinje": {
+      "beskrivning": "medel av de 3 senaste nätterna minus baslinjen: negativt = lägre än normalt",
+      "somn_timmar": 2.3,
+      "hrv_median_ms": -11,
+      "nattpuls_lagsta_10min": 5,
+      "hudtemp_median_c": 0.55,
+      "andning_median_per_min": 1.8,
+      "spo2_median": 0,
+      "hrv_procent": -20
+     },
+     "riktning_senaste_3_natter_mot_baslinje": {
+      "somn_timmar": "högre än baslinjen",
+      "hrv_median_ms": "lägre än baslinjen",
+      "nattpuls_lagsta_10min": "högre än baslinjen",
+      "hudtemp_median_c": "högre än baslinjen",
+      "andning_median_per_min": "högre än baslinjen",
+      "spo2_median": "samma som baslinjen"
+     },
+     "natter_med_minst_5_syrefall_per_timme": 0,
+     "syrefall_definition": "fall på minst 4 procentenheter under nattens 90:e percentil (som ODI)",
+     "medel_somn_timmar_senaste": 9
+    },
+    "N:natt-1795553388": {
+     "natt_till": "2026-11-25",
+     "somnade": "21:49",
+     "vaknade": "09:28",
+     "ref": "N:natt-1795553388",
+     "somn_timmar": 11.4,
+     "hrv_median_ms": 30,
+     "nattpuls_lagsta_10min": 64,
+     "hudtemp_median_c": 35.38,
+     "andning_median_per_min": 17.3,
+     "spo2_median": 96,
+     "spo2_fall_antal": 0,
+     "spo2_fall_per_timme": 0,
+     "spo2_lagsta": 94
+    },
+    "N:natt-1795468174": {
+     "natt_till": "2026-11-24",
+     "somnade": "22:09",
+     "vaknade": "09:18",
+     "ref": "N:natt-1795468174",
+     "somn_timmar": 10.9,
+     "hrv_median_ms": 36,
+     "nattpuls_lagsta_10min": 57,
+     "hudtemp_median_c": 34.76,
+     "andning_median_per_min": 16.8,
+     "spo2_median": 96,
+     "spo2_fall_antal": 0,
+     "spo2_fall_per_timme": 0,
+     "spo2_lagsta": 94
+    },
+    "N:natt-1795385527": {
+     "natt_till": "2026-11-23",
+     "somnade": "23:12",
+     "vaknade": "07:54",
+     "ref": "N:natt-1795385527",
+     "somn_timmar": 8.5,
+     "hrv_median_ms": 63,
+     "nattpuls_lagsta_10min": 53,
+     "hudtemp_median_c": 34.03,
+     "andning_median_per_min": 14.2,
+     "spo2_median": 96,
+     "spo2_fall_antal": 0,
+     "spo2_fall_per_timme": 0,
+     "spo2_lagsta": 94
+    },
+    "N:natt-1795299677": {
+     "natt_till": "2026-11-22",
+     "somnade": "23:21",
+     "vaknade": "07:35",
+     "ref": "N:natt-1795299677",
+     "somn_timmar": 8.1,
+     "hrv_median_ms": 56,
+     "nattpuls_lagsta_10min": 53,
+     "hudtemp_median_c": 33.97,
+     "andning_median_per_min": 14.2,
+     "spo2_median": 96
+    },
+    "N:natt-1795211901": {
+     "natt_till": "2026-11-21",
+     "somnade": "22:58",
+     "vaknade": "07:31",
+     "ref": "N:natt-1795211901",
+     "somn_timmar": 8.4,
+     "hrv_median_ms": 59,
+     "nattpuls_lagsta_10min": 53,
+     "hudtemp_median_c": 33.94,
+     "andning_median_per_min": 14.2,
+     "spo2_median": 96
+    },
+    "N:natt-1795127383": {
+     "natt_till": "2026-11-20",
+     "somnade": "23:29",
+     "vaknade": "07:27",
+     "ref": "N:natt-1795127383",
+     "somn_timmar": 7.9,
+     "hrv_median_ms": 50,
+     "nattpuls_lagsta_10min": 53,
+     "hudtemp_median_c": 34.03,
+     "andning_median_per_min": 14.3,
+     "spo2_median": 96
+    },
+    "N:natt-1795040174": {
+     "natt_till": "2026-11-19",
+     "somnade": "23:16",
+     "vaknade": "07:18",
+     "ref": "N:natt-1795040174",
+     "somn_timmar": 7.8,
+     "hrv_median_ms": 58,
+     "nattpuls_lagsta_10min": 53,
+     "hudtemp_median_c": 34.09,
+     "andning_median_per_min": 14.2,
+     "spo2_median": 96
+    },
+    "F:dagar": {
+     "ref": "F:dagar",
+     "beskrivning": "dygn, nyast först",
+     "dagar": [
+      {
+       "datum": "2026-11-25 (idag, hittills)",
+       "steg": 1500
+      },
+      {
+       "datum": "2026-11-24",
+       "steg": 4569,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 224
+       },
+       "dator_minuter_efter_23": 0,
+       "sista_datorminut_pa_kvallen": "22:39"
+      },
+      {
+       "datum": "2026-11-23",
+       "steg": 5926,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 241
+       },
+       "dator_minuter_efter_23": 0,
+       "sista_datorminut_pa_kvallen": "22:53"
+      },
+      {
+       "datum": "2026-11-22",
+       "steg": 5995,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 237
+       },
+       "dator_minuter_efter_23": 0,
+       "sista_datorminut_pa_kvallen": "22:53"
+      },
+      {
+       "datum": "2026-11-21",
+       "steg": 5640,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 264
+       },
+       "dator_minuter_efter_23": 13,
+       "sista_datorminut_pa_kvallen": "23:12"
+      },
+      {
+       "datum": "2026-11-20",
+       "steg": 5548,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 232
+       },
+       "dator_minuter_efter_23": 8,
+       "sista_datorminut_pa_kvallen": "23:07"
+      },
+      {
+       "datum": "2026-11-19",
+       "steg": 5585,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 231
+       },
+       "dator_minuter_efter_23": 0,
+       "sista_datorminut_pa_kvallen": "22:53"
+      }
+     ],
+     "baslinje_steg_per_dag": 5848
+    },
+    "F:somnskuld": {
+     "ref": "F:somnskuld",
+     "beskrivning": "samma räkning som appens sömnskuld: summa av (behov - sömn) per natt",
+     "somnbehov_timmar": 8.0,
+     "natter_med_data": 7,
+     "somnskuld_timmar_senaste_7_natter": 0.3,
+     "medel_somn_timmar_senaste_7": 9,
+     "natter_under_7_timmar": 0,
+     "natter_med_datorn_efter_midnatt": 0,
+     "baslinje_somn_timmar_tidigare_veckor": 8,
+     "skillnad_medel_somn_mot_baslinje_timmar": 1
+    },
+    "F:kvallar": {
+     "ref": "F:kvallar",
+     "beskrivning": "datorn efter 23:00 per kväll, nyast först",
+     "kvallar_med_datorn_efter_23": 2,
+     "kvallar_med_datorn_efter_01": 0,
+     "kvallar": [
+      {
+       "kvall": "2026-11-24",
+       "minuter_vid_datorn_efter_23": 0,
+       "sista_datorminut": null,
+       "per_kategori": "inga"
+      },
+      {
+       "kvall": "2026-11-23",
+       "minuter_vid_datorn_efter_23": 0,
+       "sista_datorminut": null,
+       "per_kategori": "inga"
+      },
+      {
+       "kvall": "2026-11-22",
+       "minuter_vid_datorn_efter_23": 0,
+       "sista_datorminut": null,
+       "per_kategori": "inga"
+      },
+      {
+       "kvall": "2026-11-21",
+       "minuter_vid_datorn_efter_23": 13,
+       "sista_datorminut": "23:12",
+       "per_kategori": {
+        "spel": 13
+       }
+      },
+      {
+       "kvall": "2026-11-20",
+       "minuter_vid_datorn_efter_23": 8,
+       "sista_datorminut": "23:07",
+       "per_kategori": {
+        "spel": 8
+       }
+      },
+      {
+       "kvall": "2026-11-19",
+       "minuter_vid_datorn_efter_23": 0,
+       "sista_datorminut": null,
+       "per_kategori": "inga"
+      }
+     ]
+    },
+    "F:belastning": {
+     "ref": "F:belastning",
+     "period": "senaste 7 dygnen",
+     "antal_traningspass": 0,
+     "traningsminuter_totalt": 0,
+     "pass": "inga",
+     "minuter_i_zon_4_5_per_dag_senaste_3": "inga",
+     "tranade_igar": false
+    },
+    "F:prover": {
+     "ref": "F:prover",
+     "beskrivning": "senaste provsvaret per analys",
+     "prover": [
+      {
+       "ref": "L:c396c96d0d",
+       "analys": "Hb",
+       "varde": "148",
+       "enhet": "g/L",
+       "referens": "134.0-170.0",
+       "datum": "2026-03-30",
+       "dagar_sedan": 240,
+       "bedomning_mot_referens": "inom"
+      },
+      {
+       "ref": "L:43d14831fd",
+       "analys": "Ferritin",
+       "varde": "72",
+       "enhet": "µg/L",
+       "referens": "15.0-150.0",
+       "datum": "2026-03-30",
+       "dagar_sedan": 240,
+       "bedomning_mot_referens": "inom"
+      },
+      {
+       "ref": "L:17c2cfe783",
+       "analys": "TSH",
+       "varde": "1,6",
+       "enhet": "mIE/L",
+       "referens": "0.4-4.0",
+       "datum": "2026-03-30",
+       "dagar_sedan": 240,
+       "bedomning_mot_referens": "inom"
+      },
+      {
+       "ref": "L:f7a69c46ee",
+       "analys": "CRP",
+       "varde": "<1",
+       "enhet": "mg/L",
+       "referens": "-5.0",
+       "datum": "2026-03-30",
+       "dagar_sedan": 240,
+       "bedomning_mot_referens": "inom"
+      }
+     ]
+    },
+    "L:c396c96d0d": {
+     "ref": "L:c396c96d0d",
+     "analys": "Hb",
+     "varde": "148",
+     "enhet": "g/L",
+     "referens": "134.0-170.0",
+     "datum": "2026-03-30",
+     "dagar_sedan": 240,
+     "bedomning_mot_referens": "inom"
+    },
+    "L:43d14831fd": {
+     "ref": "L:43d14831fd",
+     "analys": "Ferritin",
+     "varde": "72",
+     "enhet": "µg/L",
+     "referens": "15.0-150.0",
+     "datum": "2026-03-30",
+     "dagar_sedan": 240,
+     "bedomning_mot_referens": "inom"
+    },
+    "L:17c2cfe783": {
+     "ref": "L:17c2cfe783",
+     "analys": "TSH",
+     "varde": "1,6",
+     "enhet": "mIE/L",
+     "referens": "0.4-4.0",
+     "datum": "2026-03-30",
+     "dagar_sedan": 240,
+     "bedomning_mot_referens": "inom"
+    },
+    "L:f7a69c46ee": {
+     "ref": "L:f7a69c46ee",
+     "analys": "CRP",
+     "varde": "<1",
+     "enhet": "mg/L",
+     "referens": "-5.0",
+     "datum": "2026-03-30",
+     "dagar_sedan": 240,
+     "bedomning_mot_referens": "inom"
+    },
+    "F:journal": {
+     "ref": "F:journal",
+     "anteckningar": [
+      {
+       "ref": "J:09aab5bea4",
+       "date": "2026-03-30",
+       "kind": "anteckning",
+       "title": "Hälsobesök",
+       "text": "Hälsosamtal. Frisk, inga mediciner, inga kända allergier. Blodprover tagna, normala."
+      }
+     ]
+    },
+    "J:09aab5bea4": {
+     "ref": "J:09aab5bea4",
+     "date": "2026-03-30",
+     "kind": "anteckning",
+     "title": "Hälsobesök",
+     "text": "Hälsosamtal. Frisk, inga mediciner, inga kända allergier. Blodprover tagna, normala."
+    },
+    "F:tolkning": {
+     "ref": "F:tolkning",
+     "beskrivning": "deterministiska regler, inte en språkmodell",
+     "metric": null,
+     "brådska_enligt_regler": "bevaka",
+     "skal": [
+      "bevaka: HRV under baslinjen tre nätter med hudtemperatur upp, andning upp, nattpuls upp; hudtemperaturen har stigit: mönstret talar för begynnande infektion"
+     ]
+    }
+   },
+   "sekunder": 111.1,
+   "tokens": {
+    "prompt": 24263,
+    "ut": 6689,
+    "anrop": 6,
+    "per_modell": {
+     "gemma4:e4b": {
+      "calls": 6,
+      "prompt_tokens": 24263,
+      "output_tokens": 6689,
+      "seconds": 111.06,
+      "prompt_eval_s": 13.69,
+      "eval_s": 89.6,
+      "gen_tokens_per_s": 74.7,
+      "prompt_tokens_per_s": 1772.9
+     }
+    }
+   },
+   "llm_anrop": [
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4010,
+     "ut": 126,
+     "s": 15.8,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 3991,
+     "ut": 1750,
+     "s": 31.97,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4063,
+     "ut": 1750,
+     "s": 22.44,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 3892,
+     "ut": 313,
+     "s": 6.02,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4052,
+     "ut": 1000,
+     "s": 11.76,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4255,
+     "ut": 1750,
+     "s": 23.06,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    }
+   ],
+   "fel": null,
+   "ollama_minne_gib_efter": {
+    "gemma4:e4b": 9.3
+   }
+  },
+  {
+   "scenario": "h2_tsh",
+   "titel": "Holdout 2: lågt TSH och hög vilopuls",
+   "klocka": "15:00",
+   "forskjutning_s": -76407,
+   "utlosare": {
+    "kind": "question",
+    "question": "Varför har jag hjärtklappning och svettas fast jag sitter still?",
+    "hours": 168
+   },
+   "utlosare_fran_vakt": false,
+   "dataantal": {
+    "hr": 10368,
+    "hrv_rmssd": 3171,
+    "spo2": 3974,
+    "skin_temp": 2730,
+    "resp_rate": 2730,
+    "steps": 1601,
+    "dator_kod": 0,
+    "dator_spel": 6808,
+    "dator_chatt": 0,
+    "dator_webb": 0,
+    "dator_annat": 0,
+    "resting_hr": 28,
+    "natter": 28,
+    "pass": 0,
+    "journal": 1,
+    "labb": 7
+   },
+   "verdict": {
+    "sammanfattning": "{\n  \"sammanfattning\": \"Baserat på de granskade laboratorieproverna finns ett fynd som indikerar att T4, fritt är över referensintervallet med värdet 31 pmol/L (ref:L:0d2ea0d3a7). Det finns ingen data i faktabladet som direkt stöder en koppling mellan de rapporterade blodvärdena och de aktuella symtomen (hjärtklappning och svettning) i en vardaglig kontext.\",\n  \"bradska\": \"ta_upp_med_varden\",\n  \"bradska_motivering\": \"ta_upp_med_varden: TSH 0,05 mIE/L under referensintervallet; ta_upp_med_varden: T4, fritt 31 pmol/L över referensintervallet\",\n  \"rad\": [\n    \"Boka tid för att diskutera blodprover",
+    "bradska": "ta_upp_med_varden",
+    "rad": [],
+    "fragor_till_varden": [],
+    "bradska_bestamd_av": "regelverkets ram",
+    "bradska_team": "bevaka",
+    "bradska_regel": "ta_upp_med_varden",
+    "bradska_regel_skal": [
+     "ta_upp_med_varden: TSH 0,05 mIE/L under referensintervallet",
+     "ta_upp_med_varden: T4, fritt 31 pmol/L över referensintervallet"
+    ],
+    "belagda_pastaenden": [
+     {
+      "text": "T4, fritt är över referensintervallet med värdet 31 pmol/L (ref:L:0d2ea0d3a7).",
+      "kallor": [
+       "L:0d2ea0d3a7"
+      ],
+      "av": "labb"
+     },
+     {
+      "text": "TSH är under referensintervallet med värdet 0,05 mIE/L (ref:L:afd4ed4bc8).",
+      "kallor": [
+       "L:afd4ed4bc8"
+      ],
+      "av": "labb"
+     }
+    ]
+   },
+   "strykningar": [],
+   "pastaenden": [
+    {
+     "agent": "labb",
+     "text": "T4, fritt är över referensintervallet med värdet 31 pmol/L (ref:L:0d2ea0d3a7).",
+     "kallor": [
+      "L:0d2ea0d3a7"
+     ]
+    },
+    {
+     "agent": "labb",
+     "text": "TSH är under referensintervallet med värdet 0,05 mIE/L (ref:L:afd4ed4bc8).",
+     "kallor": [
+      "L:afd4ed4bc8"
+     ]
+    },
+    {
+     "agent": "advokat",
+     "text": "Det finns ingen data i faktabladet som direkt stöder en koppling mellan de rapporterade blodvärdena (T4, fritt och TSH) och de aktuella symtomen (hjärtklappning och svettning) i en vardaglig kontext.",
+     "kallor": [
+      "F:nu",
+      "F:prover"
+     ]
+    },
+    {
+     "agent": "advokat",
+     "text": "Datan visar att personen har haft 0 traningspass under de senaste 7 dygnen (ref:F:belastning), vilket gör att en förklaring baserad på nyligen intensiv träning inte kan bekräftas.",
+     "kallor": [
+      "F:belastning"
+     ]
+    },
+    {
+     "agent": "advokat",
+     "text": "Under de senaste 15 minuterna har personen haft 0 steg (ref:F:nu), vilket indikerar inaktivitet snarare än en aktiv ansträngning som skulle kunna kopplas till vissa symtom.",
+     "kallor": [
+      "F:nu"
+     ]
+    }
+   ],
+   "yttranden": [
+    {
+     "agent": "ordforande",
+     "text": "Kardiolog: Granska pulsdata (F:nu, F:puls) för att bedöma hjärtklappningens mönster och eventuella spikar."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Stressmedicin: Analysera HRV och vilopuls (F:natter) samt skärmtid (F:dagar) för att bedöma stressbelastning."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Klinisk kemist: Bedöm provsvaren som ligger utanför referensintervallet."
+    },
+    {
+     "agent": "kardiolog",
+     "text": "{\n  \"sammanfattning\": \"Pulsdata visar en högre puls i vila jämfört med baslinjen, men det finns inga direkta tecken på mätfel. Den nuvarande pulsen är 83 slag/minut, vilket är 3 slag högre än baslinjen på 80 slag/minut (F:nu). Det har inte registrerats några isolerade spikar i de senaste 48 timmarna (F:puls).\",\n  \"pastaenden\": [\n    {\n      \"text\": \"Pulsmedianen under de senaste 15 minuterna är 83 slag/minut (F:nu).\",\n      \"kallor\": [\"F:nu\"]\n    },\n    {\n      \"text\": \"Pulsmedianen är 3 slag hö"
+    },
+    {
+     "agent": "stress",
+     "text": "{\n  \"sammanfattning\": \"Data indikerar viss belastning, men inte akut fara. Vilopulsen är högre än baslinjen (F:nu). Sömnen är i linje med baslinjen (F:somnskuld). Datoranvändningen efter midnatt är låg (F:kvallar).\",\n  \"pastaenden\": [\n    {\n      \"text\": \"Pulsens median under de senaste 15 minuterna är 83, vilket är högre än baslinjen på 80 (F:nu).\",\n      \"kallor\": [\"F:nu\"]\n    },\n    {\n      \"text\": \"Medelvärdet för sömnlängd de senaste 7 nätterna är 8.2 timmar, vilket är högre än baslinjen på"
+    },
+    {
+     "agent": "labb",
+     "text": "Två provsvar ligger utanför referensintervallet. T4, fritt är över referensintervallet (31 pmol/L) (ref:L:0d2ea0d3a7). TSH är under referensintervallet (0,05 mIE/L) (ref:L:afd4ed4bc8). Brådskan är ta_upp_med_varden."
+    },
+    {
+     "agent": "advokat",
+     "text": "- Det finns ingen data i faktabladet som direkt stöder en koppling mellan de rapporterade blodvärdena (T4, fritt och TSH) och de aktuella symtomen (hjärtklappning och svettning) i en vardaglig kontext.\n- Datan visar att personen har haft 0 traningspass under de senaste 7 dygnen (ref:F:belastning), vilket gör att en förklaring baserad på nyligen intensiv träning inte kan bekräftas.\n- Under de senaste 15 minuterna har personen haft 0 steg (ref:F:nu), vilket indikerar inaktivitet snarare än en aktiv ansträngning som skulle kunna kopplas till vissa symtom."
+    },
+    {
+     "agent": "ordforande",
+     "text": "{\n  \"sammanfattning\": \"Baserat på de granskade laboratorieproverna finns ett fynd som indikerar att T4, fritt är över referensintervallet med värdet 31 pmol/L (ref:L:0d2ea0d3a7). Det finns ingen data i faktabladet som direkt stöder en koppling mellan de rapporterade blodvärdena och de aktuella symtomen (hjärtklappning och svettning) i en vardaglig kontext.\",\n  \"bradska\": \"ta_upp_med_varden\",\n  \"bradska_motivering\": \"ta_upp_med_varden: TSH 0,05 mIE/L under referensintervallet; ta_upp_med_varden: T4, fritt 31 pmol/L över referensintervallet\",\n  \"rad\": [\n    \"Boka tid för att diskutera blodprover"
+    }
+   ],
+   "verktygsanrop": [
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "hr"
+     }
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_labb",
+     "args": {}
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "sok_journal",
+     "args": {}
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "dator_spel"
+     }
+    },
+    {
+     "agent": "kardiolog",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "hr"
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "sok_journal",
+     "args": {}
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "dator_spel"
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "labb",
+     "tool": "hamta_labb",
+     "args": {}
+    },
+    {
+     "agent": "labb",
+     "tool": "sok_journal",
+     "args": {}
+    }
+   ],
+   "medlemmar": [
+    "ordforande",
+    "kardiolog",
+    "stress",
+    "labb",
+    "advokat",
+    "granskare"
+   ],
+   "refs": {
+    "U:fraga": {
+     "ref": "U:fraga",
+     "personen_skrev": "Varför har jag hjärtklappning och svettas fast jag sitter still?"
+    },
+    "F:nu": {
+     "ref": "F:nu",
+     "klockan": "15:00",
+     "period": "senaste 15 minuterna",
+     "puls_median": 83,
+     "steg": 0,
+     "puls_baslinje_samma_timme": 80,
+     "skillnad_puls_mot_baslinje": 3,
+     "riktning_puls_mot_baslinje": "högre",
+     "puls_median_1_till_3_timmar_sedan": 88,
+     "puls_senaste_5_min_median": 86,
+     "puls_senaste_5_min_max": 88,
+     "steg_senaste_15_min_per_minut_max": 0,
+     "puls_median_senaste_timmen": 84,
+     "steg_senaste_timmen": 0
+    },
+    "F:puls": {
+     "ref": "F:puls",
+     "period": "senaste 48 timmarna",
+     "median": 84,
+     "max": 124,
+     "max_tid": "16:32",
+     "max_under_traningspass": false,
+     "minuter_over_140": 0,
+     "varav_under_eller_direkt_efter_pass": 0,
+     "varav_med_steg_samma_minut": 0,
+     "kvalitet": {
+      "andel_hopp_over_25_slag_mellan_minuter": 0,
+      "andel_saknade_minuter": 0,
+      "isolerade_spikar": [],
+      "antal_isolerade_spikar": 0,
+      "tolkning": "ren signal, inga tecken på mätfel"
+     }
+    },
+    "F:natter": {
+     "ref": "F:natter",
+     "beskrivning": "senaste nätterna, nyast först",
+     "natter": [
+      {
+       "natt_till": "2026-11-24",
+       "somnade": "22:51",
+       "vaknade": "07:38",
+       "ref": "N:natt-1795470718",
+       "somn_timmar": 8.4,
+       "hrv_median_ms": 57,
+       "nattpuls_lagsta_10min": 65,
+       "hudtemp_median_c": 34.35,
+       "andning_median_per_min": 14.2,
+       "spo2_median": 96,
+       "spo2_fall_antal": 0,
+       "spo2_fall_per_timme": 0,
+       "spo2_lagsta": 94
+      },
+      {
+       "natt_till": "2026-11-23",
+       "somnade": "23:00",
+       "vaknade": "07:29",
+       "ref": "N:natt-1795384811",
+       "somn_timmar": 8.3,
+       "hrv_median_ms": 59,
+       "nattpuls_lagsta_10min": 66,
+       "hudtemp_median_c": 34.15,
+       "andning_median_per_min": 14.2,
+       "spo2_median": 96,
+       "spo2_fall_antal": 0,
+       "spo2_fall_per_timme": 0,
+       "spo2_lagsta": 94
+      },
+      {
+       "natt_till": "2026-11-22",
+       "somnade": "22:48",
+       "vaknade": "07:28",
+       "ref": "N:natt-1795297717",
+       "somn_timmar": 8.5,
+       "hrv_median_ms": 54,
+       "nattpuls_lagsta_10min": 66,
+       "hudtemp_median_c": 34.15,
+       "andning_median_per_min": 14.1,
+       "spo2_median": 96,
+       "spo2_fall_antal": 0,
+       "spo2_fall_per_timme": 0,
+       "spo2_lagsta": 94
+      },
+      {
+       "natt_till": "2026-11-21",
+       "somnade": "23:35",
+       "vaknade": "07:42",
+       "ref": "N:natt-1795214130",
+       "somn_timmar": 8,
+       "hrv_median_ms": 60,
+       "nattpuls_lagsta_10min": 66,
+       "hudtemp_median_c": 33.93,
+       "andning_median_per_min": 14.1,
+       "spo2_median": 96
+      },
+      {
+       "natt_till": "2026-11-20",
+       "somnade": "23:28",
+       "vaknade": "07:35",
+       "ref": "N:natt-1795127320",
+       "somn_timmar": 8,
+       "hrv_median_ms": 48,
+       "nattpuls_lagsta_10min": 67,
+       "hudtemp_median_c": 34.34,
+       "andning_median_per_min": 14.1,
+       "spo2_median": 96
+      },
+      {
+       "natt_till": "2026-11-19",
+       "somnade": "22:51",
+       "vaknade": "07:15",
+       "ref": "N:natt-1795038665",
+       "somn_timmar": 8.2,
+       "hrv_median_ms": 61,
+       "nattpuls_lagsta_10min": 68,
+       "hudtemp_median_c": 34.13,
+       "andning_median_per_min": 14.2,
+       "spo2_median": 96
+      },
+      {
+       "natt_till": "2026-11-18",
+       "somnade": "23:27",
+       "vaknade": "07:37",
+       "ref": "N:natt-1794954437",
+       "somn_timmar": 8.1,
+       "hrv_median_ms": 60,
+       "nattpuls_lagsta_10min": 67,
+       "hudtemp_median_c": 34.09,
+       "andning_median_per_min": 14.3,
+       "spo2_median": 96
+      }
+     ],
+     "baslinje_natt": {
+      "beskrivning": "median av 21 tidigare nätter",
+      "somn_timmar": 7.9,
+      "hrv_median_ms": 57,
+      "nattpuls_lagsta_10min": 54,
+      "hudtemp_median_c": 34.05,
+      "andning_median_per_min": 14.2,
+      "spo2_median": 96
+     },
+     "skillnad_senaste_3_natter_mot_baslinje": {
+      "beskrivning": "medel av de 3 senaste nätterna minus baslinjen: negativt = lägre än normalt",
+      "somn_timmar": 0.5,
+      "hrv_median_ms": -0.3,
+      "nattpuls_lagsta_10min": 11.7,
+      "hudtemp_median_c": 0.17,
+      "andning_median_per_min": 0,
+      "spo2_median": 0,
+      "hrv_procent": -1
+     },
+     "riktning_senaste_3_natter_mot_baslinje": {
+      "somn_timmar": "högre än baslinjen",
+      "hrv_median_ms": "lägre än baslinjen",
+      "nattpuls_lagsta_10min": "högre än baslinjen",
+      "hudtemp_median_c": "högre än baslinjen",
+      "andning_median_per_min": "samma som baslinjen",
+      "spo2_median": "samma som baslinjen"
+     },
+     "natter_med_minst_5_syrefall_per_timme": 0,
+     "syrefall_definition": "fall på minst 4 procentenheter under nattens 90:e percentil (som ODI)",
+     "medel_somn_timmar_senaste": 8.2
+    },
+    "N:natt-1795470718": {
+     "natt_till": "2026-11-24",
+     "somnade": "22:51",
+     "vaknade": "07:38",
+     "ref": "N:natt-1795470718",
+     "somn_timmar": 8.4,
+     "hrv_median_ms": 57,
+     "nattpuls_lagsta_10min": 65,
+     "hudtemp_median_c": 34.35,
+     "andning_median_per_min": 14.2,
+     "spo2_median": 96,
+     "spo2_fall_antal": 0,
+     "spo2_fall_per_timme": 0,
+     "spo2_lagsta": 94
+    },
+    "N:natt-1795384811": {
+     "natt_till": "2026-11-23",
+     "somnade": "23:00",
+     "vaknade": "07:29",
+     "ref": "N:natt-1795384811",
+     "somn_timmar": 8.3,
+     "hrv_median_ms": 59,
+     "nattpuls_lagsta_10min": 66,
+     "hudtemp_median_c": 34.15,
+     "andning_median_per_min": 14.2,
+     "spo2_median": 96,
+     "spo2_fall_antal": 0,
+     "spo2_fall_per_timme": 0,
+     "spo2_lagsta": 94
+    },
+    "N:natt-1795297717": {
+     "natt_till": "2026-11-22",
+     "somnade": "22:48",
+     "vaknade": "07:28",
+     "ref": "N:natt-1795297717",
+     "somn_timmar": 8.5,
+     "hrv_median_ms": 54,
+     "nattpuls_lagsta_10min": 66,
+     "hudtemp_median_c": 34.15,
+     "andning_median_per_min": 14.1,
+     "spo2_median": 96,
+     "spo2_fall_antal": 0,
+     "spo2_fall_per_timme": 0,
+     "spo2_lagsta": 94
+    },
+    "N:natt-1795214130": {
+     "natt_till": "2026-11-21",
+     "somnade": "23:35",
+     "vaknade": "07:42",
+     "ref": "N:natt-1795214130",
+     "somn_timmar": 8,
+     "hrv_median_ms": 60,
+     "nattpuls_lagsta_10min": 66,
+     "hudtemp_median_c": 33.93,
+     "andning_median_per_min": 14.1,
+     "spo2_median": 96
+    },
+    "N:natt-1795127320": {
+     "natt_till": "2026-11-20",
+     "somnade": "23:28",
+     "vaknade": "07:35",
+     "ref": "N:natt-1795127320",
+     "somn_timmar": 8,
+     "hrv_median_ms": 48,
+     "nattpuls_lagsta_10min": 67,
+     "hudtemp_median_c": 34.34,
+     "andning_median_per_min": 14.1,
+     "spo2_median": 96
+    },
+    "N:natt-1795038665": {
+     "natt_till": "2026-11-19",
+     "somnade": "22:51",
+     "vaknade": "07:15",
+     "ref": "N:natt-1795038665",
+     "somn_timmar": 8.2,
+     "hrv_median_ms": 61,
+     "nattpuls_lagsta_10min": 68,
+     "hudtemp_median_c": 34.13,
+     "andning_median_per_min": 14.2,
+     "spo2_median": 96
+    },
+    "N:natt-1794954437": {
+     "natt_till": "2026-11-18",
+     "somnade": "23:27",
+     "vaknade": "07:37",
+     "ref": "N:natt-1794954437",
+     "somn_timmar": 8.1,
+     "hrv_median_ms": 60,
+     "nattpuls_lagsta_10min": 67,
+     "hudtemp_median_c": 34.09,
+     "andning_median_per_min": 14.3,
+     "spo2_median": 96
+    },
+    "F:dagar": {
+     "ref": "F:dagar",
+     "beskrivning": "dygn, nyast först",
+     "dagar": [
+      {
+       "datum": "2026-11-24 (idag, hittills)",
+       "steg": 4391
+      },
+      {
+       "datum": "2026-11-23",
+       "steg": 5570,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 240
+       },
+       "dator_minuter_efter_23": 10,
+       "sista_datorminut_pa_kvallen": "23:09"
+      },
+      {
+       "datum": "2026-11-22",
+       "steg": 5734,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 281
+       },
+       "dator_minuter_efter_23": 38,
+       "sista_datorminut_pa_kvallen": "23:37"
+      },
+      {
+       "datum": "2026-11-21",
+       "steg": 5880,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 213
+       },
+       "dator_minuter_efter_23": 0,
+       "sista_datorminut_pa_kvallen": "22:42"
+      },
+      {
+       "datum": "2026-11-20",
+       "steg": 4860,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 213
+       },
+       "dator_minuter_efter_23": 0,
+       "sista_datorminut_pa_kvallen": "22:55"
+      },
+      {
+       "datum": "2026-11-19",
+       "steg": 5741,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 227
+       },
+       "dator_minuter_efter_23": 18,
+       "sista_datorminut_pa_kvallen": "23:17"
+      },
+      {
+       "datum": "2026-11-18",
+       "steg": 6669,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 272
+       },
+       "dator_minuter_efter_23": 17,
+       "sista_datorminut_pa_kvallen": "23:16"
+      }
+     ],
+     "baslinje_steg_per_dag": 5928
+    },
+    "F:somnskuld": {
+     "ref": "F:somnskuld",
+     "beskrivning": "samma räkning som appens sömnskuld: summa av (behov - sömn) per natt",
+     "somnbehov_timmar": 8.0,
+     "natter_med_data": 7,
+     "somnskuld_timmar_senaste_7_natter": 0.0,
+     "medel_somn_timmar_senaste_7": 8.2,
+     "natter_under_7_timmar": 0,
+     "natter_med_datorn_efter_midnatt": 0,
+     "baslinje_somn_timmar_tidigare_veckor": 7.9,
+     "skillnad_medel_somn_mot_baslinje_timmar": 0.3
+    },
+    "F:kvallar": {
+     "ref": "F:kvallar",
+     "beskrivning": "datorn efter 23:00 per kväll, nyast först",
+     "kvallar_med_datorn_efter_23": 4,
+     "kvallar_med_datorn_efter_01": 0,
+     "kvallar": [
+      {
+       "kvall": "2026-11-23",
+       "minuter_vid_datorn_efter_23": 10,
+       "sista_datorminut": "23:09",
+       "per_kategori": {
+        "spel": 10
+       }
+      },
+      {
+       "kvall": "2026-11-22",
+       "minuter_vid_datorn_efter_23": 38,
+       "sista_datorminut": "23:37",
+       "per_kategori": {
+        "spel": 38
+       }
+      },
+      {
+       "kvall": "2026-11-21",
+       "minuter_vid_datorn_efter_23": 0,
+       "sista_datorminut": null,
+       "per_kategori": "inga"
+      },
+      {
+       "kvall": "2026-11-20",
+       "minuter_vid_datorn_efter_23": 0,
+       "sista_datorminut": null,
+       "per_kategori": "inga"
+      },
+      {
+       "kvall": "2026-11-19",
+       "minuter_vid_datorn_efter_23": 18,
+       "sista_datorminut": "23:17",
+       "per_kategori": {
+        "spel": 18
+       }
+      },
+      {
+       "kvall": "2026-11-18",
+       "minuter_vid_datorn_efter_23": 17,
+       "sista_datorminut": "23:16",
+       "per_kategori": {
+        "spel": 17
+       }
+      }
+     ]
+    },
+    "F:belastning": {
+     "ref": "F:belastning",
+     "period": "senaste 7 dygnen",
+     "antal_traningspass": 0,
+     "traningsminuter_totalt": 0,
+     "pass": "inga",
+     "minuter_i_zon_4_5_per_dag_senaste_3": "inga",
+     "tranade_igar": false
+    },
+    "F:prover": {
+     "ref": "F:prover",
+     "beskrivning": "senaste provsvaret per analys",
+     "prover": [
+      {
+       "ref": "L:afd4ed4bc8",
+       "analys": "TSH",
+       "varde": "0,05",
+       "enhet": "mIE/L",
+       "referens": "0.4-4.0",
+       "datum": "2026-11-09",
+       "dagar_sedan": 15,
+       "bedomning_mot_referens": "under referensintervallet"
+      },
+      {
+       "ref": "L:0d2ea0d3a7",
+       "analys": "T4, fritt",
+       "varde": "31",
+       "enhet": "pmol/L",
+       "referens": "12.0-22.0",
+       "datum": "2026-11-09",
+       "dagar_sedan": 15,
+       "bedomning_mot_referens": "över referensintervallet"
+      },
+      {
+       "ref": "L:0cbd9a8179",
+       "analys": "Hb",
+       "varde": "146",
+       "enhet": "g/L",
+       "referens": "134.0-170.0",
+       "datum": "2026-11-09",
+       "dagar_sedan": 15,
+       "bedomning_mot_referens": "inom"
+      },
+      {
+       "ref": "L:a21ac28b98",
+       "analys": "Ferritin",
+       "varde": "72",
+       "enhet": "µg/L",
+       "referens": "15.0-150.0",
+       "datum": "2026-01-28",
+       "dagar_sedan": 300,
+       "bedomning_mot_referens": "inom"
+      },
+      {
+       "ref": "L:d158901fae",
+       "analys": "CRP",
+       "varde": "<1",
+       "enhet": "mg/L",
+       "referens": "-5.0",
+       "datum": "2026-01-28",
+       "dagar_sedan": 300,
+       "bedomning_mot_referens": "inom"
+      }
+     ]
+    },
+    "L:afd4ed4bc8": {
+     "ref": "L:afd4ed4bc8",
+     "analys": "TSH",
+     "varde": "0,05",
+     "enhet": "mIE/L",
+     "referens": "0.4-4.0",
+     "datum": "2026-11-09",
+     "dagar_sedan": 15,
+     "bedomning_mot_referens": "under referensintervallet"
+    },
+    "L:0d2ea0d3a7": {
+     "ref": "L:0d2ea0d3a7",
+     "analys": "T4, fritt",
+     "varde": "31",
+     "enhet": "pmol/L",
+     "referens": "12.0-22.0",
+     "datum": "2026-11-09",
+     "dagar_sedan": 15,
+     "bedomning_mot_referens": "över referensintervallet"
+    },
+    "L:0cbd9a8179": {
+     "ref": "L:0cbd9a8179",
+     "analys": "Hb",
+     "varde": "146",
+     "enhet": "g/L",
+     "referens": "134.0-170.0",
+     "datum": "2026-11-09",
+     "dagar_sedan": 15,
+     "bedomning_mot_referens": "inom"
+    },
+    "L:a21ac28b98": {
+     "ref": "L:a21ac28b98",
+     "analys": "Ferritin",
+     "varde": "72",
+     "enhet": "µg/L",
+     "referens": "15.0-150.0",
+     "datum": "2026-01-28",
+     "dagar_sedan": 300,
+     "bedomning_mot_referens": "inom"
+    },
+    "L:d158901fae": {
+     "ref": "L:d158901fae",
+     "analys": "CRP",
+     "varde": "<1",
+     "enhet": "mg/L",
+     "referens": "-5.0",
+     "datum": "2026-01-28",
+     "dagar_sedan": 300,
+     "bedomning_mot_referens": "inom"
+    },
+    "F:journal": {
+     "ref": "F:journal",
+     "anteckningar": [
+      {
+       "ref": "J:b3ead94769",
+       "date": "2026-01-28",
+       "kind": "anteckning",
+       "title": "Hälsobesök",
+       "text": "Hälsosamtal. Frisk, inga mediciner, inga kända allergier. Blodprover tagna, normala."
+      }
+     ]
+    },
+    "J:b3ead94769": {
+     "ref": "J:b3ead94769",
+     "date": "2026-01-28",
+     "kind": "anteckning",
+     "title": "Hälsobesök",
+     "text": "Hälsosamtal. Frisk, inga mediciner, inga kända allergier. Blodprover tagna, normala."
+    },
+    "F:tolkning": {
+     "ref": "F:tolkning",
+     "beskrivning": "deterministiska regler, inte en språkmodell",
+     "metric": null,
+     "brådska_enligt_regler": "ta_upp_med_varden",
+     "skal": [
+      "ta_upp_med_varden: TSH 0,05 mIE/L under referensintervallet",
+      "ta_upp_med_varden: T4, fritt 31 pmol/L över referensintervallet"
+     ]
+    }
+   },
+   "sekunder": 114.3,
+   "tokens": {
+    "prompt": 29375,
+    "ut": 6928,
+    "anrop": 7,
+    "per_modell": {
+     "gemma4:e4b": {
+      "calls": 7,
+      "prompt_tokens": 29375,
+      "output_tokens": 6928,
+      "seconds": 114.19,
+      "prompt_eval_s": 14.52,
+      "eval_s": 92.26,
+      "gen_tokens_per_s": 75.1,
+      "prompt_tokens_per_s": 2023.4
+     }
+    }
+   },
+   "llm_anrop": [
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4135,
+     "ut": 125,
+     "s": 15.54,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4302,
+     "ut": 1750,
+     "s": 28.8,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4114,
+     "ut": 1750,
+     "s": 24.84,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4101,
+     "ut": 301,
+     "s": 5.55,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4124,
+     "ut": 252,
+     "s": 5.69,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4185,
+     "ut": 1000,
+     "s": 12.58,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4414,
+     "ut": 1750,
+     "s": 21.19,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    }
+   ],
+   "fel": null,
+   "ollama_minne_gib_efter": {
+    "gemma4:e4b": 9.3
+   }
+  },
+  {
+   "scenario": "h2_spel_ok",
+   "titel": "Holdout 2: spel på kvällen men bra sömn",
+   "klocka": "14:00",
+   "forskjutning_s": -80122,
+   "utlosare": {
+    "kind": "question",
+    "question": "Spelar jag för mycket? Märks det på sömnen?",
+    "hours": 168
+   },
+   "utlosare_fran_vakt": false,
+   "dataantal": {
+    "hr": 10368,
+    "hrv_rmssd": 3303,
+    "spo2": 4091,
+    "skin_temp": 2868,
+    "resp_rate": 2868,
+    "steps": 1612,
+    "dator_kod": 0,
+    "dator_spel": 8437,
+    "dator_chatt": 0,
+    "dator_webb": 0,
+    "dator_annat": 0,
+    "resting_hr": 28,
+    "natter": 28,
+    "pass": 0,
+    "journal": 1,
+    "labb": 4
+   },
+   "verdict": {
+    "sammanfattning": "{\n  \"sammanfattning\": \"Svaret på frågan 'Spelar jag för mycket? Märks det på sömnen?' är att det finns mönster som indikerar potentiell stress och beteendemässiga faktorer att bevaka. Det viktigaste fyndet är att HRV-medianen har varit lägre än baslinjen med -2 ms (F:natter, skillnad_senaste_3_natter_mot_baslinje), vilket kan tyda på viss stress. Dessutom har det observerats 3 nätter med datoranvändning efter 23:00 (F:kvallar, kvallar_med_datorn_efter_23: 3).\",\n  \"bradska\": \"bevaka\",\n  \"bradska_motivering\": \"ingen\",\n  \"rad\": [\n    \"Minska tiden framför datorn efter 23:00 för att förbättra sömn",
+    "bradska": "bevaka",
+    "rad": [],
+    "fragor_till_varden": [],
+    "bradska_bestamd_av": "teamet inom regelverkets ram",
+    "bradska_team": "bevaka",
+    "bradska_regel": "ingen",
+    "bradska_regel_skal": [],
+    "belagda_pastaenden": [
+     {
+      "text": "Medelvärdet för sömnlängd är 8.5 timmar (F:somnskuld), vilket är inom rekommenderade 7-9 timmar för en 18-åring (Tumregler).",
+      "kallor": [
+       "F:somnskuld",
+       "F:natter"
+      ],
+      "av": "somn"
+     },
+     {
+      "text": "HRV-medianen har visat en tendens att vara lägre än baslinjen (F:natter, skillnad_senaste_3_natter_mot_baslinje), vilket kan tyda på viss stress.",
+      "kallor": [
+       "F:natter",
+       "F:natter"
+      ],
+      "av": "somn"
+     },
+     {
+      "text": "Det har observerats 3 nätter med datoranvändning efter 23:00 (F:kvallar), vilket kan påverka insomningen (Tumregler).",
+      "kallor": [
+       "F:kvallar",
+       "F:kvallar"
+      ],
+      "av": "somn"
+     }
+    ]
+   },
+   "strykningar": [],
+   "pastaenden": [
+    {
+     "agent": "somn",
+     "text": "Medelvärdet för sömnlängd är 8.5 timmar (F:somnskuld), vilket är inom rekommenderade 7-9 timmar för en 18-åring (Tumregler).",
+     "kallor": [
+      "F:somnskuld",
+      "F:natter"
+     ]
+    },
+    {
+     "agent": "somn",
+     "text": "HRV-medianen har visat en tendens att vara lägre än baslinjen (F:natter, skillnad_senaste_3_natter_mot_baslinje), vilket kan tyda på viss stress.",
+     "kallor": [
+      "F:natter",
+      "F:natter"
+     ]
+    },
+    {
+     "agent": "somn",
+     "text": "Det har observerats 3 nätter med datoranvändning efter 23:00 (F:kvallar), vilket kan påverka insomningen (Tumregler).",
+     "kallor": [
+      "F:kvallar",
+      "F:kvallar"
+     ]
+    },
+    {
+     "agent": "advokat",
+     "text": "Påstående 1 kan vara missvisande eftersom det inte tar hänsyn till att det inte finns någon information om en rekommenderad sömnlängd för en 18-åring i de tillgängliga källorna, utan endast en baslinje (F:somnskuld, baslinje_somn_timmar_tidigare_veckor: 8.4).",
+     "kallor": [
+      "F:somnskuld"
+     ]
+    },
+    {
+     "agent": "advokat",
+     "text": "Påstående 2 kan vara en överdrift; även om HRV-medianen är lägre än baslinjen för de tre senaste nätterna (F:natter, skillnad_senaste_3_natter_mot_baslinje, hrv_median_ms: -2), kan detta vara ett resultat av naturlig variation eller mätfel, då det inte finns någon annan data som bekräftar en stressrelaterad orsak.",
+     "kallor": [
+      "F:natter",
+      "F:natter"
+     ]
+    },
+    {
+     "agent": "advokat",
+     "text": "Påstående 3 är en observation av beteende (F:kvallar, kvallar_med_datorn_efter_23: 3) men det saknas data som direkt kopplar denna aktivitet till en negativ fysiologisk konsekvens (t.ex. ökad puls eller nedsatt sömnkvalitet) i de aktuella mätvärdena.",
+     "kallor": [
+      "F:kvallar",
+      "F:kvallar"
+     ]
+    }
+   ],
+   "yttranden": [
+    {
+     "agent": "ordforande",
+     "text": "Stressmedicin: Granska pulsdata (F:nu, F:puls) och skärmtid (F:dagar, F:kvallar) för att bedöma stressbelastning och dygnsrytm."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Sömnläkare: Analysera nattliga mätvärden (F:natter) för att bedöma sömnkvalitet, syresättning och återhämtning."
+    },
+    {
+     "agent": "ordforande",
+     "text": "Idrottsläkare: Granska aktivitetsdata (F:dagar) och träningsbelastning (F:belastning) för att bedöma fysisk aktivitet och stillasittande."
+    },
+    {
+     "agent": "stress",
+     "text": "{\n  \"sammanfattning\": \"Pulsdata och skärmtid indikerar en viss belastning, men det finns inte tillräckligt med data för att dra definitiva slutsatser. Föreslagna åtgärder fokuserar på återhämtning och rutiner.\",\n  \"pastaenden\": [\n    {\n      \"text\": \"Den nuvarande pulsen (73 slag/min) är högre än baslinjen för samma timme (71 slag/min) (F:nu).\",\n      \"kallor\": [\"F:nu\"]\n    },\n    {\n      \"text\": \"Under de senaste 48 timmarna har pulsen haft en max på 107 slag/min (F:puls).\",\n      \"kallor\": [\"F"
+    },
+    {
+     "agent": "somn",
+     "text": "Sömnen verkar vara relativt stabil men det finns mönster att notera. Medelvärdet för sömnlängd är 8.5 timmar (F:somnskuld), vilket ligger inom rekommenderat intervall för en 18-åring (Tumregler). HRV-medianen har visat en tendens att vara lägre än baslinjen (F:natter, skillnad_senaste_3_natter_mot_baslinje), vilket kan tyda på viss stress. Det har observerats 3 nätter med datoranvändning efter 23:00 (F:kvallar), vilket kan påverka insomningen (Tumregler). Ingen brådska rekommenderas baserat på den nuvarande datan (F:tolkning)."
+    },
+    {
+     "agent": "idrott",
+     "text": "{\n  \"sammanfattning\": \"Aktivitetsdata visar låg daglig rörelse jämfört med baslinjen (F:dagar). Träningsbelastningen är för närvarande noll (F:belastning). Sömnkvaliteten uppvisar stabila värden över tid (F:natter).\",\n  \"pastaenden\": [\n    {\n      \"text\": \"Steget är under baslinjen på 6013 steg (F:dagar).\",\n      \"kallor\": [\"F:dagar\"]\n    },\n    {\n      \"text\": \"Antal träningspass är 0 under de senaste 7 dygnen (F:belastning).\",\n      \"kallor\": [\"F:belastning\"]\n    },\n    {\n      \"text\": \"Andnin"
+    },
+    {
+     "agent": "advokat",
+     "text": "- Påstående 1 kan vara missvisande eftersom det inte tar hänsyn till att det inte finns någon information om en rekommenderad sömnlängd för en 18-åring i de tillgängliga källorna, utan endast en baslinje (F:somnskuld, baslinje_somn_timmar_tidigare_veckor: 8.4).\n- Påstående 2 kan vara en överdrift; även om HRV-medianen är lägre än baslinjen för de tre senaste nätterna (F:natter, skillnad_senaste_3_natter_mot_baslinje, hrv_median_ms: -2), kan detta vara ett resultat av naturlig variation eller mätfel, då det inte finns någon annan data som bekräftar en stressrelaterad orsak.\n- Påstående 3 är en observation av beteende (F:kvallar, kvallar_med_datorn_efter_23: 3) men det saknas data som direkt kopplar denna aktivitet till en negativ fysiologisk konsekvens (t.ex. ökad puls eller nedsatt sömnkvalitet) i de aktuella mätvärdena."
+    },
+    {
+     "agent": "ordforande",
+     "text": "{\n  \"sammanfattning\": \"Svaret på frågan 'Spelar jag för mycket? Märks det på sömnen?' är att det finns mönster som indikerar potentiell stress och beteendemässiga faktorer att bevaka. Det viktigaste fyndet är att HRV-medianen har varit lägre än baslinjen med -2 ms (F:natter, skillnad_senaste_3_natter_mot_baslinje), vilket kan tyda på viss stress. Dessutom har det observerats 3 nätter med datoranvändning efter 23:00 (F:kvallar, kvallar_med_datorn_efter_23: 3).\",\n  \"bradska\": \"bevaka\",\n  \"bradska_motivering\": \"ingen\",\n  \"rad\": [\n    \"Minska tiden framför datorn efter 23:00 för att förbättra sömn"
+    }
+   ],
+   "verktygsanrop": [
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "hr"
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "sok_journal",
+     "args": {}
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "dator_spel"
+     }
+    },
+    {
+     "agent": "stress",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "hr"
+     }
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "dator_spel"
+     }
+    },
+    {
+     "agent": "somn",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "idrott",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "hr"
+     }
+    },
+    {
+     "agent": "idrott",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "idrott",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    },
+    {
+     "agent": "idrott",
+     "tool": "hamta_somn",
+     "args": {}
+    },
+    {
+     "agent": "idrott",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "dator_spel"
+     }
+    },
+    {
+     "agent": "idrott",
+     "tool": "hamta_serie",
+     "args": {
+      "metric": "steps"
+     }
+    }
+   ],
+   "medlemmar": [
+    "ordforande",
+    "stress",
+    "somn",
+    "idrott",
+    "advokat",
+    "granskare"
+   ],
+   "refs": {
+    "U:fraga": {
+     "ref": "U:fraga",
+     "personen_skrev": "Spelar jag för mycket? Märks det på sömnen?"
+    },
+    "F:nu": {
+     "ref": "F:nu",
+     "klockan": "14:00",
+     "period": "senaste 15 minuterna",
+     "puls_median": 73,
+     "steg": 0,
+     "puls_baslinje_samma_timme": 71,
+     "skillnad_puls_mot_baslinje": 2,
+     "riktning_puls_mot_baslinje": "högre",
+     "puls_median_1_till_3_timmar_sedan": 72,
+     "puls_senaste_5_min_median": 71,
+     "puls_senaste_5_min_max": 72,
+     "steg_senaste_15_min_per_minut_max": 0,
+     "puls_median_senaste_timmen": 75,
+     "steg_senaste_timmen": 0
+    },
+    "F:puls": {
+     "ref": "F:puls",
+     "period": "senaste 48 timmarna",
+     "median": 69,
+     "max": 107,
+     "max_tid": "08:38",
+     "max_under_traningspass": false,
+     "minuter_over_140": 0,
+     "varav_under_eller_direkt_efter_pass": 0,
+     "varav_med_steg_samma_minut": 0,
+     "kvalitet": {
+      "andel_hopp_over_25_slag_mellan_minuter": 0,
+      "andel_saknade_minuter": 0,
+      "isolerade_spikar": [],
+      "antal_isolerade_spikar": 0,
+      "tolkning": "ren signal, inga tecken på mätfel"
+     }
+    },
+    "F:natter": {
+     "ref": "F:natter",
+     "beskrivning": "senaste nätterna, nyast först",
+     "natter": [
+      {
+       "natt_till": "2026-11-24",
+       "somnade": "00:04",
+       "vaknade": "08:11",
+       "ref": "N:natt-1795475056",
+       "somn_timmar": 8.1,
+       "hrv_median_ms": 55,
+       "nattpuls_lagsta_10min": 50,
+       "hudtemp_median_c": 33.99,
+       "andning_median_per_min": 14.2,
+       "spo2_median": 96,
+       "spo2_fall_antal": 0,
+       "spo2_fall_per_timme": 0,
+       "spo2_lagsta": 94
+      },
+      {
+       "natt_till": "2026-11-23",
+       "somnade": "23:14",
+       "vaknade": "08:00",
+       "ref": "N:natt-1795385664",
+       "somn_timmar": 8.6,
+       "hrv_median_ms": 54,
+       "nattpuls_lagsta_10min": 52,
+       "hudtemp_median_c": 33.99,
+       "andning_median_per_min": 14.2,
+       "spo2_median": 96,
+       "spo2_fall_antal": 0,
+       "spo2_fall_per_timme": 0,
+       "spo2_lagsta": 94
+      },
+      {
+       "natt_till": "2026-11-22",
+       "somnade": "23:32",
+       "vaknade": "08:06",
+       "ref": "N:natt-1795300346",
+       "somn_timmar": 8.5,
+       "hrv_median_ms": 53,
+       "nattpuls_lagsta_10min": 54,
+       "hudtemp_median_c": 34.46,
+       "andning_median_per_min": 14.3,
+       "spo2_median": 96,
+       "spo2_fall_antal": 0,
+       "spo2_fall_per_timme": 0,
+       "spo2_lagsta": 94
+      },
+      {
+       "natt_till": "2026-11-21",
+       "somnade": "23:25",
+       "vaknade": "08:12",
+       "ref": "N:natt-1795213548",
+       "somn_timmar": 8.6,
+       "hrv_median_ms": 53,
+       "nattpuls_lagsta_10min": 52,
+       "hudtemp_median_c": 34.19,
+       "andning_median_per_min": 14.2,
+       "spo2_median": 96
+      },
+      {
+       "natt_till": "2026-11-20",
+       "somnade": "23:31",
+       "vaknade": "08:01",
+       "ref": "N:natt-1795127493",
+       "somn_timmar": 8.2,
+       "hrv_median_ms": 55,
+       "nattpuls_lagsta_10min": 53,
+       "hudtemp_median_c": 33.99,
+       "andning_median_per_min": 14.2,
+       "spo2_median": 96
+      },
+      {
+       "natt_till": "2026-11-19",
+       "somnade": "23:28",
+       "vaknade": "08:01",
+       "ref": "N:natt-1795040893",
+       "somn_timmar": 8.4,
+       "hrv_median_ms": 56,
+       "nattpuls_lagsta_10min": 53,
+       "hudtemp_median_c": 34.36,
+       "andning_median_per_min": 14.1,
+       "spo2_median": 96
+      },
+      {
+       "natt_till": "2026-11-18",
+       "somnade": "23:02",
+       "vaknade": "08:06",
+       "ref": "N:natt-1794952928",
+       "somn_timmar": 8.8,
+       "hrv_median_ms": 53,
+       "nattpuls_lagsta_10min": 52,
+       "hudtemp_median_c": 34.18,
+       "andning_median_per_min": 14.3,
+       "spo2_median": 96
+      }
+     ],
+     "baslinje_natt": {
+      "beskrivning": "median av 21 tidigare nätter",
+      "somn_timmar": 8.4,
+      "hrv_median_ms": 56,
+      "nattpuls_lagsta_10min": 53,
+      "hudtemp_median_c": 34.05,
+      "andning_median_per_min": 14.2,
+      "spo2_median": 96
+     },
+     "skillnad_senaste_3_natter_mot_baslinje": {
+      "beskrivning": "medel av de 3 senaste nätterna minus baslinjen: negativt = lägre än normalt",
+      "somn_timmar": 0,
+      "hrv_median_ms": -2,
+      "nattpuls_lagsta_10min": -1,
+      "hudtemp_median_c": 0.1,
+      "andning_median_per_min": 0,
+      "spo2_median": 0,
+      "hrv_procent": -4
+     },
+     "riktning_senaste_3_natter_mot_baslinje": {
+      "somn_timmar": "samma som baslinjen",
+      "hrv_median_ms": "lägre än baslinjen",
+      "nattpuls_lagsta_10min": "lägre än baslinjen",
+      "hudtemp_median_c": "högre än baslinjen",
+      "andning_median_per_min": "samma som baslinjen",
+      "spo2_median": "samma som baslinjen"
+     },
+     "natter_med_minst_5_syrefall_per_timme": 0,
+     "syrefall_definition": "fall på minst 4 procentenheter under nattens 90:e percentil (som ODI)",
+     "medel_somn_timmar_senaste": 8.5
+    },
+    "N:natt-1795475056": {
+     "natt_till": "2026-11-24",
+     "somnade": "00:04",
+     "vaknade": "08:11",
+     "ref": "N:natt-1795475056",
+     "somn_timmar": 8.1,
+     "hrv_median_ms": 55,
+     "nattpuls_lagsta_10min": 50,
+     "hudtemp_median_c": 33.99,
+     "andning_median_per_min": 14.2,
+     "spo2_median": 96,
+     "spo2_fall_antal": 0,
+     "spo2_fall_per_timme": 0,
+     "spo2_lagsta": 94
+    },
+    "N:natt-1795385664": {
+     "natt_till": "2026-11-23",
+     "somnade": "23:14",
+     "vaknade": "08:00",
+     "ref": "N:natt-1795385664",
+     "somn_timmar": 8.6,
+     "hrv_median_ms": 54,
+     "nattpuls_lagsta_10min": 52,
+     "hudtemp_median_c": 33.99,
+     "andning_median_per_min": 14.2,
+     "spo2_median": 96,
+     "spo2_fall_antal": 0,
+     "spo2_fall_per_timme": 0,
+     "spo2_lagsta": 94
+    },
+    "N:natt-1795300346": {
+     "natt_till": "2026-11-22",
+     "somnade": "23:32",
+     "vaknade": "08:06",
+     "ref": "N:natt-1795300346",
+     "somn_timmar": 8.5,
+     "hrv_median_ms": 53,
+     "nattpuls_lagsta_10min": 54,
+     "hudtemp_median_c": 34.46,
+     "andning_median_per_min": 14.3,
+     "spo2_median": 96,
+     "spo2_fall_antal": 0,
+     "spo2_fall_per_timme": 0,
+     "spo2_lagsta": 94
+    },
+    "N:natt-1795213548": {
+     "natt_till": "2026-11-21",
+     "somnade": "23:25",
+     "vaknade": "08:12",
+     "ref": "N:natt-1795213548",
+     "somn_timmar": 8.6,
+     "hrv_median_ms": 53,
+     "nattpuls_lagsta_10min": 52,
+     "hudtemp_median_c": 34.19,
+     "andning_median_per_min": 14.2,
+     "spo2_median": 96
+    },
+    "N:natt-1795127493": {
+     "natt_till": "2026-11-20",
+     "somnade": "23:31",
+     "vaknade": "08:01",
+     "ref": "N:natt-1795127493",
+     "somn_timmar": 8.2,
+     "hrv_median_ms": 55,
+     "nattpuls_lagsta_10min": 53,
+     "hudtemp_median_c": 33.99,
+     "andning_median_per_min": 14.2,
+     "spo2_median": 96
+    },
+    "N:natt-1795040893": {
+     "natt_till": "2026-11-19",
+     "somnade": "23:28",
+     "vaknade": "08:01",
+     "ref": "N:natt-1795040893",
+     "somn_timmar": 8.4,
+     "hrv_median_ms": 56,
+     "nattpuls_lagsta_10min": 53,
+     "hudtemp_median_c": 34.36,
+     "andning_median_per_min": 14.1,
+     "spo2_median": 96
+    },
+    "N:natt-1794952928": {
+     "natt_till": "2026-11-18",
+     "somnade": "23:02",
+     "vaknade": "08:06",
+     "ref": "N:natt-1794952928",
+     "somn_timmar": 8.8,
+     "hrv_median_ms": 53,
+     "nattpuls_lagsta_10min": 52,
+     "hudtemp_median_c": 34.18,
+     "andning_median_per_min": 14.3,
+     "spo2_median": 96
+    },
+    "F:dagar": {
+     "ref": "F:dagar",
+     "beskrivning": "dygn, nyast först",
+     "dagar": [
+      {
+       "datum": "2026-11-24 (idag, hittills)",
+       "steg": 2528
+      },
+      {
+       "datum": "2026-11-23",
+       "steg": 5615,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 267
+       },
+       "dator_minuter_efter_23": 0,
+       "sista_datorminut_pa_kvallen": "22:51"
+      },
+      {
+       "datum": "2026-11-22",
+       "steg": 5996,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 302
+       },
+       "dator_minuter_efter_23": 0,
+       "sista_datorminut_pa_kvallen": "22:52"
+      },
+      {
+       "datum": "2026-11-21",
+       "steg": 5921,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 321
+       },
+       "dator_minuter_efter_23": 2,
+       "sista_datorminut_pa_kvallen": "23:01"
+      },
+      {
+       "datum": "2026-11-20",
+       "steg": 5644,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 320
+       },
+       "dator_minuter_efter_23": 23,
+       "sista_datorminut_pa_kvallen": "23:22"
+      },
+      {
+       "datum": "2026-11-19",
+       "steg": 6122,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 313
+       },
+       "dator_minuter_efter_23": 14,
+       "sista_datorminut_pa_kvallen": "23:13"
+      },
+      {
+       "datum": "2026-11-18",
+       "steg": 6734,
+       "minuter_vid_datorn_per_kategori": {
+        "spel": 296
+       },
+       "dator_minuter_efter_23": 0,
+       "sista_datorminut_pa_kvallen": "22:45"
+      }
+     ],
+     "baslinje_steg_per_dag": 6013
+    },
+    "F:somnskuld": {
+     "ref": "F:somnskuld",
+     "beskrivning": "samma räkning som appens sömnskuld: summa av (behov - sömn) per natt",
+     "somnbehov_timmar": 8.0,
+     "natter_med_data": 7,
+     "somnskuld_timmar_senaste_7_natter": 0.0,
+     "medel_somn_timmar_senaste_7": 8.5,
+     "natter_under_7_timmar": 0,
+     "natter_med_datorn_efter_midnatt": 0,
+     "baslinje_somn_timmar_tidigare_veckor": 8.4,
+     "skillnad_medel_somn_mot_baslinje_timmar": 0.1
+    },
+    "F:kvallar": {
+     "ref": "F:kvallar",
+     "beskrivning": "datorn efter 23:00 per kväll, nyast först",
+     "kvallar_med_datorn_efter_23": 3,
+     "kvallar_med_datorn_efter_01": 0,
+     "kvallar": [
+      {
+       "kvall": "2026-11-23",
+       "minuter_vid_datorn_efter_23": 0,
+       "sista_datorminut": null,
+       "per_kategori": "inga"
+      },
+      {
+       "kvall": "2026-11-22",
+       "minuter_vid_datorn_efter_23": 0,
+       "sista_datorminut": null,
+       "per_kategori": "inga"
+      },
+      {
+       "kvall": "2026-11-21",
+       "minuter_vid_datorn_efter_23": 2,
+       "sista_datorminut": "23:01",
+       "per_kategori": {
+        "spel": 2
+       }
+      },
+      {
+       "kvall": "2026-11-20",
+       "minuter_vid_datorn_efter_23": 23,
+       "sista_datorminut": "23:22",
+       "per_kategori": {
+        "spel": 23
+       }
+      },
+      {
+       "kvall": "2026-11-19",
+       "minuter_vid_datorn_efter_23": 14,
+       "sista_datorminut": "23:13",
+       "per_kategori": {
+        "spel": 14
+       }
+      },
+      {
+       "kvall": "2026-11-18",
+       "minuter_vid_datorn_efter_23": 0,
+       "sista_datorminut": null,
+       "per_kategori": "inga"
+      }
+     ]
+    },
+    "F:belastning": {
+     "ref": "F:belastning",
+     "period": "senaste 7 dygnen",
+     "antal_traningspass": 0,
+     "traningsminuter_totalt": 0,
+     "pass": "inga",
+     "minuter_i_zon_4_5_per_dag_senaste_3": "inga",
+     "tranade_igar": false
+    },
+    "F:prover": {
+     "ref": "F:prover",
+     "beskrivning": "senaste provsvaret per analys",
+     "prover": [
+      {
+       "ref": "L:00a7e0e72b",
+       "analys": "Hb",
+       "varde": "148",
+       "enhet": "g/L",
+       "referens": "134.0-170.0",
+       "datum": "2026-03-29",
+       "dagar_sedan": 240,
+       "bedomning_mot_referens": "inom"
+      },
+      {
+       "ref": "L:dd7fb8d991",
+       "analys": "Ferritin",
+       "varde": "72",
+       "enhet": "µg/L",
+       "referens": "15.0-150.0",
+       "datum": "2026-03-29",
+       "dagar_sedan": 240,
+       "bedomning_mot_referens": "inom"
+      },
+      {
+       "ref": "L:278a50d194",
+       "analys": "TSH",
+       "varde": "1,6",
+       "enhet": "mIE/L",
+       "referens": "0.4-4.0",
+       "datum": "2026-03-29",
+       "dagar_sedan": 240,
+       "bedomning_mot_referens": "inom"
+      },
+      {
+       "ref": "L:7f8b391a6c",
+       "analys": "CRP",
+       "varde": "<1",
+       "enhet": "mg/L",
+       "referens": "-5.0",
+       "datum": "2026-03-29",
+       "dagar_sedan": 240,
+       "bedomning_mot_referens": "inom"
+      }
+     ]
+    },
+    "L:00a7e0e72b": {
+     "ref": "L:00a7e0e72b",
+     "analys": "Hb",
+     "varde": "148",
+     "enhet": "g/L",
+     "referens": "134.0-170.0",
+     "datum": "2026-03-29",
+     "dagar_sedan": 240,
+     "bedomning_mot_referens": "inom"
+    },
+    "L:dd7fb8d991": {
+     "ref": "L:dd7fb8d991",
+     "analys": "Ferritin",
+     "varde": "72",
+     "enhet": "µg/L",
+     "referens": "15.0-150.0",
+     "datum": "2026-03-29",
+     "dagar_sedan": 240,
+     "bedomning_mot_referens": "inom"
+    },
+    "L:278a50d194": {
+     "ref": "L:278a50d194",
+     "analys": "TSH",
+     "varde": "1,6",
+     "enhet": "mIE/L",
+     "referens": "0.4-4.0",
+     "datum": "2026-03-29",
+     "dagar_sedan": 240,
+     "bedomning_mot_referens": "inom"
+    },
+    "L:7f8b391a6c": {
+     "ref": "L:7f8b391a6c",
+     "analys": "CRP",
+     "varde": "<1",
+     "enhet": "mg/L",
+     "referens": "-5.0",
+     "datum": "2026-03-29",
+     "dagar_sedan": 240,
+     "bedomning_mot_referens": "inom"
+    },
+    "F:journal": {
+     "ref": "F:journal",
+     "anteckningar": [
+      {
+       "ref": "J:941d2e8d2c",
+       "date": "2026-03-29",
+       "kind": "anteckning",
+       "title": "Hälsobesök",
+       "text": "Hälsosamtal. Frisk, inga mediciner, inga kända allergier. Blodprover tagna, normala."
+      }
+     ]
+    },
+    "J:941d2e8d2c": {
+     "ref": "J:941d2e8d2c",
+     "date": "2026-03-29",
+     "kind": "anteckning",
+     "title": "Hälsobesök",
+     "text": "Hälsosamtal. Frisk, inga mediciner, inga kända allergier. Blodprover tagna, normala."
+    },
+    "F:tolkning": {
+     "ref": "F:tolkning",
+     "beskrivning": "deterministiska regler, inte en språkmodell",
+     "metric": null,
+     "brådska_enligt_regler": "ingen",
+     "skal": [
+      "inga regler slog till"
+     ]
+    }
+   },
+   "sekunder": 130.8,
+   "tokens": {
+    "prompt": 28609,
+    "ut": 7305,
+    "anrop": 7,
+    "per_modell": {
+     "gemma4:e4b": {
+      "calls": 7,
+      "prompt_tokens": 28609,
+      "output_tokens": 7305,
+      "seconds": 130.74,
+      "prompt_eval_s": 15.23,
+      "eval_s": 108.3,
+      "gen_tokens_per_s": 67.5,
+      "prompt_tokens_per_s": 1878.4
+     }
+    }
+   },
+   "llm_anrop": [
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 3979,
+     "ut": 197,
+     "s": 16.69,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 3968,
+     "ut": 1750,
+     "s": 32.1,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4033,
+     "ut": 482,
+     "s": 10.06,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 3965,
+     "ut": 1750,
+     "s": 25.5,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4061,
+     "ut": 376,
+     "s": 8.8,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4208,
+     "ut": 1000,
+     "s": 14.29,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    },
+    {
+     "modell": "gemma4:e4b",
+     "prompt": 4395,
+     "ut": 1750,
+     "s": 23.3,
+     "think": false,
+     "verktyg": false,
+     "schema": true
+    }
+   ],
+   "fel": null,
+   "ollama_minne_gib_efter": {
+    "gemma4:e4b": 9.3
+   }
+  }
+ ]
+}
