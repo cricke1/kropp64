@@ -255,6 +255,9 @@ Problem på vägen:
   (kontrollerat mot safetensors egen läsare: alla 2 798 tensorer lika). Tjänsten startas av en .bat som
   försöker igen efter 60 s om den ändå faller.
 - När Lenovon var hårt belastad av de andra jobben blev RTF 15-30 (en replik på 3,6 s tog 91 s).
+- Mellan meningarna lade tjänsten först in 0,22 s digital tystnad. Ägarens egna erfarenheter med samma röster
+  (i en annan skill) är att digital tystnad hörs som konstiga pauser. Nu 0,17 s brus på nivå med tagningens
+  eget brusgolv, och demons repliker är omgjorda.
 Därför genereras rösterna i förväg: nya repliker så fort de hamnar i loggen (när någon lyssnar), och när ett
 gammalt konsilium spelas upp resten av dess repliker i tur och ordning. Webben väntar live så länge inget annat
 händer (upp till 90 s) och hoppar över rösten så fort nästa händelse väntar, och väntar upp till 40 s i

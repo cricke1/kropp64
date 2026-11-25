@@ -22,7 +22,7 @@ Filmerna ligger inte i git (för stora). Så spelas de in igen:
    `web/dev/rost-demo.mjs`) och byggs in i demobygget, så den publika demon kör ingen talsyntes. Under
    inspelningen loggas när varje röst börjar spela i sidan (samma klocka som screencastens tidsstämplar), och
    filerna läggs in på exakt de tiderna med ffmpeg (`adelay` + `amix`). Varje replik är normaliserad till
-   -19 LUFS (hela filmen mätt till -20,3 LUFS integrerat), toppar under -2 dBTP. AAC 128 kbit/s i mp4, Opus i webm.
+   -19 LUFS (hela filmen mätt till -20,3 och -20,4 LUFS integrerat), toppar under -2 dBTP. AAC 128 kbit/s i mp4, Opus i webm.
 
 Rösterna görs med Parambe (Chatterbox Multilingual med svenska vikter) lokalt i hemnätet, klonade ur en röstbank
 vars referensklipp ursprungligen gjordes med ElevenLabs (syntetiska röster, gratisplan, icke-kommersiellt).
