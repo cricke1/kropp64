@@ -168,3 +168,11 @@ def test_somnskuld_kvallar_och_belastning_godkanns():
     assert g("3 träningspass på 180 minuter senaste veckan.", ["F:belastning"])
     assert not g("Sömnskulden är 21 timmar.", ["F:somnskuld"])
     assert not g("Du har sömnskuld.", ["F:belastning"])
+
+def test_fel_rad_i_faktabladet_ratttas_om_bara_en_rad_passar():
+    m = mote2()
+    m.refs["F:somnskuld"] = {"ref": "F:somnskuld", "somnskuld_timmar_senaste_7_natter": 15.3}
+    g = granska(m, "x", {"pastaenden": [{"text": "HRV är 22 ms lägre än baslinjen.", "kallor": ["F:somnskuld"]}]})
+    assert len(g) == 1 and g[0]["kalla_tillagd_av_granskaren"] == "F:natter"
+    # en påhittad siffra räddas inte
+    assert granska(m, "x", {"pastaenden": [{"text": "HRV är 23 ms lägre än baslinjen.", "kallor": ["F:somnskuld"]}]}) == []

@@ -560,11 +560,23 @@ def granska(m: Mote, agent: str, bed: dict[str, Any]) -> list[dict[str, Any]]:
         if not text:
             continue
         skal = kontrollera(text, kallor, m.refs, m.trigger.get("metric"))
+        tillagd = None
+        if skal and skal.startswith("siffran") and kallor:
+            # Vanligaste felet: rätt siffra, fel rad i faktabladet (t.ex. HRV-skillnaden citerad från F:somnskuld
+            # i stället för F:natter). Finns det EN annan faktabladsrad där påståendet håller helt, läggs den till
+            # som källa. Garantin är densamma: varje siffra finns i en angiven källa av rätt mätvärde.
+            kandidater = [k for k in m.refs if k.startswith("F:") and k not in kallor
+                          and not kontrollera(text, kallor + [k], m.refs, m.trigger.get("metric"))]
+            if len(kandidater) == 1:
+                tillagd, skal = kandidater[0], None
         if skal:
             m.emit("review.strike", agent="granskare", target=agent, claim=text, reason=skal,
                    say_id=f"{agent}-bedomning")
         else:
-            godkanda.append({"text": text, "kallor": [k for k in kallor if k in m.refs], "av": agent})
+            p_ok = {"text": text, "kallor": [k for k in kallor if k in m.refs] + ([tillagd] if tillagd else []), "av": agent}
+            if tillagd:
+                p_ok["kalla_tillagd_av_granskaren"] = tillagd
+            godkanda.append(p_ok)
     return godkanda
 
 
