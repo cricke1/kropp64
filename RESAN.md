@@ -262,7 +262,12 @@ Därför genereras rösterna i förväg: nya repliker så fort de hamnar i logge
 gammalt konsilium spelas upp resten av dess repliker i tur och ordning. Webben väntar live så länge inget annat
 händer (upp till 90 s) och hoppar över rösten så fort nästa händelse väntar, och väntar upp till 40 s i
 uppspelning. Demon är förgenererad. Mac minins MPS är reserv bara när Qwen inte är laddad och minst 45 % minne
-är ledigt, som en engångsprocess som avslutas efteråt. Piper är sista reserv, och testad: med Lenovon nere
+är ledigt, som en engångsprocess som avslutas efteråt. När jag skulle mäta den reserven startade mätningen i en kort lucka
+mellan två utvärderingskörningar, och sedan laddades Qwen igen mitt i: datorn swappade 6 GB innan jag
+avbröt. Kontrollen vid start räckte alltså inte. Nu bevakas MPS-jobbet varannan sekund och dödas direkt om
+en språkmodell laddas eller minnet sjunker under 20 % (test i test_rost.py). MPS-reservens hastighet är
+därför fortfarande inte uppmätt här; ägarens tidigare körningar av samma modell på Macen tog runt en minut
+per replik. Piper är sista reserv, och testad: med Lenovon nere
 svarade `/api/rost/{id}` med Piper-röst efter 4,3 s (3 s väntan på Lenovon) och sedan direkt i 60 s utan att
 fråga Lenovon igen. Kvaliteten kontrollerades genom att en annan modell (Gemini) fick lyssna på demons 13
 repliker mot manuset: alla ord och tal rätt, en replik hade en paus mitt i "hjärtmuskelinflammation" och

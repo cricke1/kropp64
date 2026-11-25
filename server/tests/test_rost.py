@@ -129,3 +129,18 @@ def test_forvarmning(klient, monkeypatch):
         _t.sleep(0.2)
     assert "fel konsilium" not in gjorda
     assert set(gjorda) == {"rad 1", "rad 2", "rad 3", "ny live"}
+
+
+def test_mps_avbryts_om_sprakmodellen_laddas(tmp_path, monkeypatch):
+    from konsiliet import rost
+    py = tmp_path / "python"
+    py.write_text("#!/bin/sh\nsleep 30\n")
+    py.chmod(0o755)
+    monkeypatch.setattr(rost, "MPS_PYTHON", py)
+    monkeypatch.setattr(rost, "ROSTBANK", tmp_path)
+    monkeypatch.setattr(rost, "_fritt_minne_procent", lambda: 90)
+    laddad = iter([False] + [True] * 100)    # ledig vid start, laddas strax efter
+    monkeypatch.setattr(rost, "_sprakmodell_laddad", lambda: next(laddad))
+    t0 = __import__("time").time()
+    assert rost._wav_mps(rost.BANK["somn"], "Hej.") is None
+    assert __import__("time").time() - t0 < 10

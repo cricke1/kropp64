@@ -460,13 +460,20 @@ def _wav_mps(b: BankRost, text: str) -> bytes | None:
         jobb = Path(d) / "jobb.json"
         jobb.write_text(json.dumps([{"id": "a", "rost": b.namn, "text": text, "uttryck": b.uttryck, "cfg": b.cfg}]),
                         encoding="utf-8")
-        try:
-            subprocess.run([str(MPS_PYTHON), str(skript), "--rostbank", str(ROSTBANK), "--en-gang", str(jobb),
-                            "--ut-mapp", d], check=True, capture_output=True, timeout=600,
-                           env={**os.environ, "HF_HUB_OFFLINE": "1"})
-            return (Path(d) / "a.wav").read_bytes()
-        except Exception:
-            return None
+        # Kontrollen före start räcker inte: språkmodellen kan laddas mitt i (hänt i test, datorn swappade).
+        # Jobbet bevakas och avbryts direkt om en språkmodell laddas eller minnet tar slut.
+        p = subprocess.Popen([str(MPS_PYTHON), str(skript), "--rostbank", str(ROSTBANK), "--en-gang", str(jobb),
+                              "--ut-mapp", d], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                             env={**os.environ, "HF_HUB_OFFLINE": "1"})
+        slut = time.time() + 600
+        while p.poll() is None:
+            if time.time() > slut or _sprakmodell_laddad() or _fritt_minne_procent() < 20:
+                p.kill()
+                p.wait()
+                return None
+            time.sleep(2)
+        ut = Path(d) / "a.wav"
+        return ut.read_bytes() if p.returncode == 0 and ut.exists() else None
 
 
 def _cachefil(motor: str, spec: str, talt: str) -> Path:
