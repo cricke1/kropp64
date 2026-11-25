@@ -688,3 +688,8 @@ bildtakten inte räcker. En riktig mellanklassmobil behövs för en siffra.
 **Rösttjänsten startar av sig själv.** En schemalagd uppgift på Lenovon ("Kropp64 rosttjanst") startar
 `rost_tjanst.bat` vid inloggning och startar om den upp till tre gånger om den faller. Tidigare slutade
 rösterna fungera efter en omstart av laptopen.
+
+**Reservrösten på Mac minin, uppmätt.** Chatterbox/Parambe på MPS med Qwen urladdad (79 % ledigt minne vid
+start): kort replik 30,3 s för 2,1 s tal (RTF 14,3), mellan 32,2 s för 5,8 s (RTF 5,5), lång 44,4 s för 9,4 s
+(RTF 4,7). Ungefär 25 s är fast uppstartskostnad per jobb. Långt från realtid, så den duger bara som reserv för
+förgenerering när Lenovon är avstängd. Ännu en sak som 16 GB sätter gränsen för.
