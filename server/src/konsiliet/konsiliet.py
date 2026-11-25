@@ -724,9 +724,9 @@ def bestam_bradska(m: Mote, llm_niva: str, godkanda: list[dict[str, Any]]) -> tu
     if lage_ == "regel":
         niva, hur = regel, "regelverket"
     elif lage_ == "hybrid":
-        # teamet får justera ett steg, men aldrig sänka det regelverket bedömt som vårdfall
-        lo = i_regel if i_regel >= 2 else max(0, i_regel - 1)
-        i = min(max(i_llm, lo), min(3, i_regel + 1))
+        # Regelverket är golvet: teamet får höja ett steg men aldrig sänka. I utvärderingen sänkte teamet
+        # bara fel (löst sittande klocka, HRV-fall efter träning, vilopuls 106 i soffan blev "ingen").
+        i = min(max(i_llm, i_regel), min(3, i_regel + 1))
         niva, hur = NIVAER[i], "teamet inom regelverkets ram" if i == i_llm else "regelverkets ram"
     else:
         niva, hur = llm_niva, "teamet"

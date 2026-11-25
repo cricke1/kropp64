@@ -82,3 +82,8 @@ def test_fraga_med_hog_vilopuls_senaste_timmen_ger_bevaka():
     assert fakta.regelbradska({"kind": "question"}, f)[0] == "bevaka"
     f["F:nu"]["steg_senaste_timmen"] = 2500  # rörelse förklarar pulsen
     assert fakta.regelbradska({"kind": "question"}, f)[0] == "ingen"
+
+
+def test_hybrid_far_inte_sanka_regelverket():
+    m = _mote("avvikelse", "hybrid", "bevaka")
+    assert bestam_bradska(m, "ingen", [{"text": "x"}])[0] == "bevaka"
