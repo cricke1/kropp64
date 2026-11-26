@@ -329,24 +329,65 @@ _STEG = [  # (fil, start-rekt, slut-rekt, etikett, rubrik, platta)
     ("mobil-idag.png", (540, 1900, 1250), (420, 1880, 900), "1177", "HELA JOURNALEN", "ett BankID-tryck, sparas bara hemma"),
     ("mobil-sensorer2.png", (540, 1560, 1250), (560, 1560, 1050), "MAC MINI + TELEFONEN", "TIDEN VID SKÄRMEN", "kod, spel, sociala medier, per minut"),
 ]
-_GRANS = [B[9], B[10], B[11], B[12]]
-for k, idx in enumerate((0, 2, 3)):
-    a, b = _GRANS[k], _GRANS[k + 1]
-    f, r0, r1, et, rub, pl = _STEG[idx]
-    punch(a, 0.08); blixt(a, 0.5, 0.08); ljud(a - 0.25, "whoosh", 0.7); ljud(a, "slam", 0.9)
-    _fn = mobil_scen(f, r0, r1, et, rub, a, b)
+# Sensorpanelen: allt klockan, 1177 och datorn loggar, i HWiNFO-form bredvid klockan
+SENSORER = [
+    ("g", "Pixel Watch 5", ""), ("r", "Puls", "69 bpm"), ("r", "Vilopuls", "56 bpm"), ("r", "HRV", "41 ms"),
+    ("r", "Syremättnad", "97 %"), ("r", "Andning", "14 /min"), ("r", "Sömn i natt", "5 h 40 min"), ("r", "Steg", "899"),
+    ("g", "1177 (BankID)", ""), ("r", "Journalanteckningar", "44"), ("r", "Provsvar", "12"),
+    ("g", "Mac mini + mobilen", ""), ("r", "Kod", "2 h 16 min"), ("r", "Webb", "19 min"), ("r", "Sociala medier", "1 h 49 min"),
+]
+RAD_DT = 0.075
+for i in range(len(SENSORER)): ljud(B[9] + 0.05 + i * RAD_DT, "tick", 0.45)
+punch(B[9], 0.08); blixt(B[9], 0.5, 0.08); ljud(B[9] - 0.25, "whoosh", 0.7); ljud(B[9], "slam", 0.9)
+punch(B[10], 0.07); ljud(B[10], "slam", 0.9)
 
-    def _m(t, lt, _fn=_fn, a=a, b=b, pl=pl):
-        im = _fn(t, lt)
-        return gul_platta(im, t, a + (b - a) * 0.15, pl)
-    SCENER.append((a, b, _m))
+
+def _jitter(v, t, i):
+    if not v or not v[0].isdigit() or " h " in v: return v
+    tal, *enh = v.split(" ")
+    if i in (1,):  # bara pulsen lever
+        tal = str(int(tal) + int(2 * math.sin(t * 9 + i)))
+    return " ".join([tal] + enh)
+
+
+@scen(B[9], B[11])
+def sensorer(t, lt):
+    if "klocka" not in _anim: _anim["klocka"] = Video(ANIM, 5.6, 0.55)
+    src = _anim["klocka"].vid(t - B[9])
+    u = (t - B[9]) / (B[11] - B[9])
+    cx, cy, w = lerp(600, 590, u), lerp(800, 810, u), lerp(700, 600, u)
+    h = w * 1080 / 760; top = min(max(0, cy - h / 2), H - h)
+    klocka = src.resize((760, 1080), Image.BICUBIC, box=(cx - w / 2, top, cx + w / 2, top + h))
+    im = Image.new("RGB", (W, H), (14, 16, 19)); im.paste(klocka, (0, 0))
+    im = R.osd(im, [("KLOCKAN", "", None)], x=40, y=40, size=64)
+    d = ImageDraw.Draw(im)
+    X0 = 800
+    d.rectangle((X0, 30, W - 30, H - 30), fill=(22, 25, 29), outline=(70, 76, 82), width=3)
+    d.rectangle((X0, 30, W - 30, 100), fill=(44, 49, 56))
+    d.text((X0 + 24, 44), "Kropp64 Sensors", font=font("mono", 500, 40), fill=VIT)
+    d.text((W - 330, 44), "Värde", font=font("mono", 500, 40), fill=(170, 176, 182))
+    fr, fg = font("mono", 500, 42), font("mono", 500, 42)
+    n = int((t - B[9] - 0.05) / RAD_DT) + 1
+    y = 112
+    for i, (typ, namn, varde) in enumerate(SENSORER[:max(0, n)]):
+        if typ == "g":
+            d.text((X0 + 24, y), "- " + namn, font=fg, fill=GUL)
+        else:
+            d.text((X0 + 70, y), namn, font=fr, fill=(225, 228, 230))
+            v = _jitter(varde, t, i)
+            vb = d.textbbox((0, 0), v, font=fr)[2]
+            d.text((W - 60 - vb, y), v, font=fr, fill=GRON if i <= 7 else (120, 200, 255))
+        y += 53
+    if t >= B[10]:
+        im = gul_platta(im, t, B[10], "ALLT LOGGAS. VARJE MINUT.", cy=H - 75)
+    return im
 
 
 # ---- AKT 3: LÄKARTEAMET, 12-34 s --------------------------------------------------
 # Kontoret spelas in separat (kontorsfilm.py, web/src/office/film.ts) i 4x: 8 bildpunkter per logisk pixel.
 KONTOR = MEDIA / "ut/kontor"
 KPX = 8
-BORDET = 18.6               # scentid när bordet välts
+BORDET = 20.6               # scentid när bordet välts
 OFF = DROP - BORDET         # trailertid = scentid + OFF fram till droppet
 
 
@@ -373,34 +414,43 @@ def kontor_kam(ft, r0, r1, u, e=easeio):
 
 # (scentid start, slut, kamera från, kamera till (logiska px: mitt x, mitt y, bredd), namn, roll)
 KONTORSKLIPP = [
-    (0.6, 2.4, (176, 92, 190), (168, 88, 150), "TRÅDSTARTAREN", "allmänläkare"),
-    (2.4, 4.6, (186, 74, 175), (184, 70, 150), "KARDIOLOGEN", "kardiolog"),
-    (4.6, 6.4, (212, 78, 160), (210, 74, 135), "TROLLET", "djävulens advokat"),
-    (6.4, 8.4, (190, 74, 140), (186, 70, 120), "KARDIOLOGEN", "blir arg"),
-    (8.4, 10.0, (234, 74, 165), (232, 70, 145), "SÖMNLÄKAREN", "skyller på sömnen"),
-    (10.0, 11.5, (190, 112, 150), (188, 110, 125), "IDROTTSLÄKAREN", "skyller på träningen"),
-    (11.5, 12.9, (222, 112, 150), (220, 110, 125), "STRESSLÄKAREN", "skyller på stressen"),
-    (12.9, 14.4, (214, 62, 165), (212, 58, 140), "TROLLET", "igen"),
-    (14.4, BORDET, (186, 85, 190), (180, 88, 120), "KARDIOLOGEN", "går för långt"),
+    (2.6, 4.4, (176, 92, 190), (168, 88, 150), "TRÅDSTARTAREN", "allmänläkare"),
+    (4.4, 6.6, (186, 74, 175), (184, 70, 150), "KARDIOLOGEN", "kardiolog"),
+    (6.6, 8.4, (212, 78, 160), (210, 74, 135), "TROLLET", "djävulens advokat"),
+    (8.4, 10.4, (190, 74, 140), (186, 70, 120), "KARDIOLOGEN", "blir arg"),
+    (10.4, 12.0, (234, 74, 165), (232, 70, 145), "SÖMNLÄKAREN", "skyller på sömnen"),
+    (12.0, 13.5, (190, 112, 150), (188, 110, 125), "IDROTTSLÄKAREN", "skyller på träningen"),
+    (13.5, 14.9, (222, 112, 150), (220, 110, 125), "STRESSLÄKAREN", "skyller på stressen"),
+    (14.9, 16.4, (214, 62, 165), (212, 58, 140), "TROLLET", "igen"),
+    (16.4, BORDET, (186, 85, 190), (180, 88, 120), "KARDIOLOGEN", "går för långt"),
 ]
 for (fs, fe, *_r) in KONTORSKLIPP:
     t0 = fs + OFF
     if t0 > B[13]:
         punch(t0, 0.07); ljud(t0, "pop", 0.9); ljud(t0 - 0.18, "whoosh", 0.45)
-for tt in (6.4 + OFF, 10.0 + OFF, 11.5 + OFF):
+for tt in (8.4 + OFF, 12.0 + OFF, 13.5 + OFF):
     skak(tt, 22, 0.3); ljud(tt, "slam", 0.8)
-rgb(16.6 + OFF, DROP, 0)
+rgb(18.6 + OFF, DROP, 0)
 for k in range(36, 41): skak(B[k], 6 + (k - 36) * 7, 0.2); punch(B[k], 0.02 + (k - 36) * 0.012)
 
-blixt(B[12], 1.0, 0.2); punch(B[12], 0.1); skak(B[12], 30); ljud(B[12], "nedslag", 1.0); ljud(B[12] - 0.35, "whoosh", 0.9)
+blixt(B[11], 0.8, 0.15); punch(B[11], 0.09); ljud(B[11] - 0.3, "whoosh", 0.9); ljud(B[11], "nedslag", 0.9)
+for i in range(8): ljud(0.7 + i * 0.15 + OFF, "whoosh", 0.3)
+blixt(B[12], 0.6, 0.15); punch(B[12], 0.1); skak(B[12], 26); ljud(B[12], "nedslag", 1.0)
 
 
-@scen(B[12], B[13])
-def lakarteamet(t, lt):
-    im = morka(kontor_kam(0.3, (208, 140, 416), (208, 120, 300), (t - B[12]) / (B[13] - B[12])), 0.45)
+@scen(B[11], B[13])
+def dataflod(t, lt):
+    ft = scentid(t)
+    u = (t - B[11]) / (B[13] - B[11])
+    im = kontor_kam(ft, (209, 80, 250), (209, 86, 215), u)
+    if t < B[12]:
+        d = ImageDraw.Draw(im); d.rectangle((0, 0, W, 130), fill=(0, 0, 0))
+        jattetext(im, "ALL DATA  ->  LÄKARTEAMET", 66, size=84, fill=GUL, stroke=0, lt=t, t_in=B[11], typ="mono", vikt=500, fran=1.3)
+        return im
+    im = morka(im, 0.35)
     jattetext(im, "6 AI-LÄKARE", 430, size=250, lt=t, t_in=B[12], stroke=12, fran=2.0)
     sk, a = slam(t, B[12] + 0.3, fran=1.3)
-    lagg(im, textlager("som bråkar om min data", "sans", 600, 90, GUL, 8), W // 2, 640, sk, a)
+    lagg(im, textlager("drar slutsatser. Och bråkar.", "sans", 600, 90, GUL, 8), W // 2, 640, sk, a)
     return im
 
 
@@ -414,11 +464,11 @@ def kontoret(t, lt):
     sk, a = slam(ft, fs, fran=1.3)
     lagg(im, textlager(namn, "mono", 500, 74, ORANGE, 6), 70, 60, sk, a, ankare="lm")
     lagg(im, textlager(roll, "mono", 500, 74, VIT, 6), 110 + textlager(namn, "mono", 500, 74).width, 60, sk, a, ankare="lm")
-    if ft >= 16.4:  # ordet slås in i jätteformat medan risern stiger
+    if ft >= 18.4:  # ordet slås in i jätteformat medan risern stiger
         g = Image.linear_gradient("L").resize((W, 520)).point(lambda v: int(v * 0.92))
         im.paste(Image.new("RGB", (W, 520)), (0, H - 520), g)
         ord_ = "HJÄRTMUSKEL-INFLAMMATION!"
-        n = int(len(ord_) * min(1.0, (ft - 16.4) / 1.6))
+        n = int(len(ord_) * min(1.0, (ft - 18.4) / 1.6))
         for i, s_ in enumerate(ord_[:n].split("-")):
             if s_: jattetext(im, s_ + ("-" if i == 0 and n > 12 else ""), 760 + i * 180, size=175, fill=ROD, stroke=10, lt=1, t_in=0)
     return im
@@ -427,7 +477,7 @@ def kontoret(t, lt):
 # ---- DROPPET, 31 s: Kardiologen välter bordet, moderatorn stryker -------------
 blixt(DROP, 1.0, 0.3); skak(DROP, 80, 0.6); glitch(DROP, 0.25); punch(DROP, 0.2); rgb(DROP, DROP + 0.5, 18)
 ljud(DROP, "nedslag", 1.0); ljud(DROP, "glitch", 1.0); ljud(DROP + 0.25, "nedslag", 0.6)
-STRYK_T = DROP + 1.0 + (19.6 - BORDET - 0.55) / 1.6  # när strecket dras i scenen
+STRYK_T = DROP + 1.0 + (21.9 - BORDET - 0.55) / 1.6  # när strecket dras i scenen
 punch(STRYK_T, 0.12); blixt(STRYK_T, 0.5, 0.1, (255, 40, 40)); ljud(STRYK_T, "strykning", 1.0); ljud(STRYK_T, "slam", 0.8)
 
 
@@ -507,7 +557,7 @@ def siffror(t, lt):
 
 # snabba klipp: allt material, ett slag var
 SNABB = [  # (beat, källa, start, rekt, etikett)
-    (58, "film", 24.4, (196, 84, 210), "INGEN ÅTGÄRD. BORDET LIGGER KVAR."),
+    (58, "film", 26.4, (196, 84, 210), "INGEN ÅTGÄRD. BORDET LIGGER KVAR."),
     (59, "demo", 141.0, (1560, 900, 600), "STRUKET I TRÅDEN"),
     (60, "rigg", 6.0, (980, 560, 900), "RIGGEN"),
     (61, "skarm", "mobil-idag.png", (540, 1380, 1080), "HEADROOM, PASS, SÖMN"),

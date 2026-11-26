@@ -8,6 +8,7 @@ import './office.css'
 import { Scene } from './scene'
 import { TABLE, TABLE_SEATS } from './map'
 import { rect, type Ctx } from './pixel'
+import { demoScreen } from './demo'
 
 const css = document.createElement('style')
 css.textContent = `
@@ -17,6 +18,7 @@ css.textContent = `
   .ob-bubble.rage .tail { background: #fff1ec; border-color: #8a1c16; }
   .ob-card, .ob-strike .claim span { transition: none !important; }
   .ob-strike { font-size: 14px; max-width: 270px; }
+  .ob-doc { font-size: 12px !important; padding: 3px 6px 4px !important; }
 `
 document.head.appendChild(css)
 
@@ -24,6 +26,7 @@ const s = new Scene()
 const S = s as any
 S.destroy()            // ingen egen animationsloop, klockan stegas utifrån
 s.ambient = false
+s.screen = demoScreen('hr')
 document.getElementById('stage')!.appendChild(s.root)
 S.resize()
 
@@ -204,7 +207,19 @@ const MANUS: [number, () => void][] = [
   [21.6, () => { lugna('kardiolog'); fx.kardiolog.svett = s.t + 20 }],
   [23.6, () => { sag('ordforande', 'Ingen åtgärd. Vi bevakar i natt.') }],
 ]
-for (const [t, fn] of MANUS) s.after(t, fn)
+// Först flyger datan från skärmväggen till var och en: klockan, 1177 och datorn är underlaget för allt de säger.
+const FORSKJ = 2.0
+const DATA: [string, string][] = [
+  ['kardiolog', 'Puls 30 d'], ['somn', 'Sömn'], ['idrott', 'Träningspass'], ['stress', 'HRV'],
+  ['labb', 'Provsvar 1177'], ['ordforande', 'Journal 1177'], ['advokat', 'Skärmtid'], ['granskare', 'Alla källor'],
+]
+DATA.forEach(([id, etikett], i) => s.after(0.7 + i * 0.15, () => {
+  const a = s.ensure(id)
+  const label = S.el('ob-doc', etikett)
+  S.flights.push({ from: { x: 209 + (i - 3.5) * 6, y: 40 }, to: { x: a.x + 2, y: a.y - 10 }, t0: s.t, dur: 0.85, label,
+    done: () => { a.holdUntil = s.t + 1.5 } })
+}))
+for (const [t, fn] of MANUS) s.after(t + FORSKJ, fn)
 
 // skakning och hopp läggs på positionen varje bildruta
 function rorelse() {
