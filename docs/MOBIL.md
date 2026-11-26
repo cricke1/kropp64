@@ -20,6 +20,11 @@ cd wear    && ./gradlew assembleDebug    # wear/app/build/outputs/apk/debug/app-
 cd android && ./gradlew assembleDebug    # android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
+De färdiga APK-filerna från Lenovon (byggda 2026-11-25) och debug-nyckeln som signerade dem ligger utanför repot i
+`~/konsiliet-lenovo/android/` på Mac minin: `kropp64-mobil-debug.apk`, `kropp64-klocka-debug.apk` och
+`debug.keystore` (SHA-256 börjar `e6bd925d`). Bygger du om på en annan dator: lägg nyckeln i `~/.android/debug.keystore`
+först, annars får appen en annan signatur och måste avinstalleras (med sin lokala kö) innan den nya går att installera.
+
 Kräver JDK 17 eller senare och Android SDK (platform 36). `local.properties` med `sdk.dir` skapas per dator.
 
 ## Installera på riktig Pixel-mobil och Pixel Watch
