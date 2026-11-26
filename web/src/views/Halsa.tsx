@@ -179,7 +179,10 @@ export function Sync1177() {
   }, [ev])
   async function start() {
     setOpen(true); setErr(null); setQr(null); setLink(null); setStartedAt(Date.now())
-    try { await api.sync1177() } catch (e: any) { setErr(String(e?.message ?? e)) }
+    try {
+      const r = await api.sync1177()
+      if (!r.started) setStartedAt(0) // en hämtning pågår redan: visa dess status i stället
+    } catch (e: any) { setErr(String(e?.message ?? e)) }
   }
   const kvar = qr ? Math.max(0, qr.kvar - Math.floor((now - qr.at) / 1000)) : null
   const done = st === 'klar' || st === 'misslyckades' || !!err

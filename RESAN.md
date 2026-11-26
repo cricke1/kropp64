@@ -693,3 +693,11 @@ rösterna fungera efter en omstart av laptopen.
 start): kort replik 30,3 s för 2,1 s tal (RTF 14,3), mellan 32,2 s för 5,8 s (RTF 5,5), lång 44,4 s för 9,4 s
 (RTF 4,7). Ungefär 25 s är fast uppstartskostnad per jobb. Långt från realtid, så den duger bara som reserv för
 förgenerering när Lenovon är avstängd. Ännu en sak som 16 GB sätter gränsen för.
+
+**QR-koden för 1177 kom aldrig fram i appen.** Första provet mot riktiga 1177 (2026-11-26, utan att logga in)
+visade att hämtaren fungerade: inloggningssidan, BankID-länken och en ny QR-bild varje sekund. Men rutan i
+webben stod kvar på "Startar hämtningen". QR-händelserna sparas inte i databasen (en bild i sekunden) och fick
+därför ingen tidsstämpel, och webben kastade händelser utan tidsstämpel som gamla. Nu får de tiden när de
+skickas. Dessutom svarade servern "startad" även när en hämtning redan pågick, så en andra knapptryckning
+hängde. Nu säger den att en hämtning pågår och rutan visar den i stället. Knappen ligger också som steg 4 i
+"Kom igång" på Idag, inte bara under Översikt.

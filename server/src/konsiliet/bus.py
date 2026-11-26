@@ -21,6 +21,7 @@ Händelsetyper (payload-fält inom parentes) som klienterna förstår:
 from __future__ import annotations
 
 import asyncio
+import time
 from typing import Any
 
 from . import db
@@ -44,7 +45,7 @@ class Bus:
 
     def publish(self, kind: str, payload: dict[str, Any], persist: bool = True) -> dict[str, Any]:
         """Trådsäker. Kan anropas från agenttrådar."""
-        ev = db.add_event(kind, payload) if persist else {"id": None, "ts": None, "kind": kind, "payload": payload}
+        ev = db.add_event(kind, payload) if persist else {"id": None, "ts": time.time(), "kind": kind, "payload": payload}
         if self._loop is not None:
             self._loop.call_soon_threadsafe(self._fanout, ev)
         return ev

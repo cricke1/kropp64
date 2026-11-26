@@ -360,8 +360,8 @@ def journal() -> dict[str, Any]:
 def sync_1177() -> dict[str, Any]:
     from . import hamtare1177
 
-    hamtare1177.start_async()
-    return {"started": True}
+    startad = hamtare1177.start_async()
+    return {"started": startad, "pagar": not startad}
 
 
 @app.get("/api/aterhamtning", dependencies=[Depends(auth)])

@@ -5,6 +5,7 @@ import { useState } from 'preact/hooks'
 import { api } from '../api'
 import { dayMonth, duration, hm } from '../format'
 import { go, useAsync, useSide } from '../store'
+import { Sync1177 } from './Halsa'
 
 const KLASS: Record<string, string> = { trana: 'ok', klart: 'ok', lugnt: 'warn', vila: 'danger' }
 
@@ -77,6 +78,7 @@ export function Idag() {
               <li>Ge Health Connect behörighet i mobilappen, så läses de senaste 30 dagarna in som baslinje.</li>
               <li>Öppna Kropp64 på klockan och tillåt puls i bakgrunden.</li>
               <li>Sov en natt med klockan. Då kommer Headroom och dagens råd bygger på din sömn.</li>
+              <li>Hämta journal och provsvar från 1177 med ditt BankID, så kan läkarteamet läsa dem. <Sync1177 /></li>
             </ol>
           </div>
         </section>
