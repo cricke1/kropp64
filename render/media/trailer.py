@@ -111,18 +111,18 @@ def main():
         rader = [("Rätt brådska, holdout", "36/36", R.GRON), ("Godtagbar brådska", "56% -> 100%", R.VIT),
                  ("Tid per tråd", "226 s -> 118 s", R.VIT), ("Missade akuta fall", "4 -> 0", R.VIT),
                  ("Minne, qwen3.5:9b", "9,1 / 16 GB", R.GUL), ("RTX 5050 mot M4", "56 s / 126 s", R.CYAN)]
-        bildsekvens("e2", [R.bios_halsa(rader[:min(len(rader), 1 + i // 14)], markerad=min(len(rader), 1 + i // 14) - 1)
-                           for i in range(int(4.0 * FPS))])
+        bildsekvens("e2", [R.bios_halsa(rader[:min(len(rader), 1 + i // 12)], markerad=min(len(rader), 1 + i // 12) - 1)
+                           for i in range(int(5.0 * FPS))])
         osd_klipp("f1", RIGG, 5.0, 3.4, [("RIGGEN", "kroppen som PC-chassi", R.OSD_GUL), ("FLÄKTAR", "styrs av pulsen", None)], osd_y=200)
-        telefon("f2", 5.6, 3.2, [("1177", "BankID, ett tryck", R.OSD_GUL), ("JOURNAL", "läses på Mac minin", None), ("MOLN", "0 byte", R.GRON)])
+        telefon("f2", 5.6, 2.4, [("1177", "BankID, ett tryck", R.OSD_GUL), ("JOURNAL", "läses på Mac minin", None), ("MOLN", "0 byte", R.GRON)])
 
         # 45-55 s: hjärtat saktar in
         g = Image.open(REPO / "docs/render/kropp64-16gb-gransen.png").convert("RGB").resize((W, H))
         stillbild("g1", R.osd(g, [("RAM", "16 GB räcker. Precis.", R.OSD_GUL), ("MED 128 GB", "hela teamet parallellt", R.GRON)],
-                              x=80, y=70, size=48), 4.2, zoom=0.0008)
-        bildsekvens("h1", [R.bios_dialog("RÖSTA PÅ KROPP64 (Y/N)?", "Y" if i > 30 else ("_" if (i // 8) % 2 == 0 else " "),
+                              x=80, y=70, size=48), 3.0, zoom=0.0008)
+        bildsekvens("h1", [R.bios_dialog("RÖSTA PÅ KROPP64 (Y/N)?", "Y" if i > 24 else ("_" if (i // 8) % 2 == 0 else " "),
                                          under="projekt.sweclockers.com/asus  -  1-13 december  -  kropp64.se")
-                           for i in range(int(4.0 * FPS))])
+                           for i in range(int(5.0 * FPS))])
 
         lista = t / "lista.txt"; lista.write_text("".join(f"file '{p}'\n" for p in delar))
         run("-f", "concat", "-safe", "0", "-i", str(lista), "-c", "copy", str(t / "bild.mp4"))

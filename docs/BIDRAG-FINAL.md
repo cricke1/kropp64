@@ -107,16 +107,30 @@ Mac mini M4 16 GB (server, alla lokala modeller, 1177-hämtningen). Pixel Watch 
 
 ## Tokens
 
-Var kördes AI:n: **Både och**. Hur vet du antalet: **Från en tokenräknare**.
-Siffrorna fylls i från `python3 tools/tokenredovisning.py` precis innan inlämning (raderna under "Till tävlingsformuläret").
+- Var kördes AI:n: **Både och**
+- Tokens bearbetade lokalt: **9 878 376** (Ollama på Mac minin plus llama.cpp-körningen på RTX 5050)
+- Tokens betalda i molnet: **1 321 041 453** (Claude Code under bygget, med cache)
+- Hur vet du antalet tokens: **Från en tokenräknare**
 
-## Bilder (1-10, högst 5 MB, PNG/JPG/WebP/GIF)
+Uppdatera precis innan inlämning med `python3 tools/tokenredovisning.py` (siffrorna ovan är från 2026-11-26 kväll).
+Utan cache (bara ny input och output) var molnet 3 136 932 tokens. Det står i repot.
 
-Se `docs/bidrag-media/README.md` för ordningen. Den första bilden är bidragskortet.
+## Bilder (1-10, högst 5 MB, PNG/JPG/WebP/GIF), i den här ordningen
+
+1. `docs/bidrag-media/01-kropp64.jpg` - kortbilden: 3D-rendering med de riktiga appskärmarna och OSD-titel
+2. `docs/bidrag-media/02-post.webp` - animerad POST-skärm ("WARNING: Vilopuls ej övervakad på 18 år.")
+3. `docs/bidrag-media/03-moderatorn-stryker.webp` - animerad: kardiologen drar en slutsats, moderatorn stryker den
+4. `docs/bidrag-media/04-appen.webp` - animerad: riktiga mobilappen med min riktiga data
+5. `docs/bidrag-media/05-riggen.webp` - animerad: kroppen som PC-chassi
+6. `docs/bidrag-media/06-health-status.png` - siffrorna som PC Health Status
+7. `docs/bidrag-media/07-16gb.jpg` - 16 GB-gränsen, 3D-rendering
+8. Riktigt foto: handleden med Pixel Watch vid tangentbordet (tas av mig)
+9. Riktigt foto: Mac minin på skrivbordet (tas av mig)
 
 ## Video på YouTube
 
-Trailern `docs/video/kropp64-trailer-1920x1080.mp4` (laddas upp av mig).
+`docs/video/kropp64-trailer-1920x1080.mp4`, 55 s. Titel på YouTube: "Kropp64: HWiNFO för kroppen (SweClockers AI-tävling 2026)".
+Olistad räcker. Beskrivning: "Ett lokalt AI-läkarteam på en Mac mini 16 GB läser min Pixel Watch och min journal från 1177. Allt i trailern är eget: 3D i Blender, riktiga skärminspelningar, musiken syntetiserad i Python. https://kropp64.se"
 
 ## Länk
 
