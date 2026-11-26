@@ -1,5 +1,11 @@
 package se.konsiliet.app.ui.components
 
+import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.fillMaxSize
+
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -40,6 +46,7 @@ import kotlin.math.max
 import se.konsiliet.app.data.MetricPoint
 import se.konsiliet.app.ui.theme.LocalTokens
 import se.konsiliet.app.ui.theme.Type
+import se.konsiliet.app.ui.theme.TNUM
 
 val SV: Locale = Locale("sv", "SE")
 private val hmFmt = SimpleDateFormat("HH:mm", SV)
@@ -69,18 +76,23 @@ object Fmt {
     }
 }
 
-/** Sektion med rubrik i normal versal/gemen och en tunn linje, som i ett instrumentprotokoll. */
+/** Sektion: rubrik i accentfärg och innehållet i ett Material-kort, som i Androids egna appar. */
 @Composable
 fun Section(title: String, trailing: String? = null, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    val t = LocalTokens.current
-    Column(modifier.fillMaxWidth().padding(top = 22.dp)) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp), verticalAlignment = Alignment.Bottom) {
-            Text(title, style = Type.heading, color = t.ink, modifier = Modifier.weight(1f))
-            if (trailing != null) Text(trailing, style = Type.small, color = t.ink3)
+    val cs = androidx.compose.material3.MaterialTheme.colorScheme
+    Column(modifier.fillMaxWidth().padding(top = 16.dp)) {
+        Row(Modifier.fillMaxWidth().padding(start = 28.dp, end = 28.dp, bottom = 8.dp), verticalAlignment = Alignment.Bottom) {
+            Text(title, style = androidx.compose.material3.MaterialTheme.typography.titleSmall, color = cs.primary,
+                modifier = Modifier.weight(1f).semantics { heading() })
+            if (trailing != null) Text(trailing, style = androidx.compose.material3.MaterialTheme.typography.labelMedium, color = cs.onSurfaceVariant)
         }
-        Spacer(Modifier.height(8.dp))
-        Box(Modifier.fillMaxWidth().padding(horizontal = 20.dp).height(1.dp).background(t.rule))
-        content()
+        androidx.compose.material3.Card(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+            colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = cs.surfaceContainerLow),
+        ) {
+            Column(Modifier.padding(vertical = 6.dp)) { content() }
+        }
     }
 }
 
@@ -102,7 +114,7 @@ fun ReadoutRow(label: String, value: String?, unit: String = "", note: String? =
                 Text("ingen data", style = Type.small, color = t.ink3)
             }
         }
-        Box(Modifier.fillMaxWidth().padding(start = 20.dp).height(1.dp).background(t.grid))
+        androidx.compose.material3.HorizontalDivider(Modifier.padding(horizontal = 20.dp), color = t.rule.copy(alpha = 0.5f))
     }
 }
 
@@ -269,6 +281,66 @@ fun Legend(items: List<Pair<String, Color>>) {
                 Spacer(Modifier.width(5.dp))
                 Text(name, style = Type.small, color = t.ink2)
             }
+        }
+    }
+}
+
+/** Ring som i aktivitetsappar: andel av ett mål, värdet i mitten och etikett under. */
+@Composable
+fun Ring(value: String, label: String, fraction: Float, color: Color, modifier: Modifier = Modifier, unit: String = "",
+         icon: androidx.compose.ui.graphics.vector.ImageVector? = null) {
+    val cs = androidx.compose.material3.MaterialTheme.colorScheme
+    val typo = androidx.compose.material3.MaterialTheme.typography
+    val anim by androidx.compose.animation.core.animateFloatAsState(fraction.coerceIn(0f, 1f), label = "ring")
+    Column(modifier.semantics(mergeDescendants = true) {}, horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(Modifier.size(96.dp), contentAlignment = Alignment.Center) {
+            androidx.compose.foundation.Canvas(Modifier.fillMaxSize().padding(6.dp)) {
+                val w = 10.dp.toPx()
+                val st = androidx.compose.ui.graphics.drawscope.Stroke(w, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+                drawArc(color.copy(alpha = 0.18f), -90f, 360f, false, style = st)
+                if (anim > 0f) drawArc(color, -90f, 360f * anim, false, style = st)
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                if (icon != null) androidx.compose.material3.Icon(icon, null, tint = color, modifier = Modifier.size(18.dp))
+                Text(value, style = typo.titleLarge.copy(fontFeatureSettings = TNUM), color = cs.onSurface)
+                if (unit.isNotEmpty()) Text(unit, style = typo.labelSmall, color = cs.onSurfaceVariant)
+            }
+        }
+        Text(label, style = typo.labelLarge, color = cs.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp))
+    }
+}
+
+/** Ruta i ett rutnät: ikon, värde och etikett, som i hälsoappars översikt. */
+@Composable
+fun StatTile(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String, unit: String, color: Color,
+             modifier: Modifier = Modifier, note: String? = null, spark: List<Double> = emptyList()) {
+    val cs = androidx.compose.material3.MaterialTheme.colorScheme
+    val typo = androidx.compose.material3.MaterialTheme.typography
+    androidx.compose.material3.Card(modifier, shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+        colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = cs.surfaceContainerLow)) {
+        Column(Modifier.padding(16.dp).semantics(mergeDescendants = true) {}) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(32.dp).background(color.copy(alpha = 0.16f), CircleShape), contentAlignment = Alignment.Center) {
+                    androidx.compose.material3.Icon(icon, null, tint = color, modifier = Modifier.size(18.dp))
+                }
+                Text(label, style = typo.labelLarge, color = cs.onSurfaceVariant, modifier = Modifier.padding(start = 8.dp), maxLines = 1)
+            }
+            Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 12.dp)) {
+                Text(value, style = typo.headlineMedium.copy(fontFeatureSettings = TNUM), color = cs.onSurface)
+                if (unit.isNotEmpty()) Text(" $unit", style = typo.labelLarge, color = cs.onSurfaceVariant, modifier = Modifier.padding(bottom = 4.dp))
+            }
+            if (spark.size >= 2) {
+                androidx.compose.foundation.Canvas(Modifier.fillMaxWidth().height(28.dp).padding(top = 6.dp)) {
+                    val lo = spark.min(); val hi = spark.max(); val span = (hi - lo).takeIf { it > 0 } ?: 1.0
+                    val path = androidx.compose.ui.graphics.Path()
+                    spark.forEachIndexed { k, v ->
+                        val x = size.width * k / (spark.size - 1); val y = size.height * (1 - ((v - lo) / span).toFloat())
+                        if (k == 0) path.moveTo(x, y) else path.lineTo(x, y)
+                    }
+                    drawPath(path, color, style = androidx.compose.ui.graphics.drawscope.Stroke(2.dp.toPx(), cap = androidx.compose.ui.graphics.StrokeCap.Round))
+                }
+            }
+            if (note != null) Text(note, style = typo.bodySmall, color = cs.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp), maxLines = 2)
         }
     }
 }

@@ -1,5 +1,27 @@
 package se.konsiliet.app.ui
 
+import androidx.compose.material3.NavigationBarItem
+
+import androidx.compose.material.icons.outlined.Settings
+
+import androidx.compose.material.icons.filled.Settings
+
+import androidx.compose.material.icons.outlined.Forum
+
+import androidx.compose.material.icons.filled.Forum
+
+import androidx.compose.material.icons.outlined.Timeline
+
+import androidx.compose.material.icons.filled.Timeline
+
+import androidx.compose.material.icons.outlined.MonitorHeart
+
+import androidx.compose.material.icons.filled.MonitorHeart
+
+import androidx.compose.material.icons.outlined.Today
+
+import androidx.compose.material.icons.filled.Today
+
 import android.Manifest
 import android.content.Intent
 import android.os.Build
@@ -60,7 +82,13 @@ import se.konsiliet.app.ui.theme.LocalTokens
 import se.konsiliet.app.ui.theme.Type
 
 // Idag först: svaret på "ska jag träna i dag?" utan att leta. Ny tråd nås från Idag och Trådar.
-enum class Tab(val label: String) { Idag("Idag"), Sensorer("Sensorer"), Tidslinje("Tidslinje"), Konsiliet("Trådar"), Installningar("Inställningar") }
+enum class Tab(val label: String, val on: androidx.compose.ui.graphics.vector.ImageVector, val off: androidx.compose.ui.graphics.vector.ImageVector) {
+    Idag("Idag", androidx.compose.material.icons.Icons.Filled.Today, androidx.compose.material.icons.Icons.Outlined.Today),
+    Sensorer("Sensorer", androidx.compose.material.icons.Icons.Filled.MonitorHeart, androidx.compose.material.icons.Icons.Outlined.MonitorHeart),
+    Tidslinje("Tidslinje", androidx.compose.material.icons.Icons.Filled.Timeline, androidx.compose.material.icons.Icons.Outlined.Timeline),
+    Konsiliet("Trådar", androidx.compose.material.icons.Icons.Filled.Forum, androidx.compose.material.icons.Icons.Outlined.Forum),
+    Installningar("Mer", androidx.compose.material.icons.Icons.Filled.Settings, androidx.compose.material.icons.Icons.Outlined.Settings),
+}
 
 class MainActivity : ComponentActivity() {
     companion object { const val EXTRA_CONSULT = "consult_id" }
@@ -100,7 +128,7 @@ class MainActivity : ComponentActivity() {
         val consult = openConsult
         // Första start: ingen serveradress än. Bara första-gångs-vyn, ingen flikrad.
         val firstRun = Prefs.config.collectAsState().value.serverUrl.isBlank()
-        Column(Modifier.fillMaxSize().background(t.bg).statusBarsPadding()) {
+        Column(Modifier.fillMaxSize().background(androidx.compose.material3.MaterialTheme.colorScheme.surface).statusBarsPadding()) {
             Box(Modifier.weight(1f)) {
                 if (firstRun) {
                     FirstRunScreen()
@@ -125,28 +153,15 @@ class MainActivity : ComponentActivity() {
                     Tab.Installningar -> SettingsScreen()
                 }
             }
-            if (!firstRun) Box(Modifier.fillMaxWidth().height(1.dp).background(t.rule))
-            if (!firstRun) Row(Modifier.fillMaxWidth().background(t.surface).navigationBarsPadding().padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween) {
+            if (!firstRun) androidx.compose.material3.NavigationBar {
                 Tab.entries.forEach { e ->
                     val sel = e == tab && consult == null && !asking
-                    Column(
-                        Modifier.width(IntrinsicSize.Max).clickable { tab = e; openConsult = null; asking = false }.padding(horizontal = 2.dp)
-                            .semantics { selected = sel; role = Role.Tab },
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Box(Modifier.fillMaxWidth().height(2.dp).background(if (sel) t.accent else t.surface))
-                        // Flikarnas text växer högst till 115 %: vid 130 % klipptes "Inställningar" i kanten.
-                        // Resten av appen följer systemets textstorlek fullt ut.
-                        val d = androidx.compose.ui.platform.LocalDensity.current
-                        androidx.compose.runtime.CompositionLocalProvider(
-                            androidx.compose.ui.platform.LocalDensity provides androidx.compose.ui.unit.Density(d.density, minOf(d.fontScale, 1.15f)),
-                        ) {
-                            Text(e.label, style = Type.label.copy(fontWeight = if (sel) FontWeight(600) else FontWeight(500)),
-                                color = if (sel) t.ink else t.ink3, maxLines = 1, textAlign = TextAlign.Center, softWrap = false,
-                                modifier = Modifier.padding(top = 12.dp, bottom = 14.dp))
-                        }
-                    }
+                    NavigationBarItem(
+                        selected = sel,
+                        onClick = { tab = e; openConsult = null; asking = false },
+                        icon = { androidx.compose.material3.Icon(if (sel) e.on else e.off, contentDescription = null) },
+                        label = { Text(e.label, maxLines = 1, softWrap = false) },
+                    )
                 }
             }
         }

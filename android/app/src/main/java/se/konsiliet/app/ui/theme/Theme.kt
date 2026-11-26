@@ -83,11 +83,8 @@ val DarkTokens = Tokens(
 
 val LocalTokens = staticCompositionLocalOf { LightTokens }
 
-@OptIn(ExperimentalTextApi::class)
-private fun inter(w: Int) = Font(R.font.inter_variable, FontWeight(w), variationSettings = FontVariation.Settings(FontVariation.weight(w)))
-
-@OptIn(ExperimentalTextApi::class)
-val Inter = FontFamily(inter(400), inter(500), inter(600), inter(700))
+/** Systemets typsnitt (Roboto, eller tillverkarens), som i andra Android-appar. */
+val Inter: FontFamily = FontFamily.Default
 
 /** Siffror med tabulär bredd, så att kolumner och uppdaterade värden inte hoppar i sidled. */
 const val TNUM = "tnum, cv11"
@@ -97,33 +94,36 @@ object Type {
         letterSpacing = (-1.2).sp, fontFeatureSettings = TNUM)
     val value = TextStyle(fontFamily = Inter, fontWeight = FontWeight(500), fontSize = 22.sp, lineHeight = 26.sp,
         letterSpacing = (-0.3).sp, fontFeatureSettings = TNUM)
-    val title = TextStyle(fontFamily = Inter, fontWeight = FontWeight(600), fontSize = 20.sp, lineHeight = 26.sp, letterSpacing = (-0.2).sp)
-    val heading = TextStyle(fontFamily = Inter, fontWeight = FontWeight(600), fontSize = 15.sp, lineHeight = 20.sp)
-    val body = TextStyle(fontFamily = Inter, fontWeight = FontWeight(400), fontSize = 15.sp, lineHeight = 22.sp)
+    val title = TextStyle(fontFamily = Inter, fontWeight = FontWeight(400), fontSize = 28.sp, lineHeight = 36.sp)
+    val heading = TextStyle(fontFamily = Inter, fontWeight = FontWeight(500), fontSize = 16.sp, lineHeight = 24.sp, letterSpacing = 0.15.sp)
+    val body = TextStyle(fontFamily = Inter, fontWeight = FontWeight(400), fontSize = 16.sp, lineHeight = 24.sp, letterSpacing = 0.5.sp)
     val label = TextStyle(fontFamily = Inter, fontWeight = FontWeight(500), fontSize = 13.sp, lineHeight = 18.sp)
     val small = TextStyle(fontFamily = Inter, fontWeight = FontWeight(400), fontSize = 12.sp, lineHeight = 16.sp, fontFeatureSettings = TNUM)
     val axis = TextStyle(fontFamily = Inter, fontWeight = FontWeight(400), fontSize = 10.sp, lineHeight = 12.sp, fontFeatureSettings = TNUM)
 }
 
+/**
+ * Material You: färgerna kommer från bakgrundsbilden (Android 12+), annars Material-standard.
+ * Appens egna tokens härleds ur samma färgschema, så att diagram och tabeller följer temat.
+ * Röd, bärnsten och grön är fasta, eftersom de betyder larm, avvikelse och ok.
+ */
 @Composable
 fun KonsilietTheme(content: @Composable () -> Unit) {
     val dark = isSystemInDarkTheme()
-    val t = if (dark) DarkTokens else LightTokens
-    val scheme = (if (dark) darkColorScheme() else lightColorScheme()).copy(
-        primary = t.accent, onPrimary = t.surface, secondary = t.ink2, background = t.bg, onBackground = t.ink,
-        surface = t.surface, onSurface = t.ink, onSurfaceVariant = t.ink2, surfaceVariant = t.grid,
-        outline = t.rule, outlineVariant = t.rule, error = t.akut, surfaceContainer = t.surface,
-        surfaceContainerHigh = t.surface, surfaceContainerHighest = t.grid, surfaceContainerLow = t.surface,
-        primaryContainer = t.grid, onPrimaryContainer = t.ink,
-    )
-    val base = Typography()
-    val typo = Typography(
-        bodyLarge = Type.body, bodyMedium = Type.body.copy(fontSize = 14.sp), bodySmall = Type.small,
-        titleLarge = Type.title, titleMedium = Type.heading, titleSmall = Type.label,
-        labelLarge = Type.label, labelMedium = Type.label.copy(fontSize = 12.sp), labelSmall = Type.small,
-        headlineSmall = base.headlineSmall.copy(fontFamily = Inter),
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    val scheme = when {
+        android.os.Build.VERSION.SDK_INT >= 31 && dark -> androidx.compose.material3.dynamicDarkColorScheme(ctx)
+        android.os.Build.VERSION.SDK_INT >= 31 -> androidx.compose.material3.dynamicLightColorScheme(ctx)
+        dark -> darkColorScheme()
+        else -> lightColorScheme()
+    }
+    val fast = if (dark) DarkTokens else LightTokens
+    val t = fast.copy(
+        bg = scheme.surface, surface = scheme.surfaceContainer, ink = scheme.onSurface, ink2 = scheme.onSurfaceVariant,
+        ink3 = scheme.onSurfaceVariant.copy(alpha = 0.72f), rule = scheme.outlineVariant, grid = scheme.surfaceContainerHighest,
+        accent = scheme.primary, trace = scheme.primary,
     )
     CompositionLocalProvider(LocalTokens provides t) {
-        MaterialTheme(colorScheme = scheme, typography = typo, content = content)
+        MaterialTheme(colorScheme = scheme.copy(error = fast.akut), typography = Typography(), content = content)
     }
 }

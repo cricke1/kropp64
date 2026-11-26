@@ -1,5 +1,25 @@
 package se.konsiliet.app.ui.screens
 
+import androidx.compose.foundation.layout.width
+
+import androidx.compose.ui.graphics.Color
+
+import androidx.compose.material.icons.Icons
+
+import androidx.compose.material.icons.filled.Thermostat
+
+import androidx.compose.material.icons.filled.Air
+
+import androidx.compose.material.icons.filled.WaterDrop
+
+import androidx.compose.material.icons.filled.Bedtime
+
+import androidx.compose.material.icons.filled.MonitorHeart
+
+import androidx.compose.material.icons.filled.DirectionsWalk
+
+import androidx.compose.material.icons.filled.Favorite
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -107,34 +127,61 @@ fun TodayScreen() {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 24.dp)) {
         // Rubrikrad
         Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 18.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("Sensorer", style = Type.title, color = t.ink, modifier = Modifier.weight(1f))
+            Text("Sensorer", style = androidx.compose.material3.MaterialTheme.typography.headlineLarge, color = t.ink, modifier = Modifier.weight(1f))
             StatusDot(if (link.wsConnected) t.ok else t.avvikelse)
             Text("  " + if (link.wsConnected) "Ansluten" else "Frånkopplad", style = Type.small, color = t.ink2)
         }
 
-        // Puls
-        Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 18.dp)) {
-            Text("Klockfrekvens", style = Type.label, color = t.ink2)
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(hrVal?.let { Fmt.int(it) } ?: "ej mätt", style = if (hrVal == null) Type.value else Type.display,
-                    color = if (hrVal == null) t.ink3 else t.ink)
-                if (hrVal != null) Text("  BPM", style = Type.small, color = t.ink2, modifier = Modifier.padding(bottom = 10.dp))
+        // Puls: stort kort med siffra och dygnskurva.
+        val cs = androidx.compose.material3.MaterialTheme.colorScheme
+        val typo = androidx.compose.material3.MaterialTheme.typography
+        androidx.compose.material3.Card(Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 16.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
+            colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = cs.surfaceContainerLow)) {
+            Column(Modifier.padding(20.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    androidx.compose.material3.Icon(Icons.Filled.Favorite, null, tint = t.akut, modifier = Modifier.height(20.dp).width(20.dp))
+                    Text("  Klockfrekvens (puls)", style = typo.labelLarge, color = cs.onSurfaceVariant)
+                }
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(hrVal?.let { Fmt.int(it) } ?: "--", style = typo.displayLarge.copy(fontFeatureSettings = se.konsiliet.app.ui.theme.TNUM), color = cs.onSurface)
+                    Text("  BPM", style = typo.titleMedium, color = cs.onSurfaceVariant, modifier = Modifier.padding(bottom = 12.dp))
+                }
+                val stale = hrTs != null && now / 1000.0 - hrTs > 15 * 60
+                Text(
+                    if (hrTs == null) "Ingen puls mottagen ännu"
+                    else "${Fmt.ago((hrTs * 1000).toLong(), now)} · $hrSrc" + if (stale) " · inte aktuell" else "",
+                    style = typo.bodySmall, color = if (isTestSource(hrLatest?.source)) t.avvikelse else cs.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(12.dp))
+                val chartFrom = hrSeries.firstOrNull()?.let { maxOf(from24, it.ts - 15 * 60) } ?: from24
+                TraceChart(hrSeries, chartFrom, now / 1000.0, unit = "BPM")
+                if (hrSeries.isNotEmpty()) {
+                    Text((if (chartFrom > from24 + 60) "Sedan ${Fmt.hm(chartFrom)}" else "Senaste dygnet") + ": min ${Fmt.int(hrSeries.minOf { it.value })} · max ${Fmt.int(hrSeries.maxOf { it.value })}",
+                        style = typo.bodySmall, color = cs.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp))
+                }
             }
-            val stale = hrTs != null && now / 1000.0 - hrTs > 15 * 60
-            Text(
-                if (hrTs == null) "Ingen klockfrekvens mottagen ännu"
-                else "${Fmt.ago((hrTs * 1000).toLong(), now)} · $hrSrc" + if (stale) " · inte aktuell" else "",
-                style = Type.small, color = if (isTestSource(hrLatest?.source)) t.avvikelse else t.ink3,
-            )
         }
-        Spacer(Modifier.height(12.dp))
-        Column(Modifier.padding(horizontal = 20.dp)) {
-            // Finns bara en kort stund data (t.ex. första timmen) zoomas axeln in på den, annars hela dygnet.
-            val chartFrom = hrSeries.firstOrNull()?.let { maxOf(from24, it.ts - 15 * 60) } ?: from24
-            TraceChart(hrSeries, chartFrom, now / 1000.0, unit = "BPM")
-            if (hrSeries.isNotEmpty()) {
-                Text((if (chartFrom > from24 + 60) "Sedan ${Fmt.hm(chartFrom)}" else "Senaste dygnet") + ": min ${Fmt.int(hrSeries.minOf { it.value })} · max ${Fmt.int(hrSeries.maxOf { it.value })} · ${Fmt.int(hrSeries.size.toDouble())} punkter",
-                    style = Type.small, color = t.ink3, modifier = Modifier.padding(top = 6.dp))
+
+        // Rutnät med övriga sensorer
+        val steps = maxOf(stepsWatch, stepsHc, stepsEmu)
+        fun nar(x: se.konsiliet.app.data.Latest?) = x?.let { Fmt.ago((it.ts * 1000).toLong(), now) }
+        val rutor = listOf(
+            Triple(Icons.Filled.DirectionsWalk, "Steg", Triple(Fmt.int(steps), "av ${Fmt.int(config.stepsGoal.toDouble())}", t.ok)),
+            Triple(Icons.Filled.MonitorHeart, "HRV", Triple(hrv?.let { Fmt.dec(it.value) } ?: "--", "ms", cs.primary)),
+            Triple(Icons.Filled.Bedtime, "Vilopuls", Triple(rest?.let { Fmt.int(it.value) } ?: "--", "BPM", t.sleepLight)),
+            Triple(Icons.Filled.WaterDrop, "Syremättnad", Triple(spo2?.let { Fmt.dec(it.value) } ?: "--", "%", Color(0xFF4FA3E0))),
+            Triple(Icons.Filled.Air, "Andning", Triple(resp?.let { Fmt.dec(it.value) } ?: "--", "/min", Color(0xFF5BB8A8))),
+            Triple(Icons.Filled.Thermostat, "Hudtemp", Triple(skin?.let { (if (it.value >= 0) "+" else "") + Fmt.dec(it.value, 1) } ?: "--", "°C", t.avvikelse)),
+        )
+        val noter = listOf(null, nar(hrv), nar(rest), nar(spo2), nar(resp), nar(skin))
+        Column(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            rutor.chunked(2).forEachIndexed { r, par ->
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    par.forEachIndexed { k, (ic, lbl, v) ->
+                        se.konsiliet.app.ui.components.StatTile(ic, lbl, v.first, v.second, v.third, Modifier.weight(1f), note = noter[r * 2 + k])
+                    }
+                }
             }
         }
 
@@ -183,29 +230,6 @@ fun TodayScreen() {
                         "Vaken ${Fmt.duration(tot["awake"] ?: 0.0)}" to t.sleepAwake,
                     ))
                 }
-            }
-        }
-
-        // Övriga mätvärden
-        Section("Övriga sensorer", trailing = "senaste värde") {
-            ReadoutRow("Timingmarginal (HRV, RMSSD)", hrv?.let { Fmt.dec(it.value) }, "ms", note = hrv?.let { "${Fmt.ago((it.ts * 1000).toLong(), now)} · ${sourceLabel(it.source)}" })
-            ReadoutRow("Idle-klock", rest?.let { Fmt.int(it.value) }, "BPM", note = rest?.let { "${Fmt.ago((it.ts * 1000).toLong(), now)} · ${sourceLabel(it.source)}" })
-            ReadoutRow("Syremättnad", spo2?.let { Fmt.dec(it.value) }, "%", note = spo2?.let { "${Fmt.ago((it.ts * 1000).toLong(), now)} · ${sourceLabel(it.source)}" })
-            ReadoutRow("Andningsfrekvens", resp?.let { Fmt.dec(it.value) }, "/min", note = resp?.let { "${Fmt.ago((it.ts * 1000).toLong(), now)} · ${sourceLabel(it.source)}" })
-            ReadoutRow("Hudtemperatur, avvikelse", skin?.let { (if (it.value >= 0) "+" else "") + Fmt.dec(it.value, 2) }, "°C", note = skin?.let { "${Fmt.ago((it.ts * 1000).toLong(), now)} · ${sourceLabel(it.source)}" })
-        }
-
-        // Steg
-        val steps = maxOf(stepsWatch, stepsHc, stepsEmu)
-        val stepsSrc = when (steps) { 0.0 -> null; stepsWatch -> "klockan"; stepsHc -> "Health Connect"; else -> "testdata från emulator" }
-        Section("Steg idag", trailing = stepsSrc) {
-            Column(Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text(Fmt.int(steps), style = Type.value, color = t.ink)
-                    Text("  av mål ${Fmt.int(config.stepsGoal.toDouble())}", style = Type.small, color = t.ink2, modifier = Modifier.padding(bottom = 3.dp))
-                }
-                Spacer(Modifier.height(8.dp))
-                GoalBar(steps, config.stepsGoal.toDouble())
             }
         }
 

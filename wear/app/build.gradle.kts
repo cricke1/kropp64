@@ -65,7 +65,9 @@ dependencies {
 
     implementation(platform("androidx.compose:compose-bom:2025.10.01"))
     implementation("androidx.activity:activity-compose:1.11.0")
+    implementation("androidx.fragment:fragment-ktx:1.8.9") // ActivityResult-API:t kräver Fragment 1.3+ (lint i release)
     implementation("androidx.wear.compose:compose-material3:1.5.3")
+    implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.wear.compose:compose-foundation:1.5.3")
     implementation("androidx.compose.ui:ui-tooling-preview")
 

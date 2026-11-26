@@ -12,3 +12,4 @@ android/.gradle/
 android/local.properties
 *.apk
 *.keystore
+wear/local.properties

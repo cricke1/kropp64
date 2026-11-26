@@ -1,5 +1,18 @@
 package se.konsiliet.app.ui.screens
 
+import androidx.compose.material.icons.filled.BatteryChargingFull
+import androidx.compose.material.icons.filled.BatterySaver
+import androidx.compose.material.icons.filled.Bedtime
+import androidx.compose.material.icons.filled.DirectionsRun
+import androidx.compose.material.icons.filled.DirectionsWalk
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.HealthAndSafety
+import androidx.compose.material.icons.filled.Hotel
+import androidx.compose.material.icons.filled.QuestionAnswer
+import androidx.compose.material.icons.filled.Today
+import androidx.compose.material.icons.filled.Watch
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -106,60 +119,102 @@ fun IdagScreen(onAsk: (String) -> Unit, onOpenConsult: (String) -> Unit, onSetti
     var ordlista by rememberSaveable { mutableStateOf(false) }
     var msg by remember { mutableStateOf<String?>(null) }
 
+    val cs = androidx.compose.material3.MaterialTheme.colorScheme
+    val typo = androidx.compose.material3.MaterialTheme.typography
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 28.dp)) {
-        Text("Idag", style = Type.title, color = t.ink,
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 18.dp).semantics { heading() })
+        Text("Idag", style = typo.headlineLarge, color = cs.onSurface,
+            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 20.dp).semantics { heading() })
         val i = idag
         if (i == null) {
             Text(if (offline) "Ingen kontakt med servern och inget sparat svar än. Kontrollera adressen under Inställningar."
-                 else "Hämtar dagens svar ...", style = Type.body, color = t.ink3, modifier = Modifier.padding(20.dp))
-            if (offline) TextButton(onClick = onSettings, modifier = Modifier.padding(horizontal = 8.dp)) { Text("Öppna Inställningar") }
+                 else "Hämtar dagens svar ...", style = typo.bodyLarge, color = cs.onSurfaceVariant, modifier = Modifier.padding(24.dp))
+            if (offline) TextButton(onClick = onSettings, modifier = Modifier.padding(horizontal = 12.dp)) { Text("Öppna Inställningar") }
             return@Column
         }
         val plan = i.optJSONObject("plan")
         val beslut = i.optString("beslut")
-        val farg = beslutFarg(beslut, t)
         val rubrik = i.optString("rubrik")
         val planText = plan?.optString("text").orEmpty()
         val varfor = i.optString("varfor")
-        // Beslutskortet: rubrik, plan, varför. En skärmläsare läser det som en mening.
-        Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 14.dp).height(IntrinsicSize.Min).background(t.surface)
-            .semantics(mergeDescendants = true) { contentDescription = "$rubrik. $planText. $varfor" }
-            .heightIn(min = 120.dp)) {
-            Box(Modifier.width(6.dp).fillMaxHeight().background(farg))
-            Column(Modifier.padding(16.dp)) {
-                Text(rubrik, style = Type.title.copy(fontSize = Type.title.fontSize * 1.25f), color = t.ink)
-                if (planText.isNotBlank()) Text(planText, style = Type.value, color = t.ink, modifier = Modifier.padding(top = 6.dp))
+        // Hjältekortet: färg och ikon efter beslutet, som en statusskärm i en träningsapp.
+        val (heroBg, heroFg, heroIcon) = when (beslut) {
+            "trana", "klart" -> Triple(Color(0xFF1B5E3B), Color(0xFFDDF5E6), androidx.compose.material.icons.Icons.Filled.DirectionsRun)
+            "lugnt" -> Triple(Color(0xFF7A4A07), Color(0xFFFFEBCC), androidx.compose.material.icons.Icons.Filled.DirectionsWalk)
+            "vila" -> Triple(Color(0xFF8C1D18), Color(0xFFFFDAD6), androidx.compose.material.icons.Icons.Filled.Hotel)
+            else -> Triple(cs.primaryContainer, cs.onPrimaryContainer, androidx.compose.material.icons.Icons.Filled.Today)
+        }
+        androidx.compose.material3.Card(
+            Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 16.dp)
+                .semantics(mergeDescendants = true) { contentDescription = "$rubrik. $planText. $varfor" },
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
+            colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = heroBg, contentColor = heroFg),
+        ) {
+            Column(Modifier.padding(24.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.height(56.dp).width(56.dp).background(heroFg.copy(alpha = 0.16f), androidx.compose.foundation.shape.CircleShape),
+                        contentAlignment = Alignment.Center) {
+                        androidx.compose.material3.Icon(heroIcon, null, modifier = Modifier.height(32.dp).width(32.dp))
+                    }
+                    Text(rubrik, style = typo.headlineSmall, modifier = Modifier.padding(start = 16.dp))
+                }
+                if (planText.isNotBlank()) Text(planText, style = typo.titleLarge, modifier = Modifier.padding(top = 20.dp))
                 plan?.optString("forslag")?.takeIf { it.isNotBlank() }?.let {
-                    Text(it.replaceFirstChar { c -> c.uppercase() }, style = Type.body, color = t.ink2, modifier = Modifier.padding(top = 2.dp))
+                    Text(it.replaceFirstChar { c -> c.uppercase() }, style = typo.bodyLarge, color = heroFg.copy(alpha = 0.85f), modifier = Modifier.padding(top = 2.dp))
                 }
-                if (varfor.isNotBlank()) Text("Varför: $varfor.", style = Type.body, color = t.ink2, modifier = Modifier.padding(top = 10.dp))
-                i.optString("matt").takeIf { it.isNotBlank() }?.let {
-                    Text("Mätt: $it.", style = Type.small, color = t.ink3, modifier = Modifier.padding(top = 6.dp))
-                }
+                if (varfor.isNotBlank()) Text(varfor.replaceFirstChar { c -> c.uppercase() } + ".", style = typo.bodyMedium,
+                    color = heroFg.copy(alpha = 0.8f), modifier = Modifier.padding(top = 14.dp))
                 i.optJSONObject("oppet")?.let { o ->
                     o.optString("consult_id").takeIf { it.isNotBlank() }?.let { cid ->
-                        TextButton(onClick = { onOpenConsult(cid) }) { Text("Öppna tråden") }
+                        androidx.compose.material3.FilledTonalButton(onClick = { onOpenConsult(cid) }, modifier = Modifier.padding(top = 12.dp)) { Text("Öppna tråden") }
                     }
                 }
             }
         }
         if (offline) {
             val at = cached?.second ?: 0L
-            Text("Ingen kontakt med servern. Visar svaret från " + Fmt.ago(at, now) + ".", style = Type.small, color = t.avvikelse,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp))
+            Text("Ingen kontakt med servern. Visar svaret från " + Fmt.ago(at, now) + ".", style = typo.bodySmall, color = t.avvikelse,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 6.dp))
         }
-        // Första dagarna: tom data är inget fel, men det ska stå vad som behövs.
-        if (i.isNull("headroom") && i.optJSONObject("somn")?.optJSONObject("natt") == null) {
+
+        // Ringarna: återhämtning, veckans pass och nattens sömn.
+        val vk = i.optJSONObject("veckan")
+        val sm = i.optJSONObject("somn")
+        val natt = sm?.optJSONObject("natt")
+        val hr = if (i.isNull("headroom")) null else i.optInt("headroom")
+        val pass = vk?.optInt("pass") ?: 0
+        val mal = (vk?.optInt("mal") ?: 3).coerceAtLeast(1)
+        val behov = sm?.optDouble("behov_h")?.takeIf { !it.isNaN() && it > 0 } ?: 8.0
+        val timmar = natt?.optDouble("timmar")?.takeIf { !it.isNaN() }
+        androidx.compose.material3.Card(Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 12.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
+            colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = cs.surfaceContainerLow)) {
+            Row(Modifier.fillMaxWidth().padding(vertical = 20.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
+                se.konsiliet.app.ui.components.Ring(hr?.toString() ?: "--", "Headroom", (hr ?: 0) / 100f, cs.primary,
+                    icon = androidx.compose.material.icons.Icons.Filled.BatteryChargingFull)
+                se.konsiliet.app.ui.components.Ring("$pass/$mal", "Pass i veckan", pass.toFloat() / mal, t.ok,
+                    icon = androidx.compose.material.icons.Icons.Filled.FitnessCenter)
+                se.konsiliet.app.ui.components.Ring(timmar?.let { Fmt.dec(it) } ?: "--", "Sömn", ((timmar ?: 0.0) / behov).toFloat(), t.sleepLight,
+                    unit = "timmar", icon = androidx.compose.material.icons.Icons.Filled.Bedtime)
+            }
+        }
+
+        // Första dagarna: en checklista i stället för tomma ringar utan förklaring.
+        if (i.isNull("headroom") && natt == null) {
             Section("Kom igång") {
-                Column(Modifier.padding(horizontal = 20.dp, vertical = 10.dp)) {
+                Column(Modifier.padding(vertical = 4.dp)) {
                     listOf(
-                        "Ge Health Connect behörighet (Inställningar), så läses de senaste 30 dagarna in som baslinje.",
-                        "Öppna Kropp64 på klockan och tillåt puls i bakgrunden.",
-                        "Stäng av batterioptimering för Kropp64 (Inställningar).",
-                        "Sov en natt med klockan. Då kommer Headroom och dagens råd bygger på din sömn.",
-                    ).forEachIndexed { k, s2 -> Text("${k + 1}. $s2", style = Type.body, color = t.ink2, modifier = Modifier.padding(vertical = 3.dp)) }
-                    TextButton(onClick = onSettings) { Text("Öppna Inställningar") }
+                        androidx.compose.material.icons.Icons.Filled.HealthAndSafety to "Ge Health Connect behörighet, så läses 30 dagar in som baslinje.",
+                        androidx.compose.material.icons.Icons.Filled.Watch to "Öppna Kropp64 på klockan och tillåt puls i bakgrunden.",
+                        androidx.compose.material.icons.Icons.Filled.BatterySaver to "Stäng av batterioptimering för Kropp64.",
+                        androidx.compose.material.icons.Icons.Filled.Bedtime to "Sov en natt med klockan. Då kommer Headroom.",
+                    ).forEach { (ic, txt) ->
+                        androidx.compose.material3.ListItem(
+                            headlineContent = { Text(txt, style = typo.bodyMedium) },
+                            leadingContent = { androidx.compose.material3.Icon(ic, null, tint = cs.primary) },
+                            colors = androidx.compose.material3.ListItemDefaults.colors(containerColor = Color.Transparent),
+                        )
+                    }
+                    androidx.compose.material3.FilledTonalButton(onClick = onSettings, modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)) { Text("Öppna Inställningar") }
                 }
             }
         }
@@ -179,48 +234,24 @@ fun IdagScreen(onAsk: (String) -> Unit, onOpenConsult: (String) -> Unit, onSetti
             }
         }
 
-        // Veckan
-        val vk = i.optJSONObject("veckan")
         val niva = i.optJSONObject("niva")
-        Section("Veckans pass", trailing = niva?.let { "plan vecka ${it.optInt("vecka_nr")}, nivå ${it.optInt("niva")} av 4" }) {
+        Section("Veckan och sömnen", trailing = niva?.let { "nivå ${it.optInt("niva")} av 4" }) {
             Column(Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
-                val pass = vk?.optInt("pass") ?: 0
-                val mal = vk?.optInt("mal") ?: 3
-                Row(verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = "$pass av $mal pass den här veckan" }) {
-                    for (k in 1..mal) {
-                        Box(Modifier.padding(end = 6.dp).width(28.dp).height(10.dp).background(if (k <= pass) t.ok else t.grid))
-                    }
-                    Text("  $pass av $mal", style = Type.value, color = t.ink)
-                }
                 val dagar = vk?.optJSONArray("passdagar")
                 val streak = vk?.optInt("veckor_i_rad") ?: 0
                 Text((if (dagar != null) "Passdagar: " + (0 until dagar.length()).joinToString { dagar.optString(it) } + ". " else "") +
-                    (if (streak > 0) "$streak veckor i rad med målet nått." else "Målet: $mal pass i veckan, nivån höjs när två blir av."),
-                    style = Type.small, color = t.ink3, modifier = Modifier.padding(top = 6.dp))
-            }
-            senastePass?.let { p ->
-                val z = p.optJSONArray("zon_minuter")
-                val zt = if (z != null) (0 until z.length()).filter { z.optInt(it) > 0 }.joinToString { "zon ${it + 1}: ${z.optInt(it)} min" } else ""
-                Column(Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) {
-                    Text("Senaste pass: ${p.optInt("minuter")} min ${p.optString("typ")}, ${Fmt.day(p.optDouble("start"))}", style = Type.label, color = t.ink)
-                    if (!p.isNull("puls_medel")) Text("Medelpuls ${p.optInt("puls_medel")} BPM, max ${p.optInt("puls_max")} BPM. $zt", style = Type.small, color = t.ink2)
-                    Text(p.optString("rad"), style = Type.small, color = t.ink3)
+                    (if (streak > 0) "$streak veckor i rad med målet nått." else "Nivån höjs när två pass i veckan blir av."),
+                    style = typo.bodyMedium, color = cs.onSurfaceVariant)
+                senastePass?.let { p ->
+                    Text("Senaste pass: ${p.optInt("minuter")} min ${p.optString("typ")}, ${Fmt.day(p.optDouble("start"))}" +
+                        (if (!p.isNull("puls_medel")) ", medel ${p.optInt("puls_medel")} BPM" else ""), style = typo.bodyMedium, color = cs.onSurface,
+                        modifier = Modifier.padding(top = 8.dp))
                 }
-            }
-        }
-
-        // Sömnen
-        val sm = i.optJSONObject("somn")
-        Section("Viloläge (sömn)", trailing = sm?.optJSONObject("natt")?.let { "i natt " + Fmt.duration(it.optDouble("timmar") * 3600) }) {
-            sm?.let { s ->
-                Column(Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
-                    Text(s.optString("laggdags_text") + ".", style = Type.body, color = t.ink)
-                    val skuld = s.optDouble("skuld_h")
-                    if (!skuld.isNaN()) Text("Sömnskuld ${Fmt.duration(skuld * 3600)} på ${s.optInt("natter_med_data")} nätter (mot behovet ${Fmt.dec(s.optDouble("behov_h"))} h).",
-                        style = Type.small, color = if (skuld >= 5) t.avvikelse else t.ink3, modifier = Modifier.padding(top = 4.dp))
-                    val sena = s.optInt("sena_natter_vid_datorn")
-                    if (sena > 0) Text("Vid datorn efter midnatt $sena av 7 nätter.", style = Type.small, color = t.ink3)
+                sm?.let { s2 ->
+                    Text(s2.optString("laggdags_text") + ".", style = typo.bodyMedium, color = cs.onSurface, modifier = Modifier.padding(top = 8.dp))
+                    val skuld = s2.optDouble("skuld_h")
+                    if (!skuld.isNaN() && skuld > 0) Text("Sömnskuld ${Fmt.duration(skuld * 3600)}.", style = typo.bodySmall,
+                        color = if (skuld >= 5) t.avvikelse else cs.onSurfaceVariant)
                 }
             }
         }
@@ -235,10 +266,18 @@ fun IdagScreen(onAsk: (String) -> Unit, onOpenConsult: (String) -> Unit, onSetti
         }
 
         // Fråga teamet: färdiga frågor startar en tråd med ett tryck.
-        Section("Fråga teamet", trailing = "snabbsvar direkt, tråden på några minuter") {
-            Column(Modifier.padding(horizontal = 12.dp, vertical = 6.dp)) {
-                FRAGOR.forEach { q -> TextButton(onClick = { onAsk(q) }) { Text(q, style = Type.body) } }
-                TextButton(onClick = { onAsk("") }) { Text("Egen fråga ...", style = Type.body, color = t.ink2) }
+        Section("Fråga läkarteamet", trailing = "svar på några minuter") {
+            @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+            androidx.compose.foundation.layout.FlowRow(Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FRAGOR.forEach { q ->
+                    androidx.compose.material3.SuggestionChip(onClick = { onAsk(q) }, label = { Text(q) },
+                        icon = { androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Filled.QuestionAnswer, null,
+                            modifier = Modifier.height(18.dp).width(18.dp)) })
+                }
+                androidx.compose.material3.AssistChip(onClick = { onAsk("") }, label = { Text("Egen fråga") },
+                    leadingIcon = { androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Filled.Edit, null,
+                        modifier = Modifier.height(18.dp).width(18.dp)) })
             }
         }
 

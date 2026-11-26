@@ -1,5 +1,19 @@
 package se.konsiliet.wear.ui
 
+import androidx.wear.compose.material3.EdgeButton
+import androidx.wear.compose.material3.EdgeButtonSize
+import androidx.wear.compose.material3.TitleCard
+import androidx.wear.compose.material3.CardDefaults
+import androidx.wear.compose.material3.Icon
+import androidx.wear.compose.material3.dynamicColorScheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.DirectionsRun
+import androidx.compose.material.icons.filled.Air
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.foundation.layout.size
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -126,8 +140,8 @@ class MainActivity : ComponentActivity() {
         else (application as KonsilietWearApp).reregister()
         startaFranIntent(intent)
         setContent {
-            MaterialTheme(colorScheme = ColorScheme(primary = Accent, onPrimary = Color(0xFF0E1A1E))) {
-                AppScaffold(timeText = {}) { Screen(permsOk, onAskPerms = { askForeground.launch(Permissions.foreground()) }) }
+            MaterialTheme(colorScheme = dynamicColorScheme(this@MainActivity) ?: ColorScheme()) {
+                AppScaffold { Screen(permsOk, onAskPerms = { askForeground.launch(Permissions.foreground()) }) }
             }
         }
     }
@@ -184,6 +198,8 @@ private fun ago(ms: Long, now: Long): String {
 @Composable
 private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
     val ctx = androidx.compose.ui.platform.LocalContext.current
+    val cs = MaterialTheme.colorScheme
+    val typo = MaterialTheme.typography
     val status by WatchState.status.collectAsState()
     val phone by se.konsiliet.wear.data.PhoneStatus.snapshot.collectAsState()
     val pending by remember { QueueDb.get(ctx).pending().countFlow() }.collectAsState(initial = 0)
@@ -194,136 +210,119 @@ private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
     var available by remember { mutableStateOf<List<String>>(emptyList()) }
     var choosing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    LaunchedEffect(Unit) {
+    val aktiv = status.exerciseActive
+    LaunchedEffect(aktiv) {
         available = runCatching { Passive.available(ctx) }.getOrDefault(emptyList())
-        while (true) { delay(1000); now = System.currentTimeMillis() }
+        // Under ett pass räknas minuterna varje sekund. Annars räcker var 20:e sekund ("nyss", "3 min sedan"),
+        // så att hela listan inte ritas om i onödan (det var en del av laggen).
+        while (true) { now = System.currentTimeMillis(); delay(if (aktiv) 1000 else 20000) }
     }
     val listState = rememberTransformingLazyColumnState()
     val spec = rememberTransformationSpec()
+    val planTyp = phone.idag?.typ
 
-    // Rund skärm: ScreenScaffold ger utfyllnad så att listan börjar under klockan (TimeText) och slutar
-    // ovanför nederkanten, och tonar bort klockan när man skrollar. TransformingLazyColumn krymper och
-    // tonar rader som närmar sig den runda kanten (SurfaceTransformation för knappar, samma
-    // container-transformation för textblock), så att inget skärs av cirkeln.
-    val side = (LocalConfiguration.current.screenWidthDp * 0.08f).dp
-    // Klockan överst visas bara när listan står högst upp. Så fort man skrollar tonas den bort,
-    // så att inget innehåll någonsin ligger under den.
     ScreenScaffold(
         scrollState = listState,
-        timeText = {
-            AnimatedVisibility(visible = !listState.canScrollBackward, enter = fadeIn(), exit = fadeOut()) { TimeText() }
+        edgeButton = {
+            when {
+                !permsOk -> EdgeButton(onClick = onAskPerms, buttonSize = EdgeButtonSize.Medium) { Text("Ge behörighet") }
+                aktiv -> EdgeButton(onClick = { ExerciseService.stop(ctx) }, buttonSize = EdgeButtonSize.Medium,
+                    colors = ButtonDefaults.filledTonalButtonColors()) { Text("Avsluta") }
+                else -> EdgeButton(onClick = { ExerciseService.start(ctx, se.konsiliet.wear.exercise.planensTyp(planTyp)) },
+                    buttonSize = EdgeButtonSize.Medium) {
+                    Icon(Icons.Filled.PlayArrow, contentDescription = null)
+                    Text("Starta pass")
+                }
+            }
         },
     ) { contentPadding ->
-        TransformingLazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                start = side, end = side,
-                top = contentPadding.calculateTopPadding(), bottom = contentPadding.calculateBottomPadding(),
-            ),
-        ) {
+        TransformingLazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = contentPadding) {
+            // Puls överst, stort, som klockans egen pulsapp.
+            item {
+                Column(Modifier.fillMaxWidth().morph(this, spec), horizontalAlignment = Alignment.CenterHorizontally) {
+                    if (aktiv) {
+                        val min = (now - status.exerciseStartedAt) / 60000
+                        Text("Pass $min min", style = typo.labelMedium, color = cs.onSurfaceVariant)
+                    }
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Icon(Icons.Filled.Favorite, contentDescription = null, tint = cs.error,
+                            modifier = Modifier.padding(end = 4.dp, bottom = 10.dp).size(18.dp))
+                        Text(status.lastHr?.let { "%.0f".format(it) } ?: "--", style = typo.displayMedium.merge(Tab), color = cs.onSurface)
+                        Text(" BPM", style = typo.labelMedium, color = cs.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
+                    }
+                    if (!aktiv) Text(ago(status.lastHrAt, now), style = typo.labelSmall, color = cs.onSurfaceVariant)
+                }
+            }
+            if (aktiv) item {
+                val mal = live.malzon
+                val (lo, hi) = se.konsiliet.wear.exercise.Zoner.grans(mal.coerceIn(1, 5))
+                val zon = status.lastHr?.let { se.konsiliet.wear.exercise.Zoner.zon(it) }
+                val iMal = (live.sekunderIZon[mal] / 60).toInt()
+                val rad = when {
+                    zon == null -> "Väntar på puls"
+                    zon > mal -> "Över målzonen, sakta ner"
+                    zon < mal -> "Under målzonen, öka lite"
+                    else -> "I målzonen"
+                }
+                TitleCard(onClick = {}, title = { Text(if (zon != null && zon > 0) "Zon $zon: ${se.konsiliet.wear.exercise.Zoner.NAMN[zon]}" else "Under zon 1") },
+                    modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec),
+                    subtitle = { Text("Mål zon $mal: $lo-$hi BPM", style = Tab) }) {
+                    Text("$rad · $iMal min i målzon")
+                }
+            }
             senaste?.let { p ->
                 item {
                     val z = p.optJSONArray("zon_minuter")
                     val zt = if (z != null) (0 until z.length()).filter { z.optInt(it) > 0 }.joinToString(", ") { "z${it + 1} ${z.optInt(it)} min" } else ""
-                    Column(Modifier.fillMaxWidth().morph(this, spec), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Pass klart: ${p.optInt("minuter")} min", color = Ink, fontSize = 15.sp, fontWeight = FontWeight.Medium)
-                        if (!p.isNull("puls_medel")) Text("Medel ${p.optInt("puls_medel")}, max ${p.optInt("puls_max")} BPM", color = Ink, fontSize = 12.sp, style = Tab)
-                        if (zt.isNotEmpty()) Text(zt, color = Dim, fontSize = 11.sp, textAlign = TextAlign.Center, style = Tab)
-                        if (!p.isNull("i_malzon_procent")) Text("${p.optInt("i_malzon_procent")} % i målzon ${p.optInt("malzon")}", color = Accent, fontSize = 12.sp)
-                        Text(p.optString("rad"), color = Dim, fontSize = 11.sp, textAlign = TextAlign.Center)
+                    TitleCard(onClick = { se.konsiliet.wear.exercise.PassLogg.kvittera(ctx) },
+                        title = { Text("Pass klart: ${p.optInt("minuter")} min") },
+                        modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec),
+                        subtitle = { if (!p.isNull("puls_medel")) Text("Medel ${p.optInt("puls_medel")}, max ${p.optInt("puls_max")} BPM", style = Tab) }) {
+                        if (!p.isNull("i_malzon_procent")) Text("${p.optInt("i_malzon_procent")} % i målzon ${p.optInt("malzon")}", color = cs.primary)
+                        if (zt.isNotEmpty()) Text(zt, style = Tab)
+                        Text(p.optString("rad"))
+                        Text("Tryck för att stänga", style = typo.labelSmall, color = cs.onSurfaceVariant)
                     }
+                }
+            }
+            if (!aktiv) phone.idag?.let { i ->
+                item {
+                    TitleCard(onClick = {}, title = { Text(i.rubrik) },
+                        modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec),
+                        subtitle = { Text("Pass ${i.pass} av ${i.mal} i veckan", style = Tab) },
+                        colors = if (i.beslut == "vila") CardDefaults.cardColors(containerColor = cs.errorContainer) else CardDefaults.cardColors()) {
+                        Text(i.plan)
+                    }
+                }
+            }
+            if (!aktiv) item {
+                val (cText, _) = se.konsiliet.wear.tile.TileLayout.consultLine(phone)
+                TitleCard(onClick = {}, title = { Text("Headroom " + (phone.score?.toString() ?: "--"), style = Tab) },
+                    modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec),
+                    subtitle = { Text("återhämtning av 100") }) {
+                    Text(cText)
+                }
+            }
+            if (WatchState.isEmulator()) item {
+                Text("Emulator: syntetisk testdata", style = typo.labelSmall, color = cs.error, textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().morph(this, spec))
+            }
+            if (!aktiv && !choosing) {
+                item {
+                    Button(onClick = { choosing = true }, enabled = permsOk, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec),
+                        transformation = SurfaceTransformation(spec), colors = ButtonDefaults.filledTonalButtonColors(),
+                        icon = { Icon(Icons.Filled.DirectionsRun, contentDescription = null) },
+                        secondaryLabel = { Text(phone.idag?.let { "Planen: ${it.typ} ${it.minuter} min" } ?: "Planen: stresstest") }) { Text("Välj pass") }
                 }
                 item {
-                    Button(onClick = { se.konsiliet.wear.exercise.PassLogg.kvittera(ctx) }, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec),
-                        transformation = SurfaceTransformation(spec), colors = ButtonDefaults.filledTonalButtonColors()) { Text("Ok") }
+                    Button(onClick = { ctx.startActivity(android.content.Intent(ctx, AndasActivity::class.java)) },
+                        modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec),
+                        colors = ButtonDefaults.filledTonalButtonColors(), icon = { Icon(Icons.Filled.Air, contentDescription = null) },
+                        secondaryLabel = { Text("In 4 s, ut 6 s") }) { Text("Andas 60 s") }
                 }
             }
-            if (status.exerciseActive) {
-                item {
-                    // Live under passet: puls, zon och målzonen med gränser i BPM.
-                    val mal = live.malzon
-                    val (lo, hi) = se.konsiliet.wear.exercise.Zoner.grans(mal.coerceIn(1, 5))
-                    val bpm = status.lastHr
-                    val zon = bpm?.let { se.konsiliet.wear.exercise.Zoner.zon(it) }
-                    val iMal = (live.sekunderIZon[mal] / 60).toInt()
-                    val min = (now - status.exerciseStartedAt) / 60000
-                    val rad = when {
-                        bpm == null || zon == null -> "Väntar på puls"
-                        zon > mal -> "Över målzonen, sakta ner"
-                        zon < mal -> "Under målzonen, öka lite"
-                        else -> "I målzonen"
-                    }
-                    Column(Modifier.fillMaxWidth().morph(this, spec), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Pass $min min (stresstest)", color = Dim, fontSize = 12.sp, style = Tab)
-                        Row(verticalAlignment = Alignment.Bottom) {
-                            Text(bpm?.let { "%.0f".format(it) } ?: "--", style = Tab, fontSize = 40.sp, fontWeight = FontWeight.Medium, color = Ink)
-                            Text(" BPM", color = Dim, fontSize = 12.sp, modifier = Modifier.padding(bottom = 8.dp))
-                        }
-                        Text(if (zon != null && zon > 0) "Zon $zon: ${se.konsiliet.wear.exercise.Zoner.NAMN[zon]}" else "Under zon 1",
-                            color = if (zon == mal) Accent else Warn, fontSize = 14.sp)
-                        Text("Mål zon $mal: $lo-$hi BPM", color = Ink, fontSize = 12.sp, style = Tab)
-                        Text("$rad · $iMal min i målzon", color = Dim, fontSize = 11.sp, textAlign = TextAlign.Center)
-                    }
-                }
-            }
-            if (!status.exerciseActive) item {
-                ListHeader(Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec)) {
-                    Text("Klockfrekvens (puls)", color = Dim)
-                }
-            }
-            if (!status.exerciseActive) item {
-                Column(Modifier.fillMaxWidth().morph(this, spec), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text(status.lastHr?.let { "%.0f".format(it) } ?: "--",
-                            style = Tab, fontSize = 44.sp, fontWeight = FontWeight.Medium, color = Ink)
-                        Text(" BPM", color = Dim, fontSize = 12.sp, modifier = Modifier.padding(bottom = 8.dp))
-                    }
-                    Text(ago(status.lastHrAt, now), color = Dim, fontSize = 12.sp, style = Tab)
-                }
-            }
-            item {
-                // Samma rader som tilen, så att den som trycker på tilen känner igen sig.
-                val (cText, cColor) = se.konsiliet.wear.tile.TileLayout.consultLine(phone)
-                val (sText, sColor) = se.konsiliet.wear.tile.TileLayout.syncLine(phone, now)
-                Column(Modifier.fillMaxWidth().morph(this, spec).padding(top = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    phone.idag?.let { i ->
-                        Text(i.rubrik, color = if (i.beslut == "vila") Warn else Accent, fontSize = 15.sp, fontWeight = FontWeight.Medium,
-                            textAlign = TextAlign.Center)
-                        Text(i.plan, color = Ink, fontSize = 12.sp, textAlign = TextAlign.Center)
-                        Text("Pass ${i.pass} av ${i.mal} i veckan", color = Dim, fontSize = 11.sp, style = Tab)
-                    }
-                    Text("Headroom " + (phone.score?.toString() ?: "--") + " av 100", color = Ink, fontSize = 14.sp, style = Tab)
-                    Text("återhämtning", color = Dim, fontSize = 11.sp)
-                    Text(cText, color = Color(cColor), fontSize = 12.sp, textAlign = TextAlign.Center)
-                    Text(sText, color = Color(sColor), fontSize = 11.sp, style = Tab)
-                }
-            }
-            if (WatchState.isEmulator()) {
-                item { Text("Emulator: syntetisk testdata", color = Warn, fontSize = 11.sp, textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().morph(this, spec)) }
-            }
-            item {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().morph(this, spec).padding(top = 6.dp)) {
-                    Text("Senast skickat: ${ago(status.lastSentAt, now)}", color = Ink, fontSize = 13.sp, style = Tab)
-                    Text("I kö på klockan: $pending", color = Dim, fontSize = 12.sp, style = Tab)
-                    status.lastError?.let {
-                        Text(it, color = Warn, fontSize = 11.sp, textAlign = TextAlign.Center,
-                            )
-                    }
-                }
-            }
-            if (!permsOk) {
-                item {
-                    Button(onClick = onAskPerms, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec)) { Text("Ge behörighet") }
-                }
-            }
-            if (status.exerciseActive) {
-                item {
-                    Button(onClick = { ExerciseService.stop(ctx) }, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec),
-                        colors = ButtonDefaults.filledTonalButtonColors()) { Text("Avsluta passet") }
-                }
-            } else if (choosing) {
+            if (choosing) {
+                item { ListHeader(Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec)) { Text("Välj pass") } }
                 EXERCISE_CHOICES.forEach { (type, label) ->
                     item {
                         Button(onClick = { choosing = false; ExerciseService.start(ctx, type) },
@@ -331,46 +330,31 @@ private fun Screen(permsOk: Boolean, onAskPerms: () -> Unit) {
                             colors = ButtonDefaults.filledTonalButtonColors()) { Text(label) }
                     }
                 }
-                item { Button(onClick = { choosing = false }, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec)) { Text("Avbryt") } }
-            } else {
-                val planTyp = phone.idag?.typ
-                item {
-                    // Ett tryck: dagens planerade pass. Annan sorts pass via "Välj pass".
-                    Button(onClick = { ExerciseService.start(ctx, se.konsiliet.wear.exercise.planensTyp(planTyp)) }, enabled = permsOk,
-                        modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec),
-                        secondaryLabel = { Text(phone.idag?.let { "${it.typ} ${it.minuter} min" } ?: "Stresstest") }) {
-                        Text("Starta pass")
-                    }
-                }
-                item {
-                    Button(onClick = { choosing = true }, enabled = permsOk, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec),
-                        transformation = SurfaceTransformation(spec), colors = ButtonDefaults.filledTonalButtonColors()) { Text("Välj pass") }
-                }
-                item {
-                    Button(onClick = { ctx.startActivity(android.content.Intent(ctx, AndasActivity::class.java)) },
-                        modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec),
-                        colors = ButtonDefaults.filledTonalButtonColors(), secondaryLabel = { Text("In 4 s, ut 6 s") }) { Text("Andas 60 s") }
-                }
+                item { Button(onClick = { choosing = false }, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec),
+                    transformation = SurfaceTransformation(spec), colors = ButtonDefaults.outlinedButtonColors()) { Text("Avbryt") } }
             }
-            msg?.let { m -> item { Text(m, color = Warn, fontSize = 11.sp, textAlign = TextAlign.Center,
+            msg?.let { m -> item { Text(m, style = typo.labelSmall, color = cs.error, textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth().morph(this, spec)) } }
+            item { ListHeader(Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec)) { Text("Synk") } }
             item {
-                Button(onClick = { scope.launch { Flush.request(ctx, urgent = true) } }, modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec),
-                    colors = ButtonDefaults.outlinedButtonColors()) { Text("Skicka nu") }
+                val (sText, _) = se.konsiliet.wear.tile.TileLayout.syncLine(phone, now)
+                Button(onClick = { scope.launch { Flush.request(ctx, urgent = true) } },
+                    modifier = Modifier.fillMaxWidth().transformedHeight(this, spec), transformation = SurfaceTransformation(spec),
+                    colors = ButtonDefaults.outlinedButtonColors(), icon = { Icon(Icons.Filled.Sync, contentDescription = null) },
+                    secondaryLabel = { Text(if (pending > 0) "$pending i kö · ${ago(status.lastSentAt, now)}" else sText) }) { Text("Skicka nu") }
             }
+            status.lastError?.let { e -> item { Text(e, style = typo.labelSmall, color = cs.error, textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().morph(this, spec)) } }
             item {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp),
                     modifier = Modifier.fillMaxWidth().morph(this, spec).padding(vertical = 8.dp)) {
-                    Text("Registrerat passivt", color = Dim, fontSize = 11.sp)
-                    Text(status.registered ?: "inget ännu", color = Ink, fontSize = 11.sp, textAlign = TextAlign.Center)
-                    Text("Klockan erbjuder", color = Dim, fontSize = 11.sp)
-                    Text(available.joinToString(", ").ifEmpty { "okänt" }, color = Ink, fontSize = 11.sp, textAlign = TextAlign.Center)
+                    Text("Mäter passivt: " + (status.registered ?: "inget ännu"), style = typo.labelSmall, color = cs.onSurfaceVariant, textAlign = TextAlign.Center)
+                    Text("Sensorer: " + available.joinToString(", ").ifEmpty { "okänt" }, style = typo.labelSmall, color = cs.onSurfaceVariant, textAlign = TextAlign.Center)
                 }
             }
         }
     }
 }
-
 
 /** Textblock i listan krymper och tonar mot den runda kanten på samma sätt som knapparna. */
 private fun Modifier.morph(scope: TransformingLazyColumnItemScope, spec: TransformationSpec): Modifier =
