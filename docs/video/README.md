@@ -44,3 +44,21 @@ riggen. Så spelas den in igen:
    `window.__rigg.stega(1, 1/30)` och tar en skärmbild per steg, så filmen blir exakt 30 bilder/s oavsett
    hur snabb datorn är.
 3. `ffmpeg -framerate 30 -i f%04d.jpg -c:v libx264 -crf 18 -pix_fmt yuv420p -movflags +faststart` (och VP9 för webm).
+
+## Bidragsfilmen (3 min 11 s)
+
+| Fil | Format |
+|---|---|
+| `kropp64-bidrag-1920x1080.mp4` | 16:9, 30 bilder/s, H.264 crf 18, AAC 192 kbit/s, -20,0 LUFS integrerat |
+
+Byggs av `render/slutvideo.py` av material som redan finns här: 3D-animationen, sensorpanelen och pulsen vid
+datorn (docs/bidrag-bilder 04 och 05), riggen, demotråden kortad till 2-60 s och 121-191,4 s (trollet,
+strykningen och lösningen är kvar), 16 GB-bilden och ett slutkort. Skyltarna ritas med PIL i IBM Plex.
+
+Berättarrösten är Gemini TTS (rösten Sulafat), och det är systemet som pratar ("Jag är Kropp64"), inte jag.
+Den normaliseras till -19 LUFS som demons röster. Allt i kontoret och riggen är syntetisk demo och märkt så.
+Siffran "36 av 36 rätt brådska" är holdout-körningarna i eval/RESULTAT.md, syntetisk data.
+
+```
+python3 render/slutvideo.py <arbetsmapp> <mapp med n1.wav-n5.wav>
+```

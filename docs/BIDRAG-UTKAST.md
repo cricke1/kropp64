@@ -123,19 +123,19 @@ Mac mini M4, 16 GB unified memory (server och alla lokala modeller). Pixel Watch
 ## Tokens
 
 Kör `python3 tools/tokenredovisning.py` precis innan bidraget skickas och använd raderna under
-"Till tävlingsformuläret". Siffrorna nedan är från 2026-11-24 kväll och växer så länge bygget pågår.
+"Till tävlingsformuläret". Siffrorna nedan är från 2026-11-26 13:45 och växer så länge bygget pågår.
 
 Claude Code skickar hela samtalet som indata vid varje svar, och det mesta läses ur cachen. Tävlingens egen
 inlämningsprompt räknar det som indata, alltså med cache. Därför står talet med cache i fältet. Talet utan cache
 (bara ny indata och utdata) redovisas bredvid i texten och i repot, så att ingen behöver gissa vilket som avses.
 
-| Fält | Värde 2026-11-24 | Vad det är |
+| Fält | Värde 2026-11-26 | Vad det är |
 |---|--:|---|
-| Tokens i molnet | 361 318 084 | Claude Code under bygget, med cache: input 2 612 + cache-skrivning 5 014 128 + cache-läsning 355 000 763 + output 1 300 581. Utan cache (input + output): 1 303 193. Idéfasen och den oberoende granskningen räknas inte här men redovisas i skriptets utdata. |
-| Tokens lokalt | 1 977 788 | Ollama på Mac minin: varje anrop från tabellen llm_calls plus utvärderingskörningarnas resultatfiler, prompt + output. |
+| Tokens i molnet | 1 113 035 997 | Claude Code under bygget, med cache: input 6 418 + cache-skrivning 16 972 189 + cache-läsning 1 093 461 391 + output 2 595 999. Utan cache (input + output): 2 602 417. Idéfasen och den oberoende granskningen räknas inte här men redovisas i skriptets utdata. |
+| Tokens lokalt | 9 077 141 | Ollama på Mac minin: varje anrop från tabellen llm_calls plus utvärderingskörningarnas resultatfiler, prompt + output. |
 
 Ingen hälsodata går till molnet: mätdata, journal och trådar bearbetas bara av de lokala modellerna. Claude Code
-skrev koden mot testdatabaser med syntetisk data. [FYLLS I: aktuella siffror från skriptet]
+skrev koden mot testdatabaser med syntetisk data.
 
 ## Bilder
 
@@ -158,13 +158,12 @@ känner igen):
 
 ## Video
 
-[FYLLS I: YouTube-länk]. Underlag: docs/video/kropp64-demo-1920x1080.mp4 (en hel tråd i demoläget, cirka 3 min,
-märkt demo i varje bildruta). Förslag: börja med 10-15 sekunder av sensorpanelen och pulsen vid datorn under ett
-kodpass, sedan tråden i kontoret.
+[FYLLS I: YouTube-länk]. Filmen är klar: docs/video/kropp64-bidrag-1920x1080.mp4 (3 min 11 s, byggd av
+render/slutvideo.py, se docs/video/README.md). Den ska laddas upp på YouTube, olistad eller publik.
 
 ## Länk
 
-[FYLLS I: kropp64.se eller länk till publika demon (drift/publik-demo.sh bakom en tunnel)]
+https://kropp64.se (demo med syntetisk data: https://demo.kropp64.se)
 
 ## Källkod
 

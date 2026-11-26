@@ -10,4 +10,4 @@ Byggde en sensorpanel för kroppen: Pixel Watch in, Min/Max/Medel per sensor ut,
 När något avviker startar en supporttråd där lokala agenter (qwen3.5:9b i Ollama) svarar, och en moderator i ren Python stryker varje påstående som inte finns i datan.
 Akuta larm går aldrig via en språkmodell, och ingen hälsodata lämnar Mac minin.
 Allt som gick fel, inklusive tokens med och utan cache, står i repot.
-Demo (syntetisk data): [FYLLS I: länk]  Kod: [FYLLS I: github.com/cricke1/kropp64]
+Demo (syntetisk data): https://demo.kropp64.se  Kod: [FYLLS I: github.com/cricke1/kropp64]
