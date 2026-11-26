@@ -23,6 +23,8 @@ from . import db
 NIVAER = ["ingen", "bevaka", "ta_upp_med_varden", "kontakta_vard_nu"]
 
 
+# Mobilens skärmtid (mobilappen, Skarmtid.kt): en punkt per minut och kategori, som datorn.
+MOBILKAT = ("spel", "sociala", "video", "chatt", "webb", "annat")
 DATORNAMN = {"kod": "programmering", "spel": "spel", "chatt": "chatt", "webb": "webb", "annat": "annat"}
 
 
@@ -238,6 +240,13 @@ def dagar(nu: float, antal: int = 7) -> dict[str, Any]:
                 dator[DATORNAMN[kat]] = len(x)
         if dator:
             d["minuter_vid_datorn_per_kategori"] = dator
+        mobil = {kat: len(x) for kat in MOBILKAT if len(x := _v(f"mobil_{kat}", a, b))}
+        if mobil:
+            d["minuter_med_mobilen_per_kategori"] = mobil
+        km = [x for kat in MOBILKAT for x in _v(f"mobil_{kat}", a + 18 * 3600, min(a + 30 * 3600, nu))[:, 0]]
+        if km:
+            d["mobil_minuter_efter_23"] = int(sum(1 for t in km if t >= a + 23 * 3600))
+            d["sista_mobilminut_pa_kvallen"] = _hm(max(km))
         # kvällen: 18 den här dagen till 06 nästa morgon
         kv = [x for kat in ("kod", "spel", "chatt", "webb", "annat") for x in _v(f"dator_{kat}", a + 18 * 3600, min(a + 30 * 3600, nu))[:, 0]]
         if kv:
@@ -319,6 +328,8 @@ def larm(trigger: dict[str, Any], nu: float) -> dict[str, Any] | None:
     dator = {DATORNAMN[kat]: len(_v(f"dator_{kat}", a, b)) for kat in ("kod", "spel", "chatt", "webb", "annat")}
     dator = {k: v for k, v in dator.items() if v}
     out["minuter_vid_datorn_under_perioden"] = dator or "inga"
+    mobil = {kat: len(x) for kat in MOBILKAT if len(x := _v(f"mobil_{kat}", a, b))}
+    out["minuter_med_mobilen_under_perioden"] = mobil or "inga"
     if metric == "hr":
         hr60 = _v("hr", b - 3600, b)
         out["kvalitet_senaste_timmen"] = _kvalitet(hr60)

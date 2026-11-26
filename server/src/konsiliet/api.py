@@ -468,7 +468,14 @@ def datortid(hours: float = 24) -> dict[str, Any]:
         pulser = [v for m in minuter for v in hr_min.get(m, [])]
         out[kat] = {"minuter": len(minuter),
                     "puls_median": round(sorted(pulser)[len(pulser) // 2], 1) if pulser else None}
-    return {"timmar": hours, "kategorier": out}
+    # Mobilens skärmtid, samma modell (mobil_<kategori>, en punkt per minut), från mobilappen.
+    mobil = {}
+    for kat in ("spel", "sociala", "video", "chatt", "webb", "annat"):
+        minuter = [int(ts // 60) for ts, _ in db.query_samples(f"mobil_{kat}", start)]
+        pulser = [v for m in minuter for v in hr_min.get(m, [])]
+        mobil[kat] = {"minuter": len(minuter),
+                      "puls_median": round(sorted(pulser)[len(pulser) // 2], 1) if pulser else None}
+    return {"timmar": hours, "kategorier": out, "mobil": mobil}
 
 
 @app.get("/api/besoksunderlag.pdf", dependencies=[Depends(auth)])

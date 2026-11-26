@@ -1,5 +1,8 @@
 package se.konsiliet.app.ui.screens
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
+
 import androidx.compose.foundation.layout.width
 
 import androidx.compose.ui.graphics.Color
@@ -233,18 +236,49 @@ fun TodayScreen() {
             }
         }
 
-        // Datorn
+        // Datorn och mobilen: minuter per kategori senaste dygnet, som staplar.
+        @Composable
+        fun Staplar(rader: List<Pair<String, Int>>, farg: Color) {
+            val max = (rader.maxOfOrNull { it.second } ?: 0).coerceAtLeast(1)
+            Column(Modifier.padding(horizontal = 20.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                rader.forEach { (lbl, min) ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(lbl, style = typo.bodyMedium, color = cs.onSurface, modifier = Modifier.width(88.dp))
+                        Box(Modifier.weight(1f).height(12.dp).background(farg.copy(alpha = 0.14f), androidx.compose.foundation.shape.RoundedCornerShape(6.dp))) {
+                            Box(Modifier.fillMaxWidth(min.toFloat() / max).height(12.dp).background(farg, androidx.compose.foundation.shape.RoundedCornerShape(6.dp)))
+                        }
+                        Text(if (min >= 60) "${min / 60} h ${min % 60} min" else "$min min", style = typo.labelMedium,
+                            color = cs.onSurfaceVariant, modifier = Modifier.width(78.dp).padding(start = 8.dp))
+                    }
+                }
+            }
+        }
         val kat = datorn?.optJSONObject("kategorier")
         if (kat != null) {
+            val namn = listOf("kod" to "Kod", "spel" to "Spel", "chatt" to "Chatt", "webb" to "Webb", "annat" to "Annat")
+            val rader = namn.map { (k, l) -> l to (kat.optJSONObject(k)?.optInt("minuter") ?: 0) }.filter { it.second > 0 }
             Section("Uptime vid datorn", trailing = "senaste dygnet") {
-                val names = mapOf("kod" to "Kod", "spel" to "Spel", "chatt" to "Chatt", "webb" to "Webb", "annat" to "Annat")
-                names.forEach { (k, label) ->
-                    val o = kat.optJSONObject(k) ?: return@forEach
-                    val min = o.optInt("minuter")
-                    val med = if (o.isNull("puls_median")) null else o.optDouble("puls_median")
-                    ReadoutRow(label, if (min > 0) Fmt.int(min.toDouble()) else null, "min",
-                        note = med?.let { "medianklockfrekvens ${Fmt.int(it)} BPM" })
+                if (rader.isEmpty()) Text("Ingen datortid senaste dygnet.", style = typo.bodyMedium, color = cs.onSurfaceVariant,
+                    modifier = Modifier.padding(20.dp))
+                else Staplar(rader, cs.primary)
+            }
+        }
+        val mob = datorn?.optJSONObject("mobil")
+        val harSkarmtid = se.konsiliet.app.hc.Skarmtid.harBehorighet(ctx)
+        Section("Skärmtid på mobilen", trailing = "senaste dygnet") {
+            if (!harSkarmtid) {
+                Column(Modifier.padding(20.dp)) {
+                    Text("Ge Kropp64 åtkomst till användning, så läggs mobilens skärmtid per kategori bredvid pulsen och sömnen. " +
+                        "Bara kategorin sparas, aldrig vilken app.", style = typo.bodyMedium, color = cs.onSurfaceVariant)
+                    androidx.compose.material3.FilledTonalButton(onClick = { se.konsiliet.app.hc.Skarmtid.oppnaInstallning(ctx) },
+                        modifier = Modifier.padding(top = 10.dp)) { Text("Slå på skärmtid") }
                 }
+            } else {
+                val namn = listOf("spel" to "Spel", "sociala" to "Sociala", "video" to "Video", "chatt" to "Chatt", "webb" to "Webb", "annat" to "Annat")
+                val rader = namn.map { (k, l) -> l to (mob?.optJSONObject(k)?.optInt("minuter") ?: 0) }.filter { it.second > 0 }
+                if (rader.isEmpty()) Text("Ingen skärmtid uppladdad än. Den läses var 30:e minut.", style = typo.bodyMedium,
+                    color = cs.onSurfaceVariant, modifier = Modifier.padding(20.dp))
+                else Staplar(rader, t.avvikelse)
             }
         }
 

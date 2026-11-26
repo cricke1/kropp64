@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Skärmtid per kategori (Skarmtid.kt). Slås på av användaren under "Åtkomst till användning". -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
+    <!-- Kategorin läses från appens egen märkning (ApplicationInfo.category); bara kategorin sparas. -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Krävs för förgrundstjänst av typen connectedDevice (bryggan till klockan). Normal behörighet. -->
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />

@@ -253,6 +253,8 @@ object HcScheduler {
 
 class HcWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result = try {
+        // Skärmtiden läses i samma omgång; den kräver ingen Health Connect och får aldrig stoppa synken.
+        runCatching { Skarmtid.run(applicationContext) }.onFailure { Log.w(TAG, "skärmtid misslyckades", it) }
         HealthConnectSync.run(applicationContext)
         Result.success()
     } catch (e: Exception) {
