@@ -13,3 +13,5 @@ android/local.properties
 *.apk
 *.keystore
 wear/local.properties
+render/media/.venv/
+render/media/ut/

@@ -23,11 +23,11 @@ def build(sc, led_strength=6.0):
     mini.location = (0.075, 0.045, 0.0)
     mini.rotation_euler.z = math.radians(-30)
     # klockan framfor, med uppsidan bort fran kameran sa att urtavlan ar rattvand; korta remmar
-    watch, wp = pixel_watch(os.path.join(HERE, 'tex_klocka_panel.png'), band_color=(0.30, 0.30, 0.29, 1),
+    watch, wp = pixel_watch(os.environ.get('TEX_KLOCKA', os.path.join(HERE, 'tex_klocka_panel.png')), band_color=(0.30, 0.30, 0.29, 1),
                             screen_strength=9.0, band_bend=0.008, band_len=(62, 72))
     watch.location = (-0.035, -0.095, 0.0)
     watch.rotation_euler.z = math.radians(16)
-    tel, tp = phone(os.path.join(HERE, 'tex_mobil_panel.png'), screen_strength=9.0)
+    tel, tp = phone(os.environ.get('TEX_MOBIL', os.path.join(HERE, 'tex_mobil_panel.png')), screen_strength=9.0)
     tel.location = (-0.125, 0.025, 0.0)
     tel.rotation_euler.z = math.radians(22)
     world_studio(sc, 0.006)
