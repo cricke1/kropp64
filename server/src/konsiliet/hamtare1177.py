@@ -179,7 +179,10 @@ def _tabell_till_provsvar(t: dict[str, Any]) -> list[dict[str, str]]:
     idx: dict[str, int] = {}
     for key, ord_ in PROV_KOLUMNER.items():
         for i, h in enumerate(head):
-            if any(o in h for o in ord_) and key not in idx:
+            # "Provtagningsdatum" innehåller "prov" men är datumet, inte analysen.
+            if key == "analys" and ("datum" in h or "tagning" in h):
+                continue
+            if any(o in h for o in ord_) and key not in idx and i not in idx.values():
                 idx[key] = i
     if "analys" not in idx or "varde" not in idx:
         return []
@@ -194,6 +197,47 @@ def _tabell_till_provsvar(t: dict[str, Any]) -> list[dict[str, str]]:
             r["datum"] = datum_fallback
         out.append(r)
     return out
+
+
+def excel_till_provsvar(path: Path) -> list[dict[str, str]]:
+    """1177:s "Exportera till Excel" på provsvarssidan: alla provsvar som en tabell. Rubrikraden letas upp
+    (första raden med både en analys- och en värdekolumn), datum skrivs som ÅÅÅÅ-MM-DD."""
+    from openpyxl import load_workbook
+
+    def cell(v: Any) -> str:
+        if isinstance(v, datetime):
+            return v.strftime("%Y-%m-%d")
+        return "" if v is None else str(v).strip()
+
+    ut: list[dict[str, str]] = []
+    wb = load_workbook(path, read_only=True, data_only=True)
+    for ws in wb.worksheets:
+        rader = [[cell(v) for v in r] for r in ws.iter_rows(values_only=True)]
+        for k, r in enumerate(rader[:30]):
+            t = {"head": r, "rows": rader[k + 1:], "caption": ""}
+            hittade = _tabell_till_provsvar(t)
+            if hittade:
+                ut += [x for x in hittade if x.get("analys") and x.get("varde")]
+                break
+    return ut
+
+
+async def _provsvar_excel(page: Any, outdir: Path, i: int) -> int | None:
+    """Laddar ner provsvaren som Excel och tolkar dem. None om knappen saknas eller nedladdningen misslyckas,
+    så att sidans tabeller och den lokala modellen tar vid som förut."""
+    knapp = page.get_by_text(re.compile(r"Exportera till Excel", re.I)).first
+    try:
+        if not await knapp.count():
+            return None
+        async with page.expect_download(timeout=30000) as dl:
+            await knapp.click()
+        fil = outdir / f"{i:02d}_provsvar.xlsx"
+        await (await dl.value).save_as(str(fil))
+    except Exception as e:
+        log.warning("provsvar som Excel: %s", e)
+        return None
+    rader = excel_till_provsvar(fil)
+    return tolka_provsvar(rader) if rader else None
 
 
 # ---------------------------------------------------------------- reserv: lokal modell tolkar sidtexten
@@ -308,7 +352,9 @@ async def _hamta() -> dict[str, int]:
     NYA["anteckningar"] = NYA["provsvar"] = 0
     async with async_playwright() as pw:
         browser = await pw.chromium.launch(headless=True)
-        ctx = await browser.new_context(locale="sv-SE", viewport={"width": 1280, "height": 1800})
+        ctx = await browser.new_context(locale="sv-SE", timezone_id="Europe/Stockholm", accept_downloads=True,
+                                        extra_http_headers={"Accept-Language": "sv-SE,sv;q=0.9"},
+                                        viewport={"width": 1280, "height": 1800})
         page = await ctx.new_page()
         _status("loggar_in")
         if not await _login(page):
@@ -348,6 +394,12 @@ async def _hamta() -> dict[str, int]:
             if oforandrad:
                 counts["oforandrade"] += 1
                 continue
+            if "provsvar" in namn.lower():
+                n_excel = await _provsvar_excel(page, outdir, i)
+                if n_excel is not None:
+                    counts["provsvar"] += n_excel
+                    _spara_sidhash(url, sidhash)
+                    continue
             prov = [r for t in data["tabeller"] for r in _tabell_till_provsvar(t)]
             if prov:
                 counts["provsvar"] += tolka_provsvar(prov)

@@ -58,3 +58,21 @@ def test_ny_hamtning_ger_inga_dubbletter(h):
     mod.tolka_anteckningar(p, "anteckningar")
     mod.tolka_anteckningar(p, "Anteckningar ")  # annan kategorietikett, samma post
     assert db.conn().execute("SELECT COUNT(*) FROM journal").fetchone()[0] == 1
+
+
+def test_excel_provsvar(tmp_path):
+    """1177:s Excel-export: rubrikraden letas upp, Provtagningsdatum tas inte för analysen, datum blir ÅÅÅÅ-MM-DD."""
+    from datetime import datetime
+    from openpyxl import Workbook
+    from konsiliet.hamtare1177 import excel_till_provsvar
+
+    wb = Workbook(); ws = wb.active
+    ws.append(["Provsvar exporterade från 1177"])
+    ws.append([])
+    ws.append(["Provtagningsdatum", "Analys", "Resultat", "Enhet", "Referensintervall"])
+    ws.append([datetime(2026, 3, 12, 8, 30), "Hb", "141", "g/L", "134-170"])
+    ws.append([datetime(2026, 3, 12, 8, 30), "Ferritin", "45", "µg/L", "30-400"])
+    p = tmp_path / "prov.xlsx"; wb.save(p)
+    rader = excel_till_provsvar(p)
+    assert [(r["analys"], r["varde"], r["datum"]) for r in rader] == [("Hb", "141", "2026-03-12"), ("Ferritin", "45", "2026-03-12")]
+    assert rader[0]["enhet"] == "g/L" and rader[0]["referens"] == "134-170"
