@@ -1,6 +1,6 @@
 # Foruminlägg, utkast
 
-Kort, fem rader, två bilder och en länk. Bifoga 04-oversikt.png (sensorpanelen) och 02-granskaren-stryker.png.
+Kort, sex rader, två bilder och en länk. Bifoga docs/bidrag-bilder/04-oversikt.png (sensorpanelen) och docs/bidrag-bilder/02-moderatorn-stryker.png.
 
 ---
 
@@ -10,4 +10,5 @@ Byggde en sensorpanel för kroppen: Pixel Watch in, Min/Max/Medel per sensor ut,
 När något avviker startar en supporttråd där lokala agenter (qwen3.5:9b i Ollama) svarar, och en moderator i ren Python stryker varje påstående som inte finns i datan.
 Akuta larm går aldrig via en språkmodell, och ingen hälsodata lämnar Mac minin.
 Allt som gick fel, inklusive tokens med och utan cache, står i repot.
-Demo (syntetisk data): https://demo.kropp64.se  Kod: [FYLLS I: github.com/cricke1/kropp64]
+Demo (syntetisk data): https://demo.kropp64.se  Kod: https://github.com/cricke1/kropp64
+Film (3 min): [FYLLS I: YouTube-länk]
