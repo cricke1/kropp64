@@ -18,15 +18,18 @@ def main() -> None:
     filer = sorted((HIT / "resultat").glob("*.json"), key=ordning)
     data = [json.loads(f.read_text()) for f in filer]
     data = [d for d in data if d.get("rader")]
-    def agg(monster: str) -> dict:
+    def agg(*monster: str) -> dict:
         from poang import sammanstall
-        rader = [r for f in sorted((HIT / "resultat").glob(monster)) for r in json.loads(f.read_text())["rader"]]
+        rader = [r for m in monster for f in sorted((HIT / "resultat").glob(m)) for r in json.loads(f.read_text())["rader"]]
         return sammanstall(rader) if rader else {}
 
     slut = [("Gamla pipelinen, 16 tränade scenarier", agg("2026-11-24-baslinje.json")),
             ("Nuvarande (v8), 16 tränade scenarier", agg("2026-11-2?-v8.json")),
             ("Gamla pipelinen, 16 holdout-scenarier", agg("*holdout*-baslinje.json")),
             ("Nuvarande (v8), 16 holdout-scenarier", agg("*holdout*-v8.json")),
+            ("v8, tränade, 4 körningar sammanslagna", agg("2026-11-2?-v8.json", "2026-11-2?-v8-rep*.json")),
+            ("v8, holdout, alla omkörningar sammanslagna", agg("*holdout*-v8.json", "*holdout*-v8-final.json",
+                                                              "*holdout5-v8-rep*.json")),
             ("v8 med gemma4:12b, 16 holdout-scenarier", agg("*holdout*-v8-gemma12b.json")),
             ("v8 med gemma4:e4b, 16 holdout-scenarier", agg("*holdout*-v8-gemma4e4b.json"))]
     topp = ["# Utvärdering av konsiliet", "",
@@ -70,8 +73,14 @@ def main() -> None:
              "- **Domare:** medgemma:4b (en annan modell än Qwen som kör mötet) svarar på ja/nej-frågor mot facit. Den "
              "är för snäll (gav den gamla pipelinens holdout 2, med 1 av 5 rätt brådska, 5,0) och redovisas bara "
              "som komplement.",
-             "- **Spridning:** varje variant är körd en gång. Samma scenario kan ge olika svar vid omkörning, särskilt "
-             "i den gamla pipelinen; skillnader på några procentenheter i täckning är brus.", "",
+             "- **Spridning:** v8 är körd fyra gånger på de 16 tränade scenarierna (v8, v8-rep2 till rep4) och två "
+             "gånger på alla 16 holdout-scenarier (v8 och v8-final), holdout 5 fyra gånger. Oförändrad kod och modell. "
+             "Tränade: brådskan godtagbar i 64 av 64 trådar och exakt i 14 av 16 i varje körning (samma två scenarier "
+             "hamnar ett steg högre), täckning 90,6-94,3 % (medel 91,9 %), strykandel 8,7-16,3 %, median 123-128 s. "
+             "Holdout: brådskan exakt i 36 av 36 trådar, ingen över- eller undertriage, täckning 93,8 % och 96,9 % i "
+             "de två hela körningarna. Det som varierar är detaljer: 3 overifierade siffror på 64 tränade trådar och "
+             "5 baslinjefel på 36 holdout-trådar (en siffra kallas baslinje fast den inte är det). Övriga varianter "
+             "är körda en gång; skillnader på några procentenheter i täckning är brus.", "",
              "## Alla körningar", ""]
     rad = topp + [
            "Genereras av `eval/rapport.py`.",

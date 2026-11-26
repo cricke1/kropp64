@@ -28,7 +28,8 @@ Läget den 24 november 2026:
   från 56 % (gamla pipelinen, 3 övertriage och 4 undertriage) till 100 % (v8), täckningen av måste-fynd från 67 %
   till 94 % och mediantiden från 226 till 118 sekunder. Brådskan styrs av ett öppet regelverk med teamet som får
   höja men inte sänka; utan regelverket (bara faktabladet) var det 73 % med 4 undertriage. Allt är syntetiskt,
-  varje variant körd en gång, och metoden och förbehållen står i eval/RESULTAT.md.
+  och metoden och förbehållen står i eval/RESULTAT.md. v8 är omkörd med oförändrad kod och modell: rätt brådska
+  i 36 av 36 holdout-trådar och godtagbar i 64 av 64 tränade, täckning 91-94 % mellan körningarna.
 - Alla skärmbilder och filmer i repot är märkta som demo, syntetisk testdata eller emulator.
 
 ## Sensorpanelen
