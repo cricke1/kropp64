@@ -15,8 +15,8 @@ efteråt med PIL och IBM Plex Sans/Mono, samma typsnitt som webben.
 | `kropp64-animation.mp4` | 8 s, 30 bilder/s, 1920x1080, H.264 yuv420p | 240 bilder på 95 min (snitt 23,8 s, 22,0-26,5 s per bild, 256 sampel) |
 
 Mac minin är modellerad efter måtten på M4-modellen från 2024: 127 x 127 x 50 mm, två USB-C och
-hörlursuttag fram, statuslampa, indragen fot. Klockan är en Pixel Watch 3 (41 mm) och telefonen har
-Pixel-mått. Insidan i 16 GB-bilden är en illustration, inte en exakt kopia av Apples kretskort.
+hörlursuttag fram, statuslampa, indragen fot. Klockan i renderingarna är modellerad efter en Pixel Watch 3 (41 mm) och telefonen har Pixel-mått; i
+verkligheten används en Pixel Watch 5 och en Samsung Galaxy Z Flip8. Insidan i 16 GB-bilden är en illustration, inte en exakt kopia av Apples kretskort.
 
 **Skärmarna i hjältebilden och dataflödet är en illustration med exempelvärden** (Klockfrekvens 67 BPM,
 Headroom 72 och tabellen), ritade av `render/skarmar.py` i appens färger. De är inte uppmätt data.

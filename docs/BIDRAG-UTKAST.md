@@ -114,10 +114,10 @@ Lokalt i Ollama: qwen3.5:9b (alla agenter i läkarteamet, POST-skärmen, tolknin
 
 ## Hårdvara
 
-224 av 300 tecken.
+219 av 300 tecken.
 
 ```text
-Mac mini M4, 16 GB unified memory (server och alla lokala modeller). Pixel Watch 5 (Wear OS) och en Pixel-mobil. Lånad Lenovo-laptop (RTX 5050) för Android-bygget, emulatorerna, rösterna och 3D-renderingarna.
+Mac mini M4, 16 GB unified memory (server och alla lokala modeller). Pixel Watch 5 (Wear OS) och en Samsung Galaxy Z Flip8. Lånad Lenovo-laptop (RTX 5050) för Android-bygget, emulatorerna, rösterna och 3D-renderingarna.
 ```
 
 ## Tokens

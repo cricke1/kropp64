@@ -27,7 +27,10 @@ först, annars får appen en annan signatur och måste avinstalleras (med sin lo
 
 Kräver JDK 17 eller senare och Android SDK (platform 36). `local.properties` med `sdk.dir` skapas per dator.
 
-## Installera på riktig Pixel-mobil och Pixel Watch
+## Installera på riktig mobil och Pixel Watch
+
+Installerat 2026-11-26 på en Samsung Galaxy Z Flip8 (SM-F776B, ADB över wifi på port 5555) och en Pixel Watch 5
+(trådlös felsökning, parkopplad med kod), båda med APK-filerna i `~/konsiliet-lenovo/android/`.
 
 Mobilen:
 1. Inställningar > Om telefonen > tryck sju gånger på Versionsnummer.
