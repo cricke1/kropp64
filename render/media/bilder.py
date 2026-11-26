@@ -111,7 +111,17 @@ def grans():
     print("07-16gb.jpg")
 
 
-ALLA = {"post": post_anim, "strykningen": strykningen, "appen": appen, "riggen": riggen, "halsa": halsa, "grans": grans}
+def graleet():
+    """03: läkarteamet grälar, Kardiologen välter bordet och moderatorn stryker. Ur trailern (16,5-34 s)."""
+    trailer = REPO / "docs/video/kropp64-trailer-1920x1080.mp4"
+    with tempfile.TemporaryDirectory() as t:
+        t = Path(t)
+        ff("-ss", "16.6", "-t", "17.2", "-i", str(trailer), "-vf", "crop=1728:1080:96:0,scale=1280:800:flags=lanczos,fps=12",
+           str(t / "f%04d.png"))
+        webp(sorted(t.glob("f*.png")), UT / "03-graleet.webp", 83, sista_ms=2500, q=62)
+
+
+ALLA = {"graleet": graleet, "post": post_anim, "strykningen": strykningen, "appen": appen, "riggen": riggen, "halsa": halsa, "grans": grans}
 if __name__ == "__main__":
     for namn in (sys.argv[1:] or ALLA):
         ALLA[namn]()

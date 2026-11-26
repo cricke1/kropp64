@@ -41,7 +41,7 @@ När något avviker från min egen baslinje (median och MAD per timme på dygnet
 
 Moderatorn är det jag är mest nöjd med, för den är inte en AI. Den är vanlig Python. Den kollar att källan finns bland det tråden hämtat, att varje siffra finns i källan (puls mot puls, procent mot SpO2), att det som kallas baslinje verkligen är baslinjen. När kardiologen skrev att min baslinje var 73,2 och källan sa 72,5 ströks det. Ingen modell kan prata sig förbi den. Och brådskan bestäms av ett öppet regelverk, inte av modellen: teamet får höja den, aldrig sänka. Akuta larm (puls över 140 i vila, SpO2 under 88, fall) är vanliga regler som larmar mobilen på millisekunder, helt utan språkmodell.
 
-I webben blir tråden ett pixelkontor: läkarna går till arkivet när de söker i journalen, till labbet när de läser provsvar och pratar med egna röster. När moderatorn stryker något stryks meningen över framför dig.
+I webben blir tråden ett pixelkontor: läkarna går till arkivet när de söker i journalen, till labbet när de läser provsvar och pratar med egna röster. När moderatorn stryker något stryks meningen över framför dig. I trailern fick de gräla ordentligt och Kardiologen välta bordet. Den scenen är regisserad, inspelad bildruta för bildruta ur appens egen kontorsmotor.
 
 LOKALT PÅ 16 GB
 qwen3.5:9b i Ollama för alla agenter. På Mac minin läser den prompten i ungefär 390 tokens/s men skriver i 22, så allt är byggt kring det: datan hämtas innan specialisterna börjar, svaren tvingas fram som JSON, 8k kontext, KV-cache i q8_0, en förfrågan åt gången. Då tar modellen 9,1 GB i stället för 14,7 och datorn slutar swappa. Gemma 4 12B hittade lite fler fynd men tog 12,3 GB och 156 s per tråd. Den ryms inte bredvid allt annat. 16 GB är gränsen jag slår i varje dag.
@@ -119,7 +119,7 @@ Utan cache (bara ny input och output) var molnet 3 136 932 tokens. Det står i r
 
 1. `docs/bidrag-media/01-kropp64.jpg` - kortbilden: 3D-rendering med de riktiga appskärmarna och OSD-titel
 2. `docs/bidrag-media/02-post.webp` - animerad POST-skärm ("WARNING: Vilopuls ej övervakad på 18 år.")
-3. `docs/bidrag-media/03-moderatorn-stryker.webp` - animerad: kardiologen drar en slutsats, moderatorn stryker den
+3. `docs/bidrag-media/03-graleet.webp` - animerad: läkarna grälar, Kardiologen välter bordet, moderatorn stryker påståendet
 4. `docs/bidrag-media/04-appen.webp` - animerad: riktiga mobilappen med min riktiga data
 5. `docs/bidrag-media/05-riggen.webp` - animerad: kroppen som PC-chassi
 6. `docs/bidrag-media/06-health-status.png` - siffrorna som PC Health Status
@@ -130,7 +130,7 @@ Utan cache (bara ny input och output) var molnet 3 136 932 tokens. Det står i r
 ## Video på YouTube
 
 `docs/video/kropp64-trailer-1920x1080.mp4`, 55 s. Titel på YouTube: "Kropp64: HWiNFO för kroppen (SweClockers AI-tävling 2026)".
-Olistad räcker. Beskrivning: "Ett lokalt AI-läkarteam på en Mac mini 16 GB läser min Pixel Watch och min journal från 1177. Allt i trailern är eget: 3D i Blender, riktiga skärminspelningar, musiken syntetiserad i Python. https://kropp64.se"
+Olistad räcker. Beskrivning: "Min GPU har jag full koll på. Min vilopuls? Ingen aning. Så jag byggde HWiNFO för kroppen: Pixel Watch och 1177-journalen läses av sex AI-läkare som körs lokalt på en Mac mini 16 GB. De grälar, och en moderator i vanlig Python stryker allt som saknar källa. Allt i trailern är eget: kontorsscenen är inspelad ur appens egen motor, 3D i Blender, musiken syntetiserad i Python med hjärtslaget som takt. https://kropp64.se"
 
 ## Länk
 
