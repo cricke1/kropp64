@@ -96,6 +96,7 @@ class MainActivity : ComponentActivity() {
     private var openConsult by mutableStateOf<String?>(null)
     private var asking by mutableStateOf(false)
     private var start1177 by mutableStateOf(false)
+    private var onboardingKlar by mutableStateOf(false)
 
     private val askNotif = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
@@ -104,7 +105,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         openConsult = intent?.getStringExtra(EXTRA_CONSULT)
         start1177 = intent?.getBooleanExtra(se.konsiliet.app.ui.screens.Journal1177.EXTRA_START, false) == true
-        if (Build.VERSION.SDK_INT >= 33) askNotif.launch(Manifest.permission.POST_NOTIFICATIONS)
+        onboardingKlar = se.konsiliet.app.ui.screens.Onboarding.klar()
+        // Aviseringar frågas i onboardingen; här bara för den som redan gått igenom den.
+        if (onboardingKlar && Build.VERSION.SDK_INT >= 33) askNotif.launch(Manifest.permission.POST_NOTIFICATIONS)
         LiveService.start(this)
         setContent { KonsilietTheme { Root() } }
     }
@@ -131,11 +134,18 @@ class MainActivity : ComponentActivity() {
         val consult = openConsult
         androidx.compose.runtime.LaunchedEffect(start1177) { if (start1177) tab = Tab.Idag }
         // Första start: ingen serveradress än. Bara första-gångs-vyn, ingen flikrad.
-        val firstRun = Prefs.config.collectAsState().value.serverUrl.isBlank()
+        val serverSaknas = Prefs.config.collectAsState().value.serverUrl.isBlank()
+        // Första start: serveradress och sedan onboardingen. Ingen menyrad förrän den är klar.
+        val firstRun = serverSaknas || !onboardingKlar
         Column(Modifier.fillMaxSize().background(androidx.compose.material3.MaterialTheme.colorScheme.surface).statusBarsPadding()) {
             Box(Modifier.weight(1f)) {
-                if (firstRun) {
+                if (serverSaknas) {
                     FirstRunScreen()
+                } else if (!onboardingKlar) {
+                    se.konsiliet.app.ui.screens.OnboardingScreen(onKlar = { hamta ->
+                        onboardingKlar = true; tab = Tab.Idag
+                        if (hamta) start1177 = true
+                    })
                 } else if (consult != null) {
                     BackHandler { openConsult = null }
                     ConsultDetail(consult, onBack = { openConsult = null })
