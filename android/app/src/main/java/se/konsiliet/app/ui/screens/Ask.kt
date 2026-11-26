@@ -1,5 +1,9 @@
 package se.konsiliet.app.ui.screens
 
+import androidx.compose.material.icons.automirrored.filled.Send
+
+import androidx.compose.material.icons.filled.QuestionAnswer
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,30 +46,37 @@ fun AskScreen(onStarted: (String) -> Unit) {
     var err by rememberSaveable { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp)) {
-        Text("Starta en tråd", style = Type.title, color = t.ink)
+        Text("Ny tråd", style = androidx.compose.material3.MaterialTheme.typography.headlineLarge, color = t.ink)
         Spacer(Modifier.height(6.dp))
         Text("Teamet läser din data och journal för den valda perioden. Varje påstående i svaret måste peka på en mätpunkt, " +
             "en journalrad eller en källa. Inga diagnoser, bara underlag.", style = Type.body, color = t.ink2)
         Spacer(Modifier.height(16.dp))
-        Text("Färdiga frågor (startar direkt)", style = Type.label, color = t.ink2)
+        Text("Färdiga frågor, startar direkt", style = androidx.compose.material3.MaterialTheme.typography.titleSmall,
+            color = androidx.compose.material3.MaterialTheme.colorScheme.primary)
         FRAGOR.forEach { f ->
-            Text(f, style = Type.body, color = t.accent, modifier = Modifier.fillMaxWidth().clickable(enabled = !busy) {
-                busy = true; err = null
-                scope.launch {
-                    runCatching { startaFraga(f, hours) }.onSuccess { onStarted(it) }.onFailure { err = "Kunde inte starta: ${it.message}" }
-                    busy = false
-                }
-            }.padding(vertical = 10.dp))
+            androidx.compose.material3.ListItem(
+                headlineContent = { Text(f) },
+                leadingContent = { androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Filled.QuestionAnswer, null,
+                    tint = androidx.compose.material3.MaterialTheme.colorScheme.primary) },
+                colors = androidx.compose.material3.ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+                modifier = Modifier.clickable(enabled = !busy) {
+                    busy = true; err = null
+                    scope.launch {
+                        runCatching { startaFraga(f, hours) }.onSuccess { onStarted(it) }.onFailure { err = "Kunde inte starta: ${it.message}" }
+                        busy = false
+                    }
+                },
+            )
         }
         Spacer(Modifier.height(10.dp))
         OutlinedTextField(q, { q = it }, modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp),
             label = { Text("Din fråga") }, textStyle = Type.body)
         Spacer(Modifier.height(14.dp))
-        Text("Period", style = Type.label, color = t.ink2)
-        Row {
+        Text("Period", style = androidx.compose.material3.MaterialTheme.typography.titleSmall,
+            color = androidx.compose.material3.MaterialTheme.colorScheme.primary)
+        Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
             listOf(24 to "1 dygn", 72 to "3 dygn", 168 to "7 dygn", 720 to "30 dygn").forEach { (h, l) ->
-                Text(l, style = Type.label, color = if (hours == h) t.ink else t.ink3,
-                    modifier = Modifier.clickable { hours = h }.padding(end = 16.dp, top = 8.dp, bottom = 8.dp))
+                androidx.compose.material3.FilterChip(selected = hours == h, onClick = { hours = h }, label = { Text(l) })
             }
         }
         Spacer(Modifier.height(14.dp))
@@ -77,7 +88,11 @@ fun AskScreen(onStarted: (String) -> Unit) {
                     .onFailure { err = "Kunde inte starta: ${it.message}" }
                 busy = false
             }
-        }) { Text(if (busy) "Skickar ..." else "Starta tråden") }
+        }) {
+            androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.AutoMirrored.Filled.Send, null,
+                modifier = Modifier.padding(end = 8.dp))
+            Text(if (busy) "Skickar ..." else "Starta tråden")
+        }
         err?.let { Text(it, style = Type.small, color = t.akut, modifier = Modifier.padding(top = 10.dp)) }
     }
 }

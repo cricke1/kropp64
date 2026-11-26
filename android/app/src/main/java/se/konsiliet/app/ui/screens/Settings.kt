@@ -1,5 +1,25 @@
 package se.konsiliet.app.ui.screens
 
+import androidx.compose.material.icons.filled.Delete
+
+import androidx.compose.material.icons.filled.Person
+
+import androidx.compose.material.icons.filled.Watch
+
+import androidx.compose.material.icons.filled.BatterySaver
+
+import androidx.compose.material.icons.filled.Notifications
+
+import androidx.compose.material.icons.filled.PhoneAndroid
+
+import androidx.compose.material.icons.filled.HealthAndSafety
+
+import androidx.compose.material.icons.filled.CheckCircle
+
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+
+import androidx.compose.material.icons.Icons
+
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlarmManager
@@ -91,7 +111,40 @@ fun SettingsScreen() {
     val exact = remember(tick) { Build.VERSION.SDK_INT < 31 || ctx.getSystemService(AlarmManager::class.java).canScheduleExactAlarms() }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
-        Text("Inställningar", style = Type.title, color = t.ink, modifier = Modifier.padding(start = 20.dp, top = 12.dp))
+        Text("Mer", style = androidx.compose.material3.MaterialTheme.typography.headlineLarge, color = t.ink,
+            modifier = Modifier.padding(start = 24.dp, top = 20.dp))
+
+        // Behörigheter och data: allt appen behöver, med status och ett tryck till rätt inställning.
+        val cs = androidx.compose.material3.MaterialTheme.colorScheme
+        val notisOk = Build.VERSION.SDK_INT < 33 ||
+            ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+        val skarmOk = se.konsiliet.app.hc.Skarmtid.harBehorighet(ctx)
+        val klockaOk = Prefs.link.value.lastWatchAt > System.currentTimeMillis() - 86_400_000L
+        Section("Behörigheter och data") {
+            @Composable
+            fun Rad(ic: androidx.compose.ui.graphics.vector.ImageVector, titel: String, status: String, ok: Boolean, onClick: (() -> Unit)?) {
+                androidx.compose.material3.ListItem(
+                    headlineContent = { Text(titel) },
+                    supportingContent = { Text(status, color = if (ok) cs.onSurfaceVariant else t.avvikelse) },
+                    leadingContent = { androidx.compose.material3.Icon(ic, null, tint = if (ok) cs.primary else t.avvikelse) },
+                    trailingContent = { androidx.compose.material3.Icon(if (ok) Icons.Filled.CheckCircle else Icons.AutoMirrored.Filled.KeyboardArrowRight, null,
+                        tint = if (ok) cs.primary else cs.onSurfaceVariant) },
+                    colors = androidx.compose.material3.ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+                    modifier = if (onClick != null) Modifier.clickable { onClick() } else Modifier,
+                )
+            }
+            Rad(Icons.Filled.HealthAndSafety, "Health Connect", when (hcGranted) {
+                -2 -> "Finns inte på telefonen"; -1 -> "Kontrollerar ..."; else -> "$hcGranted av ${HealthConnectSync.permissions.size} behörigheter"
+            }, hcGranted >= HealthConnectSync.permissions.size, if (hcGranted != -2) ({ hcLauncher.launch(HealthConnectSync.permissions) }) else null)
+            Rad(Icons.Filled.PhoneAndroid, "Skärmtid", if (skarmOk) "På, per kategori" else "Av", skarmOk) { se.konsiliet.app.hc.Skarmtid.oppnaInstallning(ctx) }
+            Rad(Icons.Filled.Notifications, "Aviseringar", if (notisOk) "Tillåtna" else "Avstängda", notisOk) {
+                ctx.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, ctx.packageName))
+            }
+            Rad(Icons.Filled.BatterySaver, "Batterioptimering", if (unrestricted) "Av, länken går i viloläge" else "På, Android kan pausa länken", unrestricted) {
+                ctx.startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + ctx.packageName))); tick++
+            }
+            Rad(Icons.Filled.Watch, "Klockan", if (klockaOk) "Senast " + Fmt.ago(Prefs.link.value.lastWatchAt) else "Ingen data senaste dygnet", klockaOk, null)
+        }
 
         PlanSettings()
         BesoksunderlagKnapp()
@@ -118,16 +171,6 @@ fun SettingsScreen() {
             }
         }
 
-        Section("Health Connect") {
-            ReadoutRow("Behörigheter", when (hcGranted) {
-                -2 -> null; -1 -> "..."; else -> "$hcGranted av ${HealthConnectSync.permissions.size}"
-            }, note = if (hcGranted == -2) "Health Connect finns inte på enheten" else Prefs.link.value.hcStatus)
-            Row(Modifier.padding(horizontal = 8.dp)) {
-                TextButton(enabled = hcGranted != -2, onClick = { hcLauncher.launch(HealthConnectSync.permissions) }) { Text("Ge behörighet") }
-                TextButton(enabled = hcGranted > 0, onClick = { HcScheduler.now(ctx) }) { Text("Läs nu") }
-            }
-        }
-
         Section("Sms till anhöriga vid akut larm") {
             Column(Modifier.padding(horizontal = 20.dp, vertical = 10.dp)) {
                 Text("När vakten slår akut larm visas en notis. Trycker du inte \"Jag mår bra\" inom vald tid skickas ett sms " +
@@ -142,10 +185,11 @@ fun SettingsScreen() {
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Väntetid innan sms", style = Type.body, color = t.ink, modifier = Modifier.weight(1f))
+                }
+                Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
                     listOf(2, 5, 10, 15).forEach { m ->
-                        Text("$m min", style = Type.label, color = if (cfg.smsDelayMin == m) t.ink else t.ink3,
-                            modifier = Modifier.padding(start = 12.dp, top = 10.dp, bottom = 10.dp)
-                                .clickable { Prefs.updateConfig { it.copy(smsDelayMin = m) } })
+                        androidx.compose.material3.FilterChip(selected = cfg.smsDelayMin == m, onClick = { Prefs.updateConfig { it.copy(smsDelayMin = m) } },
+                            label = { Text("$m min") })
                     }
                 }
                 if (cfg.smsEnabled && cfg.contacts.isEmpty()) {
@@ -160,13 +204,14 @@ fun SettingsScreen() {
                 }
             }
             cfg.contacts.forEachIndexed { i, c ->
-                Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text(c.name, style = Type.body, color = t.ink)
-                        Text(c.number, style = Type.small, color = t.ink3)
-                    }
-                    TextButton(onClick = { Prefs.updateConfig { it.copy(contacts = it.contacts.filterIndexed { j, _ -> j != i }) } }) { Text("Ta bort") }
-                }
+                androidx.compose.material3.ListItem(
+                    headlineContent = { Text(c.name) }, supportingContent = { Text(c.number) },
+                    leadingContent = { androidx.compose.material3.Icon(Icons.Filled.Person, null) },
+                    trailingContent = { androidx.compose.material3.IconButton(onClick = {
+                        Prefs.updateConfig { it.copy(contacts = it.contacts.filterIndexed { j, _ -> j != i }) } }) {
+                        androidx.compose.material3.Icon(Icons.Filled.Delete, contentDescription = "Ta bort ${c.name}") } },
+                    colors = androidx.compose.material3.ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+                )
             }
             Row(Modifier.padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(cName, { cName = it }, label = { Text("Namn") }, singleLine = true, modifier = Modifier.weight(1f))
@@ -188,14 +233,7 @@ fun SettingsScreen() {
             }
         }
 
-        Section("Batteri och bakgrund") {
-            ReadoutRow("Batterioptimering", if (unrestricted) "av" else "på",
-                note = if (unrestricted) "Appen får nätverk även i viloläge" else "Android kan pausa uppladdning och live-länk i viloläge (Doze)",
-                noteColor = if (unrestricted) null else t.avvikelse)
-            if (!unrestricted) TextButton(modifier = Modifier.padding(horizontal = 8.dp), onClick = {
-                ctx.startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + ctx.packageName)))
-                tick++
-            }) { Text("Stäng av batterioptimering för Kropp64") }
+        Section("Felsökning") {
             ReadoutRow("Avvisade av servern", Fmt.int(rejected.toDouble()), "punkter", note = "Sparas lokalt för felsökning, skickas inte igen")
         }
     }

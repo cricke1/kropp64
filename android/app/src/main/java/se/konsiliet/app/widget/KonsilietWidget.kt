@@ -18,6 +18,7 @@ import androidx.glance.appwidget.LinearProgressIndicator
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
+import androidx.glance.appwidget.appWidgetBackground
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.color.ColorProvider as DayNight
@@ -38,14 +39,15 @@ import org.json.JSONObject
 import se.konsiliet.app.ui.MainActivity
 import se.konsiliet.app.ui.components.Fmt
 
-/** Samma tokens som appen (Theme.kt): papper och bläck i ljust läge, grafit i mörkt. */
+/** Material You via GlanceTheme (färger från bakgrundsbilden, som Googles egna widgetar). Larmfärgerna är fasta. */
 private object W {
-    val bg = DayNight(day = Color(0xFFFFFFFF), night = Color(0xFF16191C))
-    val ink = DayNight(day = Color(0xFF16191C), night = Color(0xFFE6E7E4))
-    val ink2 = DayNight(day = Color(0xFF50575D), night = Color(0xFFA2A8AD))
-    val ink3 = DayNight(day = Color(0xFF8A9096), night = Color(0xFF6C7379))
-    val track = DayNight(day = Color(0xFFE9EAE6), night = Color(0xFF1F2427))
-    val accent = DayNight(day = Color(0xFF1F5A69), night = Color(0xFF7FB6C3))
+    val bg @Composable get() = androidx.glance.GlanceTheme.colors.widgetBackground
+    val ink @Composable get() = androidx.glance.GlanceTheme.colors.onSurface
+    val ink2 @Composable get() = androidx.glance.GlanceTheme.colors.onSurfaceVariant
+    val ink3 @Composable get() = androidx.glance.GlanceTheme.colors.onSurfaceVariant
+    val track @Composable get() = androidx.glance.GlanceTheme.colors.secondaryContainer
+    val accent @Composable get() = androidx.glance.GlanceTheme.colors.primary
+    val kort @Composable get() = androidx.glance.GlanceTheme.colors.secondaryContainer
     val akut = DayNight(day = Color(0xFFB42318), night = Color(0xFFF0645A))
     val avvikelse = DayNight(day = Color(0xFFA15C07), night = Color(0xFFE0A458))
 }
@@ -73,7 +75,7 @@ class KonsilietWidget : GlanceAppWidget() {
         Summary.load()
         provideContent {
             val s by Summary.state.collectAsState()
-            Content(s, System.currentTimeMillis())
+            androidx.glance.GlanceTheme { Content(s, System.currentTimeMillis()) }
         }
     }
 
@@ -94,7 +96,7 @@ private fun Content(s: JSONObject?, now: Long) {
     val wide = size.width >= KonsilietWidget.WIDE.width
     val tall = size.height >= KonsilietWidget.TALL.height
     Column(
-        GlanceModifier.fillMaxSize().background(W.bg).cornerRadius(16.dp).padding(horizontal = 14.dp, vertical = 10.dp)
+        GlanceModifier.fillMaxSize().appWidgetBackground().background(W.bg).cornerRadius(24.dp).padding(horizontal = 16.dp, vertical = 12.dp)
             .clickable(actionStartActivity<MainActivity>()),
     ) {
         // Rubrik och när siffrorna senast hämtades från servern.
@@ -111,7 +113,7 @@ private fun Content(s: JSONObject?, now: Long) {
         Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             val score = s?.takeIf { it.has("poang") && !it.isNull("poang") }?.optInt("poang")
             Row(verticalAlignment = Alignment.Bottom) {
-                Text(score?.toString() ?: "--", style = style(34, if (score == null) W.ink3 else W.ink, FontWeight.Medium))
+                Text(score?.toString() ?: "--", style = style(40, if (score == null) W.ink3 else W.accent, FontWeight.Medium))
                 Text(if (score == null) "  " + (s?.optString("poang_kommentar")?.ifBlank { null } ?: "ingen poäng") else "  av 100",
                     style = style(11, W.ink3), modifier = GlanceModifier.padding(bottom = 6.dp))
             }
@@ -166,7 +168,7 @@ private fun Steps(s: JSONObject?) {
     Spacer(GlanceModifier.height(4.dp))
     LinearProgressIndicator(
         progress = (steps.toFloat() / goal).coerceIn(0f, 1f),
-        modifier = GlanceModifier.fillMaxWidth().height(4.dp),
+        modifier = GlanceModifier.fillMaxWidth().height(8.dp).cornerRadius(4.dp),
         color = W.accent, backgroundColor = W.track,
     )
 }
@@ -182,10 +184,12 @@ private fun Verdict(k: JSONObject?, lines: Int) {
         u != null -> "Markerad som lösning: " + (URGENCY[u] ?: u) to W.ink
         else -> "Ingen tråd ännu" to W.ink3
     }
+    Column(GlanceModifier.fillMaxWidth().background(W.kort).cornerRadius(16.dp).padding(horizontal = 12.dp, vertical = 8.dp)) {
     Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(label, style = style(12, color, FontWeight.Medium), modifier = GlanceModifier.defaultWeight())
+        Text(label, style = style(12, color, FontWeight.Medium), modifier = GlanceModifier.defaultWeight())
         k?.takeIf { !running && it.has("slut") }?.let { Text(Fmt.ago((it.optDouble("slut") * 1000).toLong()), style = style(11, W.ink3)) }
     }
     val text = k?.optString("sammanfattning")?.ifBlank { null }
     if (!running && text != null) Text(text, style = style(12, W.ink2), maxLines = lines)
+    }
 }

@@ -1,5 +1,39 @@
 package se.konsiliet.app.ui.screens
 
+import androidx.compose.foundation.shape.CircleShape
+
+import androidx.compose.foundation.layout.fillMaxHeight
+
+import androidx.compose.foundation.layout.size
+
+import androidx.compose.material.icons.filled.Timeline
+
+import androidx.compose.material.icons.filled.Check
+
+import androidx.compose.material.icons.filled.Circle
+
+import androidx.compose.material.icons.filled.Search
+
+import androidx.compose.material.icons.filled.Person
+
+import androidx.compose.material.icons.filled.Gavel
+
+import androidx.compose.material.icons.filled.Description
+
+import androidx.compose.material.icons.filled.WbSunny
+
+import androidx.compose.material.icons.filled.DirectionsWalk
+
+import androidx.compose.material.icons.filled.CheckCircle
+
+import androidx.compose.material.icons.filled.Forum
+
+import androidx.compose.material.icons.filled.Sensors
+
+import androidx.compose.material.icons.filled.Warning
+
+import androidx.compose.material.icons.Icons
+
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -74,7 +108,11 @@ fun describe(e: EventRow, t: Tokens): Described {
         "consult.verdict" -> Described("Markerad som lösning", p.optJSONObject("verdict")?.optString("sammanfattning"), t.accent, cid)
         "nudge.move" -> Described(p.optString("title"), p.optString("body"), null, null)
         "brief.morgon" -> Described("POST-skärmen " + p.optString("datum"), p.optString("text"), null, null)
-        "sync.1177" -> Described("1177: " + p.optString("status"), p.optString("detail").ifEmpty { null }, null, null)
+        "sync.1177" -> when (p.optString("status")) {
+            "klar" -> Described("Journalen hämtad från 1177", "${p.optInt("nya_anteckningar")} nya anteckningar, ${p.optInt("nya_provsvar")} nya provsvar", t.ok, null)
+            "misslyckades" -> Described("1177-hämtningen misslyckades", p.optString("detail").ifEmpty { null }, t.avvikelse, null)
+            else -> Described("1177: " + p.optString("status"), p.optString("detail").ifEmpty { null }, null, null)
+        }
         "review.strike" -> Described("Moderatorn strök ett påstående", p.optString("claim") + " (" + p.optString("reason") + ")", t.ink3, cid)
         "agent.say" -> Described((AGENT_NAMES[p.optString("agent")] ?: p.optString("agent")) + " till " +
             (AGENT_NAMES[p.optString("to")] ?: p.optString("to")), p.optString("text"), null, cid)
@@ -83,47 +121,80 @@ fun describe(e: EventRow, t: Tokens): Described {
     }
 }
 
+/** Ikon per händelsetyp, som i en aktivitetslogg. */
+private fun ikon(kind: String): androidx.compose.ui.graphics.vector.ImageVector = when (kind) {
+    "alert.raise" -> Icons.Filled.Warning
+    "vakt.anomaly" -> Icons.Filled.Sensors
+    "consult.start" -> Icons.Filled.Forum
+    "consult.verdict" -> Icons.Filled.CheckCircle
+    "nudge.move" -> Icons.Filled.DirectionsWalk
+    "brief.morgon" -> Icons.Filled.WbSunny
+    "sync.1177" -> Icons.Filled.Description
+    "review.strike" -> Icons.Filled.Gavel
+    "agent.say" -> Icons.Filled.Person
+    "agent.tool" -> Icons.Filled.Search
+    else -> Icons.Filled.Circle
+}
+
 @Composable
 fun TimelineScreen(onOpenConsult: (String) -> Unit) {
     val t = LocalTokens.current
     val ctx = LocalContext.current
+    val cs = androidx.compose.material3.MaterialTheme.colorScheme
+    val typo = androidx.compose.material3.MaterialTheme.typography
     val events by remember { KonsilietDb.get(ctx).events().recent(1000) }.collectAsState(emptyList())
     var all by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { syncEvents(ctx) }
-    val shown = events.filter { all || it.kind in MAIN_KINDS }
+    // Beskrivningarna räknas en gång per lista, inte vid varje omritning av en rad.
+    val rows = remember(events, all, t) {
+        // 1177 skickar en händelse per steg; i huvudlistan visas bara resultatet.
+        fun viktig(e: EventRow) = e.kind in MAIN_KINDS && (e.kind != "sync.1177" ||
+            e.payload.contains("\"klar\"") || e.payload.contains("\"misslyckades\""))
+        val shown = events.filter { all || viktig(it) }
+        shown.mapIndexed { i, e -> Triple(e, describe(e, t), i == 0 || Fmt.day(shown[i - 1].ts) != Fmt.day(e.ts)) }
+    }
 
     Column(Modifier.fillMaxSize()) {
-        Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 12.dp, top = 12.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("Tidslinje", style = Type.title, color = t.ink, modifier = Modifier.weight(1f))
-            Text("Visa allt", style = Type.small, color = t.ink2)
-            Spacer(Modifier.width(8.dp))
-            Switch(checked = all, onCheckedChange = { all = it })
+        Row(Modifier.fillMaxWidth().padding(start = 24.dp, end = 16.dp, top = 20.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text("Tidslinje", style = typo.headlineLarge, color = cs.onSurface, modifier = Modifier.weight(1f))
+            androidx.compose.material3.FilterChip(selected = all, onClick = { all = !all }, label = { Text("Visa allt") },
+                leadingIcon = if (all) { { androidx.compose.material3.Icon(Icons.Filled.Check, null, Modifier.size(18.dp)) } } else null)
         }
-        Box(Modifier.fillMaxWidth().height(1.dp).background(t.rule))
-        if (shown.isEmpty()) {
-            Text("Inga händelser ännu. Händelser från vakten, supporttråden och larm hamnar här.",
-                style = Type.body, color = t.ink3, modifier = Modifier.padding(20.dp))
+        if (rows.isEmpty()) {
+            Column(Modifier.fillMaxWidth().padding(40.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                androidx.compose.material3.Icon(Icons.Filled.Timeline, null, tint = cs.onSurfaceVariant, modifier = Modifier.size(48.dp))
+                Text("Inga händelser ännu", style = typo.titleMedium, color = cs.onSurface, modifier = Modifier.padding(top = 12.dp))
+                Text("Larm, vakten, trådar och 1177 hamnar här.", style = typo.bodyMedium, color = cs.onSurfaceVariant)
+            }
         }
-        LazyColumn(Modifier.fillMaxSize()) {
-            val rows = shown.mapIndexed { i, e -> e to (i == 0 || Fmt.day(shown[i - 1].ts) != Fmt.day(e.ts)) }
-            items(rows, key = { it.first.id }) { (e, header) ->
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp)) {
+            items(rows, key = { it.first.id }) { (e, d, header) ->
                 if (header) {
-                    Text(Fmt.day(e.ts), style = Type.label, color = t.ink2, modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp))
+                    Text(Fmt.day(e.ts), style = typo.titleSmall, color = cs.primary, modifier = Modifier.padding(start = 24.dp, top = 18.dp, bottom = 6.dp))
                 }
-                val d = describe(e, t)
+                val farg = d.color ?: cs.onSurfaceVariant
                 Row(
                     Modifier.fillMaxWidth().clickable(enabled = d.consultId != null) { d.consultId?.let(onOpenConsult) }
-                        .padding(horizontal = 20.dp, vertical = 10.dp)
+                        .padding(horizontal = 16.dp).height(androidx.compose.foundation.layout.IntrinsicSize.Min)
                 ) {
-                    Text(Fmt.hm(e.ts), style = Type.small, color = t.ink3, modifier = Modifier.width(48.dp).padding(top = 2.dp))
-                    Box(Modifier.width(2.dp).height(18.dp).padding(top = 2.dp).background(d.color ?: t.rule))
-                    Spacer(Modifier.width(10.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(d.title, style = Type.label, color = t.ink)
-                        d.body?.takeIf { it.isNotBlank() }?.let {
-                            Text(it, style = Type.body.copy(fontSize = Type.small.fontSize, lineHeight = Type.small.lineHeight),
-                                color = t.ink2, maxLines = 4)
+                    // Ikonen på en lodrät linje
+                    Box(Modifier.width(48.dp).fillMaxHeight(), contentAlignment = Alignment.TopCenter) {
+                        Box(Modifier.width(2.dp).fillMaxHeight().background(cs.outlineVariant))
+                        Box(Modifier.padding(top = 10.dp).size(36.dp).background(cs.surface, CircleShape).padding(2.dp)
+                            .background(farg.copy(alpha = 0.16f), CircleShape), contentAlignment = Alignment.Center) {
+                            androidx.compose.material3.Icon(ikon(e.kind), null, tint = farg, modifier = Modifier.size(18.dp))
                         }
+                    }
+                    Column(Modifier.weight(1f).padding(start = 8.dp, top = 10.dp, bottom = 12.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(d.title, style = typo.titleSmall, color = cs.onSurface, modifier = Modifier.weight(1f))
+                            Text(Fmt.hm(e.ts), style = typo.labelMedium, color = cs.onSurfaceVariant)
+                        }
+                        d.body?.takeIf { it.isNotBlank() }?.let {
+                            Text(it, style = typo.bodyMedium, color = cs.onSurfaceVariant, maxLines = 4,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.padding(top = 2.dp))
+                        }
+                        if (d.consultId != null) Text("Öppna tråden", style = typo.labelLarge, color = cs.primary, modifier = Modifier.padding(top = 4.dp))
                     }
                 }
             }

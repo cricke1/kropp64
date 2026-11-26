@@ -24,7 +24,10 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8: krymper koden och resurserna (APK:n blir ungefär en tredjedel) och gör appen snabbare.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("debug")
         }
     }
