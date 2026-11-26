@@ -414,8 +414,8 @@ def kontor_kam(ft, r0, r1, u, e=easeio):
 
 # (scentid start, slut, kamera från, kamera till (logiska px: mitt x, mitt y, bredd), namn, roll)
 KONTORSKLIPP = [
-    (2.6, 4.4, (176, 92, 190), (168, 88, 150), "TRÅDSTARTAREN", "allmänläkare"),
-    (4.4, 6.6, (186, 74, 175), (184, 70, 150), "KARDIOLOGEN", "kardiolog"),
+    (2.6, 4.4, (182, 62, 205), (178, 58, 190), "TRÅDSTARTAREN", "allmänläkare"),
+    (4.4, 6.6, (190, 60, 195), (188, 56, 180), "KARDIOLOGEN", "kardiolog"),
     (6.6, 8.4, (212, 78, 160), (210, 74, 135), "TROLLET", "djävulens advokat"),
     (8.4, 10.4, (190, 74, 140), (186, 70, 120), "KARDIOLOGEN", "blir arg"),
     (10.4, 12.0, (234, 74, 165), (232, 70, 145), "SÖMNLÄKAREN", "skyller på sömnen"),
