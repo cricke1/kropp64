@@ -26,7 +26,7 @@ Som AIDA64 och HWiNFO64, fast för kroppen: ett lokalt AI-läkarteam läser kloc
 
 ## Vad byggde du, och hur?
 
-5786 av 8000 tecken.
+5964 av 8000 tecken.
 
 ```text
 Jag är 18, köpte en Mac mini M4 med 16 GB under OpenClaw-trenden i januari och har byggt egna AI-grejer på den sedan dess. Det betyder också att jag sitter inne väldigt mycket. Jag vill börja träna mer, sova bättre och se hur kodpass och spelkvällar faktiskt syns i kroppen. Klockan samlar redan allt det där, men ingen tittar på det. Så jag byggde en sensorpanel för kroppen, med ett läkarteam som läser sensorerna, och allt körs på Mac minin.
@@ -59,7 +59,7 @@ Lokalt på 16 GB
 Allt körs i Ollama: qwen3.5:9b för alla agenter, medgemma:4b som valfri kunskapskälla som aldrig räknas som källa. På Mac minin läser 9B-modellen prompten i 75 tokens/s och skriver i 17. Det formade allt: datan hämtas innan specialisterna börjar, svaren tvingas fram som JSON, kontexten är 8k med KV-cache i q8_0 och en förfrågan åt gången. Då tar modellen 9,1 GB i stället för 14,7.
 
 Mätt
-Mot 16 scenarier med syntetisk data och facit, plus 16 holdout-scenarier som skrevs innan de kördes. På holdout gick godtagbar brådska från 56 % i gamla pipelinen (3 övertriage, 4 undertriage) till 100 %, täckningen av måste-fynd från 67 % till 94 % och mediantiden för en tråd från 226 till 118 sekunder. Omkört med samma kod och modell: rätt brådska i 36 av 36 holdout-trådar och godtagbar i 64 av 64 tränade, täckning 91-94 % mellan körningarna. Samma 16 holdout med gemma4:12b gav lite bättre täckning (98 %) men tog 156 sekunder och 12,3 GB, så den ryms inte bredvid allt annat i 16 GB.
+Mot 16 scenarier med syntetisk data och facit, plus 16 holdout-scenarier som skrevs innan de kördes. På holdout gick godtagbar brådska från 56 % i gamla pipelinen (3 övertriage, 4 undertriage) till 100 %, täckningen av måste-fynd från 67 % till 94 % och mediantiden för en tråd från 226 till 118 sekunder. Omkört med samma kod och modell: rätt brådska i 36 av 36 holdout-trådar och godtagbar i 64 av 64 tränade, täckning 91-94 % mellan körningarna. Samma 16 holdout med gemma4:12b gav lite bättre täckning (98 %) men tog 156 sekunder och 12,3 GB, så den ryms inte bredvid allt annat i 16 GB. Samma flöde på en lånad laptop med RTX 5050 (llama.cpp) tog 56 sekunder per tråd i stället för 126, med samma kvalitet på de tränade scenarierna och en övertriage på 16 holdout.
 
 Klocka och mobil
 Egen Wear OS-app med en kö som bara töms när mobilen kvitterat, och en Android-app med egen kö som överlever omstart och nätavbrott. På emulatorer: med mobilens nät avstängt köades 360 punkter, och alla 1 215 fanns på servern 2 sekunder efter att nätet kom tillbaka, utan dubbletter. Vid akut larm kan mobilen skicka sms till en anhörig om jag inte svarar inom vald tid. Det är avstängt tills man slår på det.

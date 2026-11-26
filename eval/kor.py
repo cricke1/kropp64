@@ -54,13 +54,15 @@ def main() -> None:
             if r["scenario"] not in nya:
                 rader.append(r)
                 korningar.append(k)
+    # Samma Ollama som körningen använder (annars laddades Mac minis egna modeller ur vid körning mot Lenovon)
+    ollama = env.get("KONSILIET_OLLAMA", "http://127.0.0.1:11434")
     for sc in valda:
         # Lasta ur modellerna före varje scenario: annars växte Qwens minne under en lång körning
         # (12 -> 15 GiB) och datorn swappade, vilket gjorde tiderna oberoende av det som mättes.
         try:
             import httpx
-            for mod in httpx.get("http://127.0.0.1:11434/api/ps", timeout=10).json().get("models", []):
-                httpx.post("http://127.0.0.1:11434/api/generate", json={"model": mod["name"], "keep_alive": 0}, timeout=60)
+            for mod in httpx.get(f"{ollama}/api/ps", timeout=10).json().get("models", []):
+                httpx.post(f"{ollama}/api/generate", json={"model": mod["name"], "keep_alive": 0}, timeout=60)
         except Exception:
             pass
         fil = HIT / "tmp" / f"{a.variant}-{sc.id}.json"
@@ -74,7 +76,7 @@ def main() -> None:
         try:
             import httpx
             res["ollama_minne_gib_efter"] = {m["name"]: round(m["size_vram"] / 2**30, 1) for m in
-                                             httpx.get("http://127.0.0.1:11434/api/ps", timeout=10).json().get("models", [])}
+                                             httpx.get(f"{ollama}/api/ps", timeout=10).json().get("models", [])}
         except Exception:
             pass
         pg = poang(res)

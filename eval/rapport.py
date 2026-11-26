@@ -30,6 +30,8 @@ def main() -> None:
             ("v8, tränade, 4 körningar sammanslagna", agg("2026-11-2?-v8.json", "2026-11-2?-v8-rep*.json")),
             ("v8, holdout, alla omkörningar sammanslagna", agg("*holdout*-v8.json", "*holdout*-v8-final.json",
                                                               "*holdout5-v8-rep*.json")),
+            ("v8 på RTX 5050 (llama.cpp), 16 tränade scenarier", agg("*-v8-rtx5050-qwen9b.json")),
+            ("v8 på RTX 5050 (llama.cpp), 16 holdout-scenarier", agg("*holdout*-v8-rtx5050.json")),
             ("v8 med gemma4:12b, 16 holdout-scenarier", agg("*holdout*-v8-gemma12b.json")),
             ("v8 med gemma4:e4b, 16 holdout-scenarier", agg("*holdout*-v8-gemma4e4b.json"))]
     topp = ["# Utvärdering av konsiliet", "",
@@ -52,6 +54,25 @@ def main() -> None:
              "var sämre: 12 av 16 godtagbara med 4 övertriage, 69 % täckning och i snitt 0,5 belagda påståenden per "
              "möte, eftersom den skrev långa, utfyllda svar (6 752 utdatatokens per möte mot 1 806) som ofta klipptes. "
              "Båda gemma-modellerna är borttagna igen.", "",
+             "## Apple M4 mot RTX 5050", "",
+             "Samma v8-kod och samma modell på den lånade laptopens NVIDIA RTX 5050 (8 GB, Windows) den 26 november: "
+             "llama.cpp b12776 (CUDA) med `Qwen3.5-9B-Q4_K_M.gguf` från lmstudio-community, eftersom Ollama på Windows "
+             "inte gick att få att registrera modellen. Samma kontext (8192), KV-cache i q8_0, flash attention och en "
+             "förfrågan i taget. `eval/ollama_proxy.py` översätter appens Ollama-anrop till llama-servers API, så "
+             "appkoden är oförändrad. Det är alltså samma modell men en annan kvantiseringsfil och en annan runtime "
+             "(Ollama bygger själv på llama.cpp/ggml), så skillnaderna är inte bara hårdvara.",
+             "- **Tid:** median 56 s per tråd på de 16 tränade scenarierna mot 123-128 s på Mac minin, och 54 s på "
+             "holdout mot 118-131 s. Ungefär 2,2 gånger snabbare. Mac-tiderna inkluderar en kall modellstart per scenario "
+             "(modellen laddas ur före varje), medan llama-server hade modellen laddad hela tiden, så en del av "
+             "skillnaden är laddningstid.",
+             "- **Hastighet:** 33 genererade tokens/s och cirka 1 070 tokens/s promptläsning (ocachade tokens, 191 "
+             "anrop) mot cirka 22 och 390 på Mac minin inne i flödet (se RESAN.md).",
+             "- **Minne:** grafikkortet låg på 6,1-6,4 GB av 8 GB under körningen, varav cirka 0,9 GB var annat. "
+             "Rösttjänsten (5,5 GB) fick stängas av under tiden, så RTX 5050 rymmer inte båda samtidigt.",
+             "- **Kvalitet:** tränade 16 av 16 godtagbar brådska och 14 exakta (samma två som på Macen), täckning 91 %. "
+             "Holdout 15 av 16: en övertriage, `h_lag_nattpuls` (låg nattpuls) blev bevaka i stället för ingen. Det "
+             "scenariot har varit rätt i alla Mac-körningar med Ollamas fil, så skillnaden kan komma från kvantiseringen "
+             "eller vara brus; en körning räcker inte för att avgöra det. Täckning 97 %.", "",
              "## Metod", "",
              "- **Data:** en syntetisk person, minutupplöst simulering av 28 dygn (`eval/sim.py`). All data är märkt "
              "`syntetisk` och skrivs till slängbara databaser under `eval/tmp/`, aldrig till den riktiga.",
