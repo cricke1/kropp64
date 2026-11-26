@@ -279,7 +279,7 @@ fun ConsultDetail(id: String, onBack: () -> Unit) {
                             Text(BRADSKA[v.optString("bradska")] ?: v.optString("bradska"), style = typo.titleLarge, color = cs.onSurface)
                         }
                     }
-                    Text(v.optString("sammanfattning"), style = typo.bodyLarge, color = cs.onSurface, modifier = Modifier.padding(top = 12.dp))
+                    Text(se.konsiliet.app.ui.components.Ref.snygg(v.optString("sammanfattning")), style = typo.bodyLarge, color = cs.onSurface, modifier = Modifier.padding(top = 12.dp))
                     v.optJSONArray("rad")?.let { a -> if (a.length() > 0) {
                         Text("Råd", style = typo.titleSmall, color = cs.onSurface, modifier = Modifier.padding(top = 14.dp))
                         for (i in 0 until a.length()) Text("• " + a.optString(i), style = typo.bodyMedium, color = cs.onSurface, modifier = Modifier.padding(top = 4.dp))
@@ -295,9 +295,9 @@ fun ConsultDetail(id: String, onBack: () -> Unit) {
                     for (i in 0 until a.length()) {
                         val p = a.optJSONObject(i) ?: continue
                         Column(Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
-                            Text(p.optString("text"), style = typo.bodyMedium, color = cs.onSurface)
+                            Text(se.konsiliet.app.ui.components.Ref.snygg(p.optString("text")), style = typo.bodyMedium, color = cs.onSurface)
                             val k = p.optJSONArray("kallor")
-                            if (k != null) Text("Källor: " + (0 until k.length()).joinToString { k.optString(it) }, style = typo.labelSmall, color = cs.onSurfaceVariant)
+                            if (k != null) Text("Källor: " + (0 until k.length()).joinToString { se.konsiliet.app.ui.components.Ref.snygg(k.optString(it)) }, style = typo.labelSmall, color = cs.onSurfaceVariant)
                         }
                     }
                 }
@@ -340,9 +340,9 @@ fun ConsultDetail(id: String, onBack: () -> Unit) {
                             .padding(12.dp)) {
                             Text(namn + if (s.optString("to") !in listOf("", "alla")) " → " + (AGENT_NAMES[s.optString("to")] ?: s.optString("to")) else "",
                                 style = androidx.compose.material3.MaterialTheme.typography.labelLarge, color = farg)
-                            Text(s.optString("text"), style = androidx.compose.material3.MaterialTheme.typography.bodyMedium, color = t.ink)
+                            Text(se.konsiliet.app.ui.components.Ref.snygg(s.optString("text")), style = androidx.compose.material3.MaterialTheme.typography.bodyMedium, color = t.ink)
                             val cites = s.optJSONArray("cites")
-                            if (cites != null && cites.length() > 0) Text("Källor: " + (0 until cites.length()).joinToString { cites.optString(it) },
+                            if (cites != null && cites.length() > 0) Text("Källor: " + (0 until cites.length()).joinToString { se.konsiliet.app.ui.components.Ref.snygg(cites.optString(it)) },
                                 style = androidx.compose.material3.MaterialTheme.typography.labelSmall, color = t.ink3, modifier = Modifier.padding(top = 4.dp))
                         }
                     }

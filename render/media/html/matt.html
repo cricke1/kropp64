@@ -1,0 +1,34 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="bas.css"><style>
+.wrap{padding:72px}
+.rader{margin-top:56px;display:grid;gap:34px}
+.rad{display:grid;grid-template-columns:330px 1fr 190px;align-items:center;gap:28px}
+.etik{font-size:30px;font-weight:500}.etik small{display:block;font-size:19px;color:#9ba4a9;font-weight:400;margin-top:4px}
+.spar{position:relative;height:54px;background:#1b2125;border-radius:14px;overflow:hidden}
+.fore{position:absolute;inset:0 auto 0 0;background:#4a3a3a;border-radius:14px}
+.efter{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#2e8f63,#4cc38a);border-radius:14px;box-shadow:0 0 40px #4cc38a55}
+.spar span{position:absolute;top:50%;transform:translateY(-50%);font:500 22px PlexMono}
+.tal{font:600 58px PlexMono;text-align:right;letter-spacing:-.03em}
+.fran{font:500 22px PlexMono;color:#f0645a;display:block;text-align:right}
+.bigbox{position:absolute;right:72px;top:72px;text-align:right}
+.big{font:600 150px PlexMono;line-height:1;letter-spacing:-.05em;color:#4cc38a;text-shadow:0 0 60px #4cc38a66}
+</style></head><body><div class="wrap">
+<div class="kicker">Mätt, inte gissat</div>
+<h1>Läkarteamet mot facit.<br><span class="dim">Första versionen → nu.</span></h1>
+<div class="bigbox"><div class="big">36/36</div><div style="font-size:24px" class="dim">rätt brådska, omkört<br>på holdout-fall</div></div>
+<div class="rader">
+ <div class="rad"><div class="etik">Godtagbar brådska<small>16 holdout-fall, skrivna före körning</small></div>
+  <div class="spar"><div class="efter" style="width:100%"></div><div class="fore" style="width:56%;background:#5a2b2b"></div><span style="left:18px">56 %</span></div>
+  <div><span class="fran">56 %</span><div class="tal gron">100 %</div></div></div>
+ <div class="rad"><div class="etik">Måste-fynd med<small>det som ska stå i svaret</small></div>
+  <div class="spar"><div class="efter" style="width:94%"></div><div class="fore" style="width:67%;background:#5a2b2b"></div><span style="left:18px">67 %</span></div>
+  <div><span class="fran">67 %</span><div class="tal gron">94 %</div></div></div>
+ <div class="rad"><div class="etik">Tid per tråd<small>median, Mac mini M4 16 GB</small></div>
+  <div class="spar"><div class="fore" style="width:100%;background:#5a2b2b"></div><div class="efter" style="width:52%"></div><span style="left:18px;color:#0e1113">118 s</span></div>
+  <div><span class="fran">226 s</span><div class="tal gron">118 s</div></div></div>
+ <div class="rad"><div class="etik">Undertriage<small>missat något brådskande</small></div>
+  <div class="spar"><div class="fore" style="width:25%;background:#5a2b2b"></div><span style="left:18px">4 st → 0</span></div>
+  <div><span class="fran">4</span><div class="tal gron">0</div></div></div>
+</div></div>
+<div class="fot">Syntetisk data · metod och förbehåll: github.com/cricke1/kropp64 → eval/RESULTAT.md</div>
+<div class="brand">Kropp<b>64</b></div>
+</body></html>

@@ -344,3 +344,28 @@ fun StatTile(icon: androidx.compose.ui.graphics.vector.ImageVector, label: Strin
         }
     }
 }
+
+/** Gör trådarnas källreferenser läsbara: "S:dator_kod:1795450202-1795536602" blir "Datorn: kod 15:10-15:20". */
+object Ref {
+    private val NAMN = mapOf(
+        "hr" to "Puls", "hr_resting" to "Vilopuls", "hrv_rmssd" to "HRV", "spo2" to "Syremättnad", "resp" to "Andning",
+        "skin_temp" to "Hudtemp", "steps" to "Steg", "dator_kod" to "Datorn: kod", "dator_spel" to "Datorn: spel",
+        "dator_chatt" to "Datorn: chatt", "dator_webb" to "Datorn: webb", "dator_annat" to "Datorn: annat",
+        "mobil_spel" to "Mobilen: spel", "mobil_sociala" to "Mobilen: sociala", "mobil_video" to "Mobilen: video",
+        "mobil_chatt" to "Mobilen: chatt", "mobil_webb" to "Mobilen: webb", "mobil_annat" to "Mobilen: annat",
+    )
+    private val SERIE = Regex("S:([a-z_]+):(\\d{9,11})-(\\d{9,11})")
+    private val FAKTA = Regex("\\bF:([a-z_]+)")
+    private val JOURNAL = Regex("\\bJ:[0-9a-f]{6,}")
+    private val PROV = Regex("\\bL:[0-9a-f]{6,}")
+    fun snygg(s: String): String = s
+        .replace(SERIE) { m ->
+            val a = m.groupValues[2].toDouble(); val b = m.groupValues[3].toDouble()
+            val namn = NAMN[m.groupValues[1]] ?: m.groupValues[1]
+            if (b - a > 20 * 3600) "$namn ${Fmt.day(a)}-${Fmt.day(b)}" else "$namn ${Fmt.hm(a)}-${Fmt.hm(b)}"
+        }
+        .replace(FAKTA) { "faktabladet (${it.groupValues[1].replace('_', ' ')})" }
+        .replace(JOURNAL, "journalen")
+        .replace(PROV, "provsvar")
+        .replace("(Ref: ", "(").replace("Ref: ", "")
+}

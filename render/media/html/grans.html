@@ -1,0 +1,31 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="bas.css"><style>
+body{background:radial-gradient(120% 90% at 10% 0%,#3a2a12 0%,#0e1113 55%)}
+.wrap{padding:72px}.kicker{color:#e0a458}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:52px}
+.kort{background:#151a1d;border:1px solid #232a2e;border-radius:28px;padding:36px}
+.kort h2{font-size:30px;font-weight:600;margin-bottom:6px}.kort p{font-size:20px;color:#9ba4a9;margin-bottom:26px}
+.b{margin:18px 0}.b .l{display:flex;justify-content:space-between;font-size:22px;margin-bottom:8px}
+.track{position:relative;height:34px;background:#1f2629;border-radius:10px}
+.fill{position:absolute;inset:0 auto 0 0;border-radius:10px}
+.limit{position:absolute;top:-10px;bottom:-10px;width:3px;background:#f0645a;left:calc(16/18*100%)}
+.limit:after{content:none}
+.t{font:600 96px PlexMono;letter-spacing:-.04em;line-height:1}
+</style></head><body><div class="wrap">
+<div class="kicker">Hårdvaran sätter gränsen</div>
+<h1>16 GB räcker. Precis.<br><span class="dim">Och inte en byte till.</span></h1>
+<div class="grid">
+ <div class="kort"><h2>Minne i Ollama</h2><p>Samma läkarteam, olika inställningar. <span class="rod">Röd linje = 16 GB.</span></p>
+  <div class="b"><div class="l"><span>Qwen3.5 9B, 16k kontext, parallellt</span><span class="mono rod">14,7 GB</span></div><div class="track"><div class="fill" style="width:81.7%;background:#8a3a34"></div><div class="limit"></div></div></div>
+  <div class="b"><div class="l"><span>Gemma 4 12B, bättre täckning</span><span class="mono barn">12,3 GB</span></div><div class="track"><div class="fill" style="width:68%;background:#9a6a2a"></div><div class="limit"></div></div></div>
+  <div class="b"><div class="l"><span>Qwen3.5 9B, 8k, en åt gången, q8_0</span><span class="mono gron">9,1 GB</span></div><div class="track"><div class="fill" style="width:50.5%;background:#2e8f63"></div><div class="limit"></div></div></div>
+  <p style="margin:22px 0 0">Plus server, röster, webb och macOS på samma 16 GB.</p></div>
+ <div class="kort"><h2>Samma tråd, annan hårdvara</h2><p>Median per tråd, samma kod och modell</p>
+  <div style="display:flex;gap:40px;align-items:flex-end;margin-top:10px">
+   <div><div class="t dim">126<span style="font-size:40px"> s</span></div><div style="font-size:22px;margin-top:10px">Mac mini M4<br><span class="dim">16 GB, Ollama</span></div></div>
+   <div><div class="t gron">56<span style="font-size:40px"> s</span></div><div style="font-size:22px;margin-top:10px">RTX 5050 Laptop<br><span class="dim">8 GB, llama.cpp</span></div></div>
+  </div>
+  <p style="margin:34px 0 0;color:#eceeed;font-size:24px">2,2x snabbare på ett riktigt GPU. Nu tänk 128 GB.</p></div>
+</div></div>
+<div class="fot">Uppmätt 25-26 nov 2026 · eval/RESULTAT.md</div>
+<div class="brand">Kropp<b>64</b></div>
+</body></html>

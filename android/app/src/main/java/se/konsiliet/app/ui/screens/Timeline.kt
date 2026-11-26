@@ -115,7 +115,7 @@ fun describe(e: EventRow, t: Tokens): Described {
         }
         "review.strike" -> Described("Moderatorn strök ett påstående", p.optString("claim") + " (" + p.optString("reason") + ")", t.ink3, cid)
         "agent.say" -> Described((AGENT_NAMES[p.optString("agent")] ?: p.optString("agent")) + " till " +
-            (AGENT_NAMES[p.optString("to")] ?: p.optString("to")), p.optString("text"), null, cid)
+            (AGENT_NAMES[p.optString("to")] ?: p.optString("to")), se.konsiliet.app.ui.components.Ref.snygg(p.optString("text")), null, cid)
         "agent.tool" -> Described((AGENT_NAMES[p.optString("agent")] ?: p.optString("agent")) + " slår upp " + p.optString("tool"), null, t.ink3, cid)
         else -> Described(e.kind, null, t.ink3, cid)
     }

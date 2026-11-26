@@ -45,20 +45,27 @@ def reset():
 def setup_render(sc, w, h, samples=512, noise=0.01, out=None, exposure=0.0):
     sc.render.engine = 'CYCLES'
     prefs = bpy.context.preferences.addons['cycles'].preferences
-    try:
-        prefs.compute_device_type = 'OPTIX'
-        prefs.get_devices()
-        for d in prefs.devices:
-            d.use = d.type == 'OPTIX'
-    except Exception as e:
-        print('OPTIX saknas', e)
+    # OptiX på NVIDIA (Lenovon), Metal på Mac minin. Avbrusning med OptiX där det finns, annars OpenImageDenoise.
+    typ = None
+    for kandidat in ('OPTIX', 'METAL', 'CUDA'):
+        try:
+            prefs.compute_device_type = kandidat
+            prefs.get_devices()
+            if any(d.type == kandidat for d in prefs.devices):
+                typ = kandidat
+                for d in prefs.devices:
+                    d.use = d.type == kandidat
+                break
+        except Exception:
+            continue
+    print('Renderar med', typ or 'CPU')
     cy = sc.cycles
-    cy.device = 'GPU'
+    cy.device = 'GPU' if typ else 'CPU'
     cy.samples = samples
     cy.use_adaptive_sampling = True
     cy.adaptive_threshold = noise
     cy.use_denoising = True
-    cy.denoiser = 'OPTIX'
+    cy.denoiser = 'OPTIX' if typ == 'OPTIX' else 'OPENIMAGEDENOISE'
     cy.denoising_use_gpu = True
     cy.denoising_input_passes = 'RGB_ALBEDO_NORMAL'
     cy.max_bounces = 12
