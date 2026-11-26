@@ -356,6 +356,13 @@ def journal() -> dict[str, Any]:
     return {"journal": j, "labs": l}
 
 
+@app.get("/api/1177/status", dependencies=[Depends(auth)])
+def status_1177() -> dict[str, Any]:
+    from . import hamtare1177
+
+    return hamtare1177.status()
+
+
 @app.post("/api/sync/1177", dependencies=[Depends(auth)])
 def sync_1177() -> dict[str, Any]:
     from . import hamtare1177

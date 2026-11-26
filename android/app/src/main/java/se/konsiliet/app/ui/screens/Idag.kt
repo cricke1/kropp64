@@ -91,7 +91,8 @@ fun beslutFarg(beslut: String?, t: se.konsiliet.app.ui.theme.Tokens): Color = wh
 }
 
 @Composable
-fun IdagScreen(onAsk: (String) -> Unit, onOpenConsult: (String) -> Unit, onSettings: () -> Unit) {
+fun IdagScreen(onAsk: (String) -> Unit, onOpenConsult: (String) -> Unit, onSettings: () -> Unit,
+               start1177: Boolean = false, onStart1177Done: () -> Unit = {}) {
     val t = LocalTokens.current
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -197,6 +198,9 @@ fun IdagScreen(onAsk: (String) -> Unit, onOpenConsult: (String) -> Unit, onSetti
                     unit = "timmar", icon = androidx.compose.material.icons.Icons.Filled.Bedtime)
             }
         }
+
+        // Journalen från 1177: inbyggd, med BankID direkt på telefonen.
+        Journal1177Card(autoStart = start1177, onAutoStarted = onStart1177Done)
 
         // Första dagarna: en checklista i stället för tomma ringar utan förklaring.
         if (i.isNull("headroom") && natt == null) {

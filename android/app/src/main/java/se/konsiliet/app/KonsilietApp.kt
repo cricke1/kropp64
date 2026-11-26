@@ -15,6 +15,7 @@ class KonsilietApp : Application() {
         UploadScheduler.periodic(this)
         HcScheduler.periodic(this)
         Summary.periodic(this)
+        se.konsiliet.app.ui.screens.Journal1177.periodic(this)
         // Det som låg i kön när processen dog laddas upp direkt vid nästa start.
         UploadScheduler.now(this)
     }

@@ -95,6 +95,7 @@ class MainActivity : ComponentActivity() {
 
     private var openConsult by mutableStateOf<String?>(null)
     private var asking by mutableStateOf(false)
+    private var start1177 by mutableStateOf(false)
 
     private val askNotif = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
@@ -102,6 +103,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         openConsult = intent?.getStringExtra(EXTRA_CONSULT)
+        start1177 = intent?.getBooleanExtra(se.konsiliet.app.ui.screens.Journal1177.EXTRA_START, false) == true
         if (Build.VERSION.SDK_INT >= 33) askNotif.launch(Manifest.permission.POST_NOTIFICATIONS)
         LiveService.start(this)
         setContent { KonsilietTheme { Root() } }
@@ -110,6 +112,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         intent.getStringExtra(EXTRA_CONSULT)?.let { openConsult = it }
+        if (intent.getBooleanExtra(se.konsiliet.app.ui.screens.Journal1177.EXTRA_START, false)) start1177 = true
     }
 
     override fun onResume() {
@@ -126,6 +129,7 @@ class MainActivity : ComponentActivity() {
         val t = LocalTokens.current
         var tab by rememberSaveable { mutableStateOf(Tab.Idag) }
         val consult = openConsult
+        androidx.compose.runtime.LaunchedEffect(start1177) { if (start1177) tab = Tab.Idag }
         // Första start: ingen serveradress än. Bara första-gångs-vyn, ingen flikrad.
         val firstRun = Prefs.config.collectAsState().value.serverUrl.isBlank()
         Column(Modifier.fillMaxSize().background(androidx.compose.material3.MaterialTheme.colorScheme.surface).statusBarsPadding()) {
@@ -146,6 +150,7 @@ class MainActivity : ComponentActivity() {
                         },
                         onOpenConsult = { openConsult = it },
                         onSettings = { tab = Tab.Installningar },
+                        start1177 = start1177, onStart1177Done = { start1177 = false },
                     )
                     Tab.Sensorer -> TodayScreen()
                     Tab.Tidslinje -> TimelineScreen(onOpenConsult = { openConsult = it })

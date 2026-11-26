@@ -38,6 +38,37 @@ START = "https://journalen.1177.se/"
 RAW_DIR = Path("~/.konsiliet/1177").expanduser()
 LOGIN_TIMEOUT = 180
 _running = threading.Lock()
+# Nya rader i den pågående hämtningen (återställs vid start). Visas i appen: "3 nya anteckningar".
+NYA = {"anteckningar": 0, "provsvar": 0}
+
+
+def _sidhash(namn: str, text: str) -> tuple[str, bool]:
+    """Sidans hash och om den ser exakt likadan ut som vid förra lyckade tolkningen. Oförändrade sidor
+    tolkas inte igen, så en hämtning utan nytt i journalen går på sekunder i stället för minuter med den
+    lokala modellen. Hashen sparas först när tolkningen lyckats (_spara_sidhash)."""
+    h = hashlib.sha256(text.encode()).hexdigest()
+    with db.tx() as c:
+        c.execute("CREATE TABLE IF NOT EXISTS sync1177_sida (namn TEXT PRIMARY KEY, hash TEXT, ts REAL)")
+        r = c.execute("SELECT hash FROM sync1177_sida WHERE namn = ?", (namn,)).fetchone()
+    return h, r is not None and r[0] == h
+
+
+def _spara_sidhash(namn: str, h: str) -> None:
+    with db.tx() as c:
+        c.execute("INSERT OR REPLACE INTO sync1177_sida VALUES (?,?,?)", (namn, h, time.time()))
+
+
+def status() -> dict[str, Any]:
+    """För appen: när journalen senast hämtades, hur mycket som finns och om en hämtning pågår."""
+    with db.tx() as c:
+        klar = c.execute("SELECT ts, payload FROM events WHERE kind = 'sync.1177' AND payload LIKE '%\"klar\"%' "
+                         "ORDER BY id DESC LIMIT 1").fetchone()
+        senaste = c.execute("SELECT ts, payload FROM events WHERE kind = 'sync.1177' ORDER BY id DESC LIMIT 1").fetchone()
+        n_j = c.execute("SELECT COUNT(*) FROM journal").fetchone()[0]
+        n_l = c.execute("SELECT COUNT(*) FROM labs").fetchone()[0]
+    return {"senast_klar": klar[0] if klar else None, "senast_klar_info": json.loads(klar[1]) if klar else None,
+            "anteckningar": n_j, "provsvar": n_l, "pagar": _running.locked(),
+            "senaste_status": json.loads(senaste[1]).get("status") if senaste else None}
 
 
 def _status(status: str, **extra: Any) -> None:
@@ -71,11 +102,13 @@ def tolka_anteckningar(poster: list[dict[str, str]], kind: str) -> int:
                 continue
             m = DATE.search(p.get("rubrik", "") + " " + text)
             datum = "-".join(m.groups()) if m else ""
+            jid = _hid(datum, re.sub(r"\W+", "", text)[:600])
+            ny = c.execute("SELECT 1 FROM journal WHERE id = ?", (jid,)).fetchone() is None
             c.execute(
                 "INSERT OR REPLACE INTO journal(id, date, unit, author, kind, title, text, fetched) VALUES (?,?,?,?,?,?,?,?)",
-                (_hid(datum, re.sub(r"\W+", "", text)[:600]), datum, p.get("enhet"), p.get("yrke"), kind,
-                 p.get("rubrik", "")[:200], text, time.time()))
+                (jid, datum, p.get("enhet"), p.get("yrke"), kind, p.get("rubrik", "")[:200], text, time.time()))
             n += 1
+            NYA["anteckningar"] += ny
     return n
 
 
@@ -100,10 +133,12 @@ def tolka_provsvar(rader: list[dict[str, str]]) -> int:
             if value is not None and hi is not None and value > hi:
                 flag = "H"
             datum = r.get("datum", "")
+            lid = _hid(datum, analyt, varde, str(sedda.setdefault(f"{datum}|{analyt}|{varde}", 0)))
+            NYA["provsvar"] += c.execute("SELECT 1 FROM labs WHERE id = ?", (lid,)).fetchone() is None
             c.execute(
                 "INSERT OR REPLACE INTO labs(id, date, analyte, value, value_raw, unit, ref_low, ref_high, flag, fetched)"
                 " VALUES (?,?,?,?,?,?,?,?,?,?)",
-                (_hid(datum, analyt, varde, str(sedda.setdefault(f"{datum}|{analyt}|{varde}", 0))), datum, analyt, value, varde, unit or r.get("enhet"), lo, hi, flag, time.time()))
+                (lid, datum, analyt, value, varde, unit or r.get("enhet"), lo, hi, flag, time.time()))
             sedda[f"{datum}|{analyt}|{varde}"] = sedda.get(f"{datum}|{analyt}|{varde}", 0) + 1
             n += 1
     return n
@@ -269,7 +304,8 @@ async def _hamta() -> dict[str, int]:
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     outdir = RAW_DIR / stamp
     outdir.mkdir(parents=True, exist_ok=True)
-    counts = {"sidor": 0, "anteckningar": 0, "provsvar": 0}
+    counts = {"sidor": 0, "anteckningar": 0, "provsvar": 0, "oforandrade": 0}
+    NYA["anteckningar"] = NYA["provsvar"] = 0
     async with async_playwright() as pw:
         browser = await pw.chromium.launch(headless=True)
         ctx = await browser.new_context(locale="sv-SE", viewport={"width": 1280, "height": 1800})
@@ -308,6 +344,10 @@ async def _hamta() -> dict[str, int]:
             safe = re.sub(r"[^\w-]+", "_", namn)[:40]
             (outdir / f"{i:02d}_{safe}.json").write_text(json.dumps(data, ensure_ascii=False, indent=1))
             (outdir / f"{i:02d}_{safe}.html").write_text(await page.content())
+            sidhash, oforandrad = _sidhash(url, json.dumps(data, ensure_ascii=False, sort_keys=True))
+            if oforandrad:
+                counts["oforandrade"] += 1
+                continue
             prov = [r for t in data["tabeller"] for r in _tabell_till_provsvar(t)]
             if prov:
                 counts["provsvar"] += tolka_provsvar(prov)
@@ -323,8 +363,9 @@ async def _hamta() -> dict[str, int]:
                             [{"rubrik": a.get("rubrik", "") + " " + a.get("datum", ""), "text": a["text"],
                               "enhet": a.get("enhet"), "yrke": a.get("yrke")} for a in ant], namn.lower())
                         counts["provsvar"] += tolka_provsvar(pv)
+            _spara_sidhash(url, sidhash)
         await browser.close()
-    _status("klar", **counts, mapp=str(outdir))
+    _status("klar", **counts, nya_anteckningar=NYA["anteckningar"], nya_provsvar=NYA["provsvar"], mapp=str(outdir))
     return counts
 
 
