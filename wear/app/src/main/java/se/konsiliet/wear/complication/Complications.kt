@@ -17,6 +17,8 @@ import androidx.wear.watchface.complications.datasource.SuspendingComplicationDa
 import se.konsiliet.wear.R
 import se.konsiliet.wear.data.PhoneStatus
 import se.konsiliet.wear.data.Snapshot
+import se.konsiliet.wear.data.Status
+import se.konsiliet.wear.data.WatchState
 import se.konsiliet.wear.data.Urgency
 import se.konsiliet.wear.ui.MainActivity
 
@@ -107,6 +109,33 @@ class ConsultComplication : SuspendingComplicationDataSourceService() {
                         .build()
                 else -> null
             }
+        }
+    }
+}
+
+/**
+ * Klockfrekvensen (senaste pulsen klockan sett) som SHORT_TEXT med enfärgat hjärta, som klockans egen
+ * pulskomplikation. Äldre än 30 minuter visas som "--". Uppdateras när passiv puls kommer
+ * (Surfaces.updateHr) och annars var femte minut.
+ */
+class HeartRateComplication : SuspendingComplicationDataSourceService() {
+
+    override fun getPreviewData(type: ComplicationType): ComplicationData? =
+        build(this, type, Status(lastHr = 72.0, lastHrAt = System.currentTimeMillis()), System.currentTimeMillis())
+
+    override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData? =
+        build(this, request.complicationType, WatchState.status.value, System.currentTimeMillis())
+
+    companion object {
+        fun build(ctx: Context, type: ComplicationType, w: Status, now: Long): ComplicationData? {
+            if (type != ComplicationType.SHORT_TEXT) return null
+            val bpm = w.lastHr?.takeIf { now - w.lastHrAt < 30 * 60_000L }?.let { "%.0f".format(it) }
+            return ShortTextComplicationData.Builder(text(bpm ?: "--"),
+                    text(if (bpm == null) "Klockfrekvens okänd" else "Klockfrekvens $bpm BPM"))
+                .setTitle(text("BPM"))
+                .setMonochromaticImage(icon(ctx, R.drawable.ic_heart))
+                .setTapAction(openApp(ctx))
+                .build()
         }
     }
 }

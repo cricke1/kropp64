@@ -23,7 +23,10 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8: krymper och optimerar koden (snabbare start och scroll). Regler i proguard-rules.pro.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -74,5 +77,9 @@ dependencies {
     // Tile och komplikationer.
     implementation("androidx.wear.tiles:tiles:1.6.2")
     implementation("androidx.wear.protolayout:protolayout:1.4.2")
+    implementation("androidx.wear.protolayout:protolayout-material3:1.4.2")
+
+    // Installerar baslinjeprofilen (src/main/baseline-prof.txt) så att första starten är AOT-kompilerad.
+    implementation("androidx.profileinstaller:profileinstaller:1.4.0")
     implementation("androidx.wear.watchface:watchface-complications-data-source-ktx:1.2.1")
 }

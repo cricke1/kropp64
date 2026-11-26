@@ -95,6 +95,7 @@ class PassiveDataService : PassiveListenerService() {
         runBlocking(Dispatchers.IO) { QueueDb.get(applicationContext).pending().insert(rows) }
         rows.filter { it.metric == "hr" }.maxByOrNull { it.ts }?.let {
             WatchState.noteHr(it.value, (it.ts * 1000).toLong())
+            se.konsiliet.wear.link.Surfaces.updateHr(applicationContext)
         }
         Flush.request(applicationContext, urgent)
     }

@@ -4,5 +4,6 @@
     <string name="tile_label">Kropp64</string>
     <string name="tile_description">Headroom, klockfrekvens och supporttråden</string>
     <string name="comp_recovery">Headroom</string>
+    <string name="comp_hr">Klockfrekvens</string>
     <string name="comp_consult">Supporttråden</string>
 </resources>

@@ -110,7 +110,7 @@
             android:name=".complication.RecoveryComplication"
             android:exported="true"
             android:label="@string/comp_recovery"
-            android:icon="@drawable/ic_stat"
+            android:icon="@drawable/ic_headroom"
             android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
             <intent-filter>
                 <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
@@ -137,6 +137,24 @@
             <meta-data
                 android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
                 android:value="0" />
+        </service>
+
+        <!-- Klockfrekvens som kort text med hjärta. Skjuts vid ny passiv puls, annars var femte minut. -->
+        <service
+            android:name=".complication.HeartRateComplication"
+            android:exported="true"
+            android:label="@string/comp_hr"
+            android:icon="@drawable/ic_heart"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
+            </intent-filter>
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="SHORT_TEXT" />
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="300" />
         </service>
 
         <!-- Passiva registreringar överlever inte omstart. Registrera om efter boot och uppdatering. -->

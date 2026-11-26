@@ -1,0 +1,17 @@
+# Baslinjeprofil för Kropp64 på klockan. AGP slår ihop den med bibliotekens egna profiler (Compose,
+# Wear Compose) och skriver om namnen efter R8. ProfileInstaller lägger in den vid första starten,
+# så startskärmen, listan, andningen och rutan körs AOT-kompilerade direkt.
+HSPLse/konsiliet/wear/**->**(**)**
+Lse/konsiliet/wear/**;
+HSPLandroidx/wear/compose/material3/**->**(**)**
+Landroidx/wear/compose/material3/**;
+HSPLandroidx/wear/compose/foundation/**->**(**)**
+Landroidx/wear/compose/foundation/**;
+HSPLandroidx/compose/runtime/**->**(**)**
+HSPLandroidx/compose/ui/**->**(**)**
+HSPLandroidx/compose/foundation/**->**(**)**
+HSPLandroidx/compose/animation/**->**(**)**
+HSPLandroidx/wear/protolayout/**->**(**)**
+HSPLandroidx/wear/tiles/**->**(**)**
+HSPLandroidx/room/**->**(**)**
+HSPLandroidx/health/services/client/**->**(**)**

@@ -102,6 +102,34 @@ object Haptics {
         Log.i(TAG, "vibration $p")
     }
 
+    enum class Andning { IN, UT, KLAR }
+
+    /**
+     * Mjuk vägledning i andningsövningen medan skärmen är på: en stigande våg när inandningen börjar,
+     * en fallande när utandningen börjar och en dubbel knackning när minuten är slut. Spelas som
+     * USAGE_TOUCH (appen är i förgrunden), så den följer användarens inställning för pekvibration.
+     */
+    fun andning(ctx: Context, steg: Andning) {
+        val vib: Vibrator = if (Build.VERSION.SDK_INT >= 31)
+            ctx.getSystemService(VibratorManager::class.java).defaultVibrator
+        else @Suppress("DEPRECATION") ctx.getSystemService(Vibrator::class.java)
+        if (!vib.hasVibrator()) return
+        val prim = when (steg) {
+            Andning.IN -> VibrationEffect.Composition.PRIMITIVE_SLOW_RISE
+            Andning.UT -> VibrationEffect.Composition.PRIMITIVE_QUICK_FALL
+            Andning.KLAR -> VibrationEffect.Composition.PRIMITIVE_CLICK
+        }
+        val effect = if (vib.areAllPrimitivesSupported(prim)) {
+            val c = VibrationEffect.startComposition().addPrimitive(prim, if (steg == Andning.KLAR) 0.8f else 0.6f)
+            if (steg == Andning.KLAR) c.addPrimitive(prim, 0.8f, 120)
+            c.compose()
+        } else VibrationEffect.createPredefined(
+            if (steg == Andning.KLAR) VibrationEffect.EFFECT_DOUBLE_CLICK else VibrationEffect.EFFECT_TICK)
+        if (Build.VERSION.SDK_INT >= 33) vib.vibrate(effect, VibrationAttributes.createForUsage(VibrationAttributes.USAGE_TOUCH))
+        else @Suppress("DEPRECATION") vib.vibrate(effect, AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).build())
+    }
+
     /** Notis plus mönster. Notisen öppnar klockappen. */
     fun notify(ctx: Context, p: Pattern, id: Int, title: String, body: String,
                actions: List<Pair<String, PendingIntent>> = emptyList(), open: Intent? = null) {

@@ -12,6 +12,7 @@ import org.json.JSONObject
 import se.konsiliet.wear.alerts.Haptics
 import se.konsiliet.wear.alerts.Pattern
 import se.konsiliet.wear.complication.ConsultComplication
+import se.konsiliet.wear.complication.HeartRateComplication
 import se.konsiliet.wear.complication.RecoveryComplication
 import se.konsiliet.wear.data.PhoneStatus
 import se.konsiliet.wear.data.Urgency
@@ -156,6 +157,11 @@ object Surfaces {
         for (c in listOf(RecoveryComplication::class.java, ConsultComplication::class.java)) {
             runCatching { ComplicationDataSourceUpdateRequester.create(ctx, ComponentName(ctx, c)).requestUpdateAll() }
         }
+    }
+
+    /** Ny puls: be urtavlan hämta pulskomplikationen igen. */
+    fun updateHr(ctx: Context) {
+        runCatching { ComplicationDataSourceUpdateRequester.create(ctx, ComponentName(ctx, HeartRateComplication::class.java)).requestUpdateAll() }
     }
 }
 
