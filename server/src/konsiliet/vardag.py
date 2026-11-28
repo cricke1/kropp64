@@ -867,7 +867,13 @@ def efter_pass(pid: str, nu: float | None = None) -> dict[str, Any] | None:
     # Inga notiser om gamla pass (t.ex. historik som kommer in i efterhand) eller väldigt korta.
     if not s or s["minuter"] < 3 or nu - (s["slut"] or nu) > 2 * 3600:
         return s
-    z = "".join(f", zon {i + 1}: {m} min" for i, m in enumerate(s["zon_minuter"]) if m)
+    # Health Connect skickar samma pass igen vid varje synk. Utan det här kom "Stresstest klart" en gång i
+    # timmen för samma pass (sett i riktig data 27 nov: samma promenad notifierad två gånger).
+    notifierade = _state("pass_notifierade", [])
+    if pid in notifierade:
+        return s
+    _satt_state("pass_notifierade", (notifierade + [pid])[-50:])
+    z ="".join(f", zon {i + 1}: {m} min" for i, m in enumerate(s["zon_minuter"]) if m)
     puls = f"Medelpuls {s['puls_medel']} BPM, max {s['puls_max']} BPM{z}." if s["puls_medel"] else ""
     notis("pass_klart", f"Stresstest klart: {s['minuter']} min {s['typ']}",
           f"{puls} {s['rad']} Pass {s['pass_denna_vecka']} av {s['mal_per_vecka']} den här veckan.".strip(), nu,

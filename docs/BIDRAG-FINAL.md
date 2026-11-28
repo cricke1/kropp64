@@ -51,6 +51,13 @@ Bonusmätning: samma kod och modell på en lånad laptop med RTX 5050 (llama.cpp
 MÄTT, INTE GISSAT
 Teamet testas mot 16 scenarier med facit plus 16 holdout-scenarier som skrevs innan de kördes. På holdout gick godtagbar brådska från 56 % i första versionen (3 övertriage, 4 undertriage) till 100 %, täckningen av måste-fynd från 67 till 94 % och tiden per tråd från 226 till 118 sekunder. Omkört med samma kod: rätt brådska i 36 av 36 holdout-trådar. Allt syntetiskt, metoden och förbehållen ligger i repot.
 
+VAD DET HITTADE I MIN RIKTIGA DATA
+Klockan har suttit på sedan 26 november: nästan 70 000 pulsvärden, fem pass och en natt som kom med som sömn. Den 28 november frågade jag teamet om mina sena kvällar syns i kroppen. Tråden tog 144 sekunder.
+Det som stämde: maxpulsen 180 var under ett löppass, inget mätfel. Nattpulsen gick ner till 43 och HRV låg på 67 ms. Och det jag själv misstänkte: datorn efter 23 fyra kvällar i rad, upp till 100 minuter, sista datorminuten 04:38 och insomning 04:40. 4,9 timmars sömn.
+Det som var fel: sammanfattningen kallade 66 för vilopuls. Det är medianen för hela dygnet, klockans vilopuls är 56-57. Sömnläkaren parade natten med fel kväll och skrev 04:43. Stressläkaren jämförde HRV med en baslinje i steg. Moderatorn släppte igenom alla tre, eftersom siffrorna fanns i källorna. Den kollar att siffran finns, inte alltid vad den betyder.
+Det moderatorn strök: rådet om skärmfritt 60-90 minuter före läggdags, eftersom 90 inte stod i någon källa. Strängt, men enligt reglerna.
+Två buggar rättades samma dag: kvällarna paras nu med rätt natt, och "Stresstest klart" kom en gång i timmen för samma pass. Provsvar fanns inga i min journal, så Labbet kallades aldrig in.
+
 KLOCKA, MOBIL OCH 1177
 Egen Wear OS-app på Pixel Watch 5 (puls i bakgrunden, pass med pulszoner, andningsövning, ruta och komplikationer) och en Android-app på mobilen, båda i Material 3. Klockan raderar bara det mobilen kvitterat, mobilen har en egen kö som överlever omstart och nätavbrott. Med nätet avstängt köades 360 punkter, och alla 1 215 fanns på servern två sekunder efter att nätet kom tillbaka, inga dubbletter.
 
@@ -108,12 +115,12 @@ Mac mini M4 16 GB (server, alla lokala modeller, 1177-hämtningen). Pixel Watch 
 ## Tokens
 
 - Var kördes AI:n: **Både och**
-- Tokens bearbetade lokalt: **9 878 376** (Ollama på Mac minin plus llama.cpp-körningen på RTX 5050)
-- Tokens betalda i molnet: **1 321 041 453** (Claude Code under bygget, med cache)
+- Tokens bearbetade lokalt: **9 903 403** (Ollama på Mac minin plus llama.cpp-körningen på RTX 5050)
+- Tokens betalda i molnet: **1 427 275 003** (Claude Code under bygget, med cache)
 - Hur vet du antalet tokens: **Från en tokenräknare**
 
-Uppdatera precis innan inlämning med `python3 tools/tokenredovisning.py` (siffrorna ovan är från 2026-11-26 kväll).
-Utan cache (bara ny input och output) var molnet 3 136 932 tokens. Det står i repot.
+Uppdatera precis innan inlämning med `python3 tools/tokenredovisning.py` (siffrorna ovan är från 2026-11-28 09:06).
+Utan cache (bara ny input och output) var molnet 3 507 858 tokens. Det står i repot.
 
 ## Bilder (1-10, högst 5 MB, PNG/JPG/WebP/GIF), i den här ordningen
 

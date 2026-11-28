@@ -479,7 +479,9 @@ def sena_kvallar(nu: float, antal: int = 7) -> dict[str, Any] | None:
             continue
         ts = sorted(t for kat in ("kod", "spel", "chatt", "webb", "annat") for t in _v(f"dator_{kat}", a, b)[:, 0])
         per = {DATORNAMN[k]: len(_v(f"dator_{k}", a, b)) for k in ("kod", "spel", "chatt", "webb", "annat")}
-        kvallar.append({"kvall": _dag(a), "minuter_vid_datorn_efter_23": len(ts),
+        # natten_till gör att kvällen kan paras med rätt natt i F:natter (natt_till). Utan den parade
+        # sömnläkaren i riktig data ihop natten till 27 nov med kvällen 27 nov (en natt för sent).
+        kvallar.append({"kvall": _dag(a), "natten_till": _dag(a + 86400), "minuter_vid_datorn_efter_23": len(ts),
                         "sista_datorminut": _hm(ts[-1]) if ts else None,
                         "per_kategori": {k: v for k, v in per.items() if v} or "inga"})
     if not any(k["minuter_vid_datorn_efter_23"] for k in kvallar):
